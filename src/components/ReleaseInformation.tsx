@@ -12,9 +12,9 @@ export const ReleaseInformation: React.FC = () => {
     },
     {
       icon: DownloadCloud,
-      label: 'Confirmed Preload Window',
+      label: 'Estimated Preload Window',
       value: 'November 12, 2026 (12:00 AM Local)',
-      subtext: 'Pre-loading unlocks at midnight in every timezone — exactly 7 days prior to launch',
+      subtext: 'Expected digital preload unlock window prior to global launch',
     },
     {
       icon: Gamepad2,

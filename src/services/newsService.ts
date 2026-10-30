@@ -20,7 +20,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-08-08T20:30:00Z',
     category: 'release',
     isUnconfirmed: false,
-    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    thumbnailUrl: '/images/hero-4k.jpg',
   },
   {
     id: 'rockstar-extended-look-premiere',
@@ -31,7 +31,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-08-27T16:00:00Z',
     category: 'gameplay',
     isUnconfirmed: false,
-    thumbnailUrl: '/official-gta-vi-cover.png',
+    thumbnailUrl: '/images/extended-look-4k.jpg',
   },
   {
     id: 'rockstar-launch-trailer-debut',
@@ -42,7 +42,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-10-15T15:00:00Z',
     category: 'trailers',
     isUnconfirmed: false,
-    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    thumbnailUrl: '/images/launch-trailer-4k.jpg',
   },
   {
     id: 'ign-hands-on-leonida-analysis',
@@ -53,7 +53,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-09-02T13:00:00Z',
     category: 'gameplay',
     isUnconfirmed: false,
-    thumbnailUrl: 'https://i.ytimg.com/vi/QdBZY2fkU-0/maxresdefault.jpg',
+    thumbnailUrl: '/images/vice-city-style-4k.jpg',
   },
   {
     id: 'gamespot-preload-breakdown',
@@ -64,7 +64,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-09-20T18:15:00Z',
     category: 'release',
     isUnconfirmed: false,
-    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    thumbnailUrl: '/images/grotti-cheetah-4k.jpg',
   },
   {
     id: 'eurogamer-soundtrack-features',
@@ -75,7 +75,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-07-14T11:30:00Z',
     category: 'gameplay',
     isUnconfirmed: false,
-    thumbnailUrl: '/official-gta-vi-cover.png',
+    thumbnailUrl: '/images/vice-city-pack-4k.jpg',
   },
   {
     id: 'vgc-actor-credits-discussion',
@@ -86,7 +86,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-05-18T14:20:00Z',
     category: 'leaks',
     isUnconfirmed: true,
-    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    thumbnailUrl: '/images/hero-4k.jpg',
   },
   {
     id: 'gamesradar-map-scale-comparison',
@@ -97,7 +97,7 @@ export const FALLBACK_ARTICLES: NewsArticle[] = [
     publishedAt: '2026-09-12T16:45:00Z',
     category: 'gameplay',
     isUnconfirmed: false,
-    thumbnailUrl: 'https://i.ytimg.com/vi/QdBZY2fkU-0/maxresdefault.jpg',
+    thumbnailUrl: '/images/squalo-speedboat-4k.jpg',
   }
 ];
 

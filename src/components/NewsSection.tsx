@@ -149,7 +149,7 @@ export const NewsSection: React.FC = () => {
               <article className="group relative rounded-3xl bg-[#0D0E14] border border-white/10 hover:border-white/25 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12">
                 <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black">
                   <img
-                    src={featuredArticle.thumbnailUrl || '/official-gta-vi-hero.jpg'}
+                    src={featuredArticle.thumbnailUrl || '/images/hero-4k.jpg'}
                     alt={featuredArticle.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
@@ -217,7 +217,7 @@ export const NewsSection: React.FC = () => {
                     >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                         <img
-                          src={article.thumbnailUrl || '/official-gta-vi-cover.png'}
+                          src={article.thumbnailUrl || '/images/vice-city-pack-4k.jpg'}
                           alt={article.title}
                           loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"

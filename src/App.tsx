@@ -10,6 +10,7 @@ import { TrailerGallery } from './components/TrailerGallery';
 import { NewsSection } from './components/NewsSection';
 import { ReleaseInformation } from './components/ReleaseInformation';
 import { Footer } from './components/Footer';
+import { MusicPlayer } from './components/MusicPlayer';
 import {
   calculateTimeRemainingFromDate,
   getGlobalReleaseLocalDate,
@@ -109,6 +110,9 @@ export default function App() {
 
       {/* Clean Editorial Footer */}
       <Footer onNavigate={handleNavigate} />
+
+      {/* Floating Vice City Soundtrack Music Player */}
+      <MusicPlayer />
     </div>
   );
 }

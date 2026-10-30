@@ -71,6 +71,8 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                 <img
                   src={video.thumbnailUrl}
+                  srcSet={`${video.thumbnailUrl} 3840w`}
+                  sizes="(min-width: 1024px) 50vw, 100vw"
                   alt={video.title}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
@@ -136,6 +138,8 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                 <img
                   src={video.thumbnailUrl}
+                  srcSet={`${video.thumbnailUrl} 3840w`}
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   alt={video.title}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
