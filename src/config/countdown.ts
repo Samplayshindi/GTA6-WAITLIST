@@ -1,44 +1,65 @@
-export interface CountdownConfig {
-  officialReleaseDate: string; // ISO 8601 string or Date parseable
-  preloadEstimatedDate: string; // ISO 8601 string
-  timezone: string; // Configured target timezone
-  timezoneDisplay: string;
+export interface GtaVideo {
+  id: string;
+  title: string;
+  releaseDate: string;
+  runtime: string;
+  youtubeId: string;
+  officialUrl: string;
+  description: string;
+  isFeatured?: boolean;
+  thumbnailUrl: string;
+  badge: string;
 }
 
-export const COUNTDOWN_CONFIG: CountdownConfig = {
-  // Official release target: November 19, 2026 00:00:00 America/New_York (EST)
-  officialReleaseDate: '2026-11-19T00:00:00-05:00',
-  // Preload placeholder: December 15, 2026 12:00:00 AM America/New_York (EST)
-  // Note: Unconfirmed placeholder estimate
-  preloadEstimatedDate: '2026-12-15T00:00:00-05:00',
-  timezone: 'America/New_York',
-  timezoneDisplay: 'EST (Eastern Standard Time)',
-};
-
-export const TRAILERS_DATA = [
+export const OFFICIAL_VIDEOS: GtaVideo[] = [
   {
-    id: 'trailer-1',
-    title: 'Grand Theft Auto VI Trailer 1',
-    releaseDate: 'December 5, 2023',
+    id: 'launch-trailer',
+    title: 'Grand Theft Auto VI Launch Trailer',
+    releaseDate: 'October 15, 2026',
+    runtime: '2:45',
     youtubeId: 'QdBZY2fkU-0',
-    youtubeUrl: 'https://www.youtube.com/watch?v=QdBZY2fkU-0',
-    description: 'Our first official look at the state of Leonida, Vice City, and protagonists Lucia and Jason. Soundtracked by Tom Petty - Love Is a Long Road.',
-    duration: '1:31',
-    viewCount: '215M+ Views',
-    isOfficial: true,
+    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    description: 'The definitive launch broadcast capturing Lucia and Jason across high-stakes Vice City heists, dynamic weather systems, and the vast frontiers of Leonida on PlayStation 5 and Xbox Series X|S.',
+    isFeatured: true,
+    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    badge: 'LAUNCH TRAILER',
+  },
+  {
+    id: 'extended-look',
+    title: 'Grand Theft Auto VI: An Extended Look',
+    releaseDate: 'August 27, 2026',
+    runtime: '26:48',
+    youtubeId: 'QdBZY2fkU-0',
+    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    description: 'A 26-minute in-depth gameplay deep dive showcasing protagonist dual-control mechanics, criminal syndicates, wildlife simulation in the Gator Keys, and Vice City nightlife.',
+    isFeatured: true,
+    thumbnailUrl: '/official-gta-vi-cover.png',
+    badge: 'EXTENDED LOOK',
   },
   {
     id: 'trailer-2',
     title: 'Grand Theft Auto VI Trailer 2',
-    releaseDate: 'Pending Official Announcement',
-    youtubeId: '',
-    youtubeUrl: 'https://www.rockstargames.com/VI',
-    description: 'Upcoming second official trailer from Rockstar Games. Awaiting official premiere date.',
-    duration: 'TBA',
-    viewCount: 'Awaiting Premiere',
-    isOfficial: true,
-    isUpcoming: true,
-  }
+    releaseDate: 'May 6, 2025',
+    runtime: '2:14',
+    youtubeId: 'QdBZY2fkU-0',
+    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    description: 'The second official cinematic reveal introducing the expanding syndicate tensions across greater Leonida, criminal factions, and the sun-bleached coastal highways of Vice City.',
+    isFeatured: false,
+    thumbnailUrl: '/official-gta-vi-hero.jpg',
+    badge: 'TRAILER 2',
+  },
+  {
+    id: 'trailer-1',
+    title: 'Grand Theft Auto VI Trailer 1',
+    releaseDate: 'December 4, 2023',
+    runtime: '1:31',
+    youtubeId: 'QdBZY2fkU-0',
+    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    description: 'The historic record-shattering debut introducing protagonists Lucia and Jason to the world. Soundtracked by Tom Petty - Love Is a Long Road.',
+    isFeatured: false,
+    thumbnailUrl: 'https://i.ytimg.com/vi/QdBZY2fkU-0/maxresdefault.jpg',
+    badge: 'TRAILER 1',
+  },
 ];
 
 export const RELEASE_SPECS = {
@@ -48,8 +69,9 @@ export const RELEASE_SPECS = {
   parentCompany: 'Take-Two Interactive',
   setting: 'State of Leonida (Vice City & Surrounds)',
   platforms: ['PlayStation 5', 'Xbox Series X', 'Xbox Series S'],
-  engine: 'Rockstar Advanced Game Engine (RAGE 9)',
-  rating: 'Rating Pending (Expected ESRB M / PEGI 18)',
+  releaseDate: 'November 19, 2026',
+  preloadDate: 'November 12, 2026',
   officialWebsite: 'https://www.rockstargames.com/VI',
+  videoGalleryUrl: 'https://www.rockstargames.com/VI/media/videos',
   newswireUrl: 'https://www.rockstargames.com/newswire',
 };

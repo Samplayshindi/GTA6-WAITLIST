@@ -11,7 +11,9 @@ A cinematic, dark-themed gaming portal inspired by Rockstar Games' Grand Theft A
 
 - **Audio & Ambiance**: The cinematic intro will start with atmospheric synthwave audio muted by default, with an unmistakable audio toggle in the top-right and a "Skip Intro" control in the bottom-right.
 - **News Aggregation & CORS**: External gaming RSS feeds (Rockstar Newswire, IGN, GameSpot, Eurogamer) are fetched and parsed through a server-side proxy (`/api/news`) with a 15-minute memory cache and resilient fallback to maintain 100% genuine information without CORS failures.
-- **Dual Countdowns**: Global Release date set to **November 19, 2026** (primary), and Preload date set to **December 15, 2026 12:00 AM EST** (clearly labeled as *Estimated / Placeholder*), both dynamically configurable.
+- **Dual Countdowns**:
+  - **Global Release Date**: November 19, 2026 at 12:00 AM local time everywhere.
+  - **Confirmed Preload Date**: November 12, 2026 at 12:00 AM local time everywhere (exactly 7 days prior to launch, with emerald "Confirmed Everywhere" badge and calendar export).
 - **Creator Credits**: Prominently features `DESIGNED & DEVELOPED BY SAMAR` in the cinematic footer with full Rockstar Games fan disclaimer.
 
 ---

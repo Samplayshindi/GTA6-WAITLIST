@@ -3,9 +3,7 @@
 @layer base {
   :root {
     --bg-deep: #08090D;
-    --bg-card: rgba(23, 16, 37, 0.65);
     --neon-pink: #FF4FA3;
-    --sunset-orange: #FF9B54;
     --ocean-blue: #36B9E9;
   }
 
@@ -19,64 +17,12 @@
   }
 }
 
-/* Custom Vice City & Neon Effects */
-.text-neon-pink {
-  color: #FF4FA3;
-  text-shadow: 0 0 15px rgba(255, 79, 163, 0.45);
-}
-
-.text-neon-cyan {
-  color: #36B9E9;
-  text-shadow: 0 0 15px rgba(54, 185, 233, 0.45);
-}
-
-.text-neon-orange {
-  color: #FF9B54;
-  text-shadow: 0 0 15px rgba(255, 155, 84, 0.4);
-}
-
-.gta-gradient-text {
-  background: linear-gradient(135deg, #FF4FA3 0%, #FF9B54 50%, #36B9E9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gta-glass {
-  background: rgba(23, 16, 37, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 79, 163, 0.18);
-}
-
-.gta-glass-hover {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.gta-glass-hover:hover {
-  background: rgba(23, 16, 37, 0.85);
-  border-color: rgba(255, 79, 163, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(255, 79, 163, 0.25);
-  transform: translateY(-2px);
-}
-
-.gta-glass-cyan {
-  background: rgba(14, 25, 45, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(54, 185, 233, 0.18);
-}
-
-.gta-glass-cyan:hover {
-  border-color: rgba(54, 185, 233, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(54, 185, 233, 0.25);
-}
-
 /* Subtle Film Grain Texture Overlay */
 .film-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
-/* Custom Scrollbar */
+/* Refined Dark Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -86,11 +32,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #251B38;
+  background: #1C1E26;
   border-radius: 4px;
-  border: 1px solid rgba(255, 79, 163, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF4FA3;
+  background: #2C2F3D;
 }

@@ -1,14 +1,17 @@
-import React from 'react';
-import { Play, Newspaper, ShieldAlert, ArrowDown } from 'lucide-react';
-import { CountdownCard } from './CountdownCard';
-import { TimeRemaining } from '../utils/time';
+import React, { useState } from 'react';
+import { Play, Newspaper, Copy, Check, Calendar, DownloadCloud, CheckCircle2 } from 'lucide-react';
+import {
+  TimeRemaining,
+  getUserLocalTimezoneName,
+  formatLocalDateString,
+  getGlobalReleaseLocalDate,
+  getPreloadLocalDate,
+  generateCalendarIcs,
+} from '../utils/time';
 
 interface HeroSectionProps {
   releaseRemaining: TimeRemaining;
   preloadRemaining: TimeRemaining;
-  officialReleaseDate: string;
-  preloadDate: string;
-  timezoneDisplay: string;
   onNavigate: (sectionId: string) => void;
   onOpenTrailerModal: () => void;
 }
@@ -16,96 +19,215 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({
   releaseRemaining,
   preloadRemaining,
-  officialReleaseDate,
-  preloadDate,
-  timezoneDisplay,
   onNavigate,
   onOpenTrailerModal,
 }) => {
+  const [copied, setCopied] = useState(false);
+
+  const localTzName = getUserLocalTimezoneName();
+  const globalReleaseDate = getGlobalReleaseLocalDate();
+  const preloadDate = getPreloadLocalDate();
+
+  const formattedLocalRelease = formatLocalDateString(globalReleaseDate);
+  const formattedLocalPreload = formatLocalDateString(preloadDate);
+
+  const handleCopyTimeline = () => {
+    const text = `Grand Theft Auto VI Local Timeline:\n• Confirmed Preload: Midnight ${formattedLocalPreload} (${preloadRemaining.days}d ${preloadRemaining.hours}h remaining)\n• Global Release: Midnight ${formattedLocalRelease} (${releaseRemaining.days}d ${releaseRemaining.hours}h remaining)\nLocal Timezone: ${localTzName}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCalendar = (type: 'launch' | 'preload' = 'launch') => {
+    if (type === 'preload') {
+      generateCalendarIcs(
+        'Grand Theft Auto VI Preload Begins',
+        preloadDate,
+        `Grand Theft Auto VI confirmed preload unlocks at midnight local time (${localTzName}) on PlayStation 5 and Xbox Series X|S.`
+      );
+    } else {
+      generateCalendarIcs(
+        'Grand Theft Auto VI Official Launch',
+        globalReleaseDate,
+        `Grand Theft Auto VI release at midnight local time (${localTzName}) on PlayStation 5 and Xbox Series X|S.`
+      );
+    }
+  };
+
   return (
-    <section id="hero" className="relative min-h-screen pt-28 pb-20 flex flex-col justify-center">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-        {/* Main Title & Subtitle */}
-        <div className="text-center max-w-4xl mx-auto space-y-4 mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-xs font-bold tracking-[0.25em] uppercase text-pink-400 backdrop-blur-md">
-            <span>Rockstar Games</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-            <span>State of Leonida</span>
-          </div>
+    <section id="overview" className="relative min-h-screen pt-32 pb-24 flex flex-col justify-center">
+      {/* Cinematic Full-Width Official Artwork Hero Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <img
+          src="/official-gta-vi-hero.jpg"
+          alt="Grand Theft Auto VI Official Artwork"
+          className="w-full h-full object-cover object-center opacity-30 scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/80 to-[#08090D]/60" />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black/80" />
+      </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase italic text-white leading-none drop-shadow-[0_0_40px_rgba(255,79,163,0.35)]">
-            Grand Theft Auto{' '}
-            <span className="gta-gradient-text not-italic">VI</span>
-          </h1>
-
-          <p className="text-base sm:text-xl md:text-2xl font-bold tracking-[0.25em] uppercase text-slate-300">
-            The Wait Is Almost Over.
-          </p>
-
-          <p className="text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed pt-1">
-            Tracking every second until launch. Live launch telemetry, preload timeline, and real-time intelligence for the next chapter in gaming history.
-          </p>
-
-          {/* Quick Hero CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
-            <button
-              onClick={onOpenTrailerModal}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm tracking-wider uppercase text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-[0_0_25px_rgba(255,79,163,0.4)] transition-all active:scale-95"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              <span>Watch Official Trailer</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('news')}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm tracking-wider uppercase text-slate-200 bg-white/5 border border-white/15 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all active:scale-95"
-            >
-              <Newspaper className="w-4 h-4 text-cyan-400" />
-              <span>Live News Feed</span>
-            </button>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 text-center">
+        {/* Prominent Official GTA VI Logo */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="/gta-vi-logo.svg"
+            alt="Grand Theft Auto VI Logo"
+            className="h-28 sm:h-36 md:h-48 w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)]"
+          />
         </div>
 
-        {/* Dual Countdown Grids */}
-        <div id="countdown" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start scroll-mt-28">
-          {/* Global Release Countdown (Prominent - 7 Columns) */}
-          <div className="lg:col-span-7">
-            <CountdownCard
-              title="Global Release Countdown"
-              badgeText="Confirmed Window"
-              isBadgeAccent={true}
-              isProminent={true}
-              timeRemaining={releaseRemaining}
-              targetDateIso={officialReleaseDate}
-              officialTimezoneLabel={timezoneDisplay}
-              disclaimer="Target aligned with Take-Two Interactive confirmed Fall 2026 launch window on PlayStation 5 and Xbox Series X|S."
-            />
-          </div>
+        {/* Tagline */}
+        <h2 className="text-sm sm:text-base md:text-lg font-mono font-bold tracking-[0.35em] uppercase text-white/90 mb-4">
+          The Wait Is Almost Over.
+        </h2>
 
-          {/* Preload Countdown (Secondary - 5 Columns) */}
-          <div className="lg:col-span-5">
-            <CountdownCard
-              title="Preload Begins In"
-              badgeText="Estimated Placeholder"
-              isBadgeAccent={false}
-              isProminent={false}
-              timeRemaining={preloadRemaining}
-              targetDateIso={preloadDate}
-              officialTimezoneLabel={timezoneDisplay}
-              disclaimer="Estimated placeholder date based on historical Rockstar digital preloads. Official preload timing will be confirmed closer to launch."
-            />
-          </div>
-        </div>
+        <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal mb-8">
+          The next chapter in the Grand Theft Auto series arrives on PlayStation 5 and Xbox Series X|S. Returning to the state of Leonida and the neon streets of Vice City.
+        </p>
 
-        {/* Scroll Indicator */}
-        <div className="mt-14 flex justify-center">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
           <button
-            onClick={() => onNavigate('news')}
-            className="flex flex-col items-center gap-2 text-xs font-medium tracking-widest text-slate-500 hover:text-pink-400 transition-colors focus:outline-none"
+            onClick={onOpenTrailerModal}
+            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-black bg-white hover:bg-slate-200 transition-colors shadow-2xl active:scale-95"
           >
-            <span>DISCOVER INTELLIGENCE</span>
-            <ArrowDown className="w-4 h-4 animate-bounce text-pink-400" />
+            <Play className="w-4 h-4 fill-black" />
+            <span>Watch Trailers</span>
           </button>
+
+          <button
+            onClick={() => onNavigate('newswire')}
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-colors active:scale-95"
+          >
+            <Newspaper className="w-4 h-4" />
+            <span>Explore Newswire</span>
+          </button>
+        </div>
+
+        {/* Primary Release Countdown Centerpiece */}
+        <div id="countdown" className="max-w-4xl mx-auto scroll-mt-28">
+          <div className="rounded-3xl bg-[#0D0E14]/90 border border-white/10 p-8 sm:p-12 backdrop-blur-md">
+            {/* Header info */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+              <div className="text-left">
+                <span className="text-[11px] font-mono font-bold tracking-[0.25em] uppercase text-[#36B9E9] block">
+                  Your Local Release Time
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight mt-1">
+                  November 19, 2026 · 12:00 AM
+                </h3>
+                <span className="text-xs font-mono text-slate-400 mt-0.5 block">
+                  {formattedLocalRelease} ({localTzName})
+                </span>
+              </div>
+
+              {/* Utility buttons */}
+              <div className="flex items-center gap-2.5 self-start sm:self-auto">
+                <button
+                  onClick={handleCopyTimeline}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono text-slate-300 bg-white/5 border border-white/10 hover:border-white/30 hover:text-white transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => handleCalendar('launch')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono text-slate-300 bg-white/5 border border-white/10 hover:border-white/30 hover:text-white transition-colors"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>.ICS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Large, Elegant, Readable Countdown Digits */}
+            {releaseRemaining.isComplete ? (
+              <div className="py-12 space-y-3">
+                <h4 className="text-4xl font-black uppercase text-white tracking-tight">
+                  Grand Theft Auto VI Is Now Live
+                </h4>
+                <p className="text-sm text-slate-400">
+                  Available now worldwide on PlayStation 5 and Xbox Series X|S.
+                </p>
+              </div>
+            ) : (
+              <div className="py-10 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
+                <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
+                  <span className="text-5xl sm:text-7xl md:text-8xl font-black tabular-nums tracking-tighter text-white">
+                    {releaseRemaining.days}
+                  </span>
+                  <span className="mt-2 text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
+                    Days
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
+                  <span className="text-5xl sm:text-7xl md:text-8xl font-black tabular-nums tracking-tighter text-white">
+                    {releaseRemaining.hours.toString().padStart(2, '0')}
+                  </span>
+                  <span className="mt-2 text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
+                    Hours
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
+                  <span className="text-5xl sm:text-7xl md:text-8xl font-black tabular-nums tracking-tighter text-white">
+                    {releaseRemaining.minutes.toString().padStart(2, '0')}
+                  </span>
+                  <span className="mt-2 text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
+                    Minutes
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
+                  <span className="text-5xl sm:text-7xl md:text-8xl font-black tabular-nums tracking-tighter text-white">
+                    {releaseRemaining.seconds.toString().padStart(2, '0')}
+                  </span>
+                  <span className="mt-2 text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
+                    Seconds
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Secondary Preload Countdown strip */}
+            <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+                  Confirmed Preload:
+                </span>
+                <span className="text-xs font-mono text-white font-bold">
+                  {preloadRemaining.days}d {preloadRemaining.hours}h {preloadRemaining.minutes}m {preloadRemaining.seconds}s
+                </span>
+                <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  Confirmed Everywhere
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                <button
+                  onClick={() => handleCalendar('preload')}
+                  className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors group"
+                  title="Add confirmed preload to calendar"
+                >
+                  <DownloadCloud className="w-3.5 h-3.5 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span>Target: Nov 12, 2026 at 12:00 AM local time ({localTzName})</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

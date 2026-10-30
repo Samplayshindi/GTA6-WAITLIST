@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Play, ExternalLink, Film, X, Clock, Eye } from 'lucide-react';
-import { TRAILERS_DATA } from '../config/countdown';
+import { Play, ExternalLink, X, Clock, Calendar } from 'lucide-react';
+import { OFFICIAL_VIDEOS, GtaVideo, RELEASE_SPECS } from '../config/countdown';
 
 interface TrailerGalleryProps {
   activeTrailerModal: string | null;
-  onOpenTrailer: (youtubeId: string) => void;
+  onOpenTrailer: (videoId: string) => void;
   onCloseTrailer: () => void;
 }
 
@@ -13,151 +13,215 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
   onOpenTrailer,
   onCloseTrailer,
 }) => {
+  const [selectedVideo, setSelectedVideo] = useState<GtaVideo | null>(null);
+
+  const handlePlayVideo = (video: GtaVideo) => {
+    setSelectedVideo(video);
+    onOpenTrailer(video.id);
+  };
+
+  const handleClose = () => {
+    setSelectedVideo(null);
+    onCloseTrailer();
+  };
+
+  const featuredVideos = OFFICIAL_VIDEOS.filter((v) => v.isFeatured);
+  const standardVideos = OFFICIAL_VIDEOS.filter((v) => !v.isFeatured);
+
   return (
-    <section id="trailers" className="relative py-20 border-t border-white/10 scroll-mt-20">
+    <section id="videos" className="relative py-24 border-t border-white/10 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono font-bold tracking-[0.2em] uppercase text-cyan-400 mb-3">
-            <Film className="w-3.5 h-3.5" />
-            <span>CINEMATIC VAULT</span>
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#36B9E9]">
+                Rockstar Games Video Gallery
+              </span>
+              <span className="text-slate-600">/</span>
+              <span className="text-xs font-mono text-slate-400">Official Media Hub</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
+              Official <span className="text-[#FF4FA3]">Videos</span>
+            </h2>
+            <p className="mt-2 text-sm text-slate-300 max-w-xl">
+              Authentic broadcast media and gameplay presentations captured in-engine on PlayStation 5 and Xbox Series X|S.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-white tracking-tight">
-            Official <span className="gta-gradient-text">Trailers</span>
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Witness the debut footage of Grand Theft Auto VI, captured in-engine showcasing the next generation of open-world fidelity.
-          </p>
+
+          <a
+            href={RELEASE_SPECS.videoGalleryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/30 transition-colors self-start md:self-auto"
+          >
+            <span>Rockstar Video Portal</span>
+            <ExternalLink className="w-3.5 h-3.5 text-[#36B9E9]" />
+          </a>
         </div>
 
-        {/* Trailer Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {TRAILERS_DATA.map((trailer) => {
-            const hasVideo = Boolean(trailer.youtubeId);
+        {/* Featured Video Tier: Launch Trailer & Extended Look */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {featuredVideos.map((video) => (
+            <div
+              key={video.id}
+              onClick={() => handlePlayVideo(video)}
+              className="group cursor-pointer rounded-3xl bg-[#0D0E14] border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+            >
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
+                <img
+                  src={video.thumbnailUrl}
+                  alt={video.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
+                />
 
-            return (
-              <div
-                key={trailer.id}
-                className="group gta-glass gta-glass-hover rounded-3xl overflow-hidden border border-pink-500/20 flex flex-col justify-between"
-              >
-                {/* Visual Thumbnail */}
-                <div className="relative aspect-[16/9] w-full bg-[#120e20] overflow-hidden">
-                  {hasVideo ? (
-                    <img
-                      src={`https://img.youtube.com/vi/${trailer.youtubeId}/maxresdefault.jpg`}
-                      alt={trailer.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#1b1229] to-[#0c0f1c] text-center">
-                      <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3">
-                        <Film className="w-8 h-8 text-slate-500" />
-                      </div>
-                      <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
-                        Upcoming Premiere
-                      </span>
-                    </div>
-                  )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0D0E14] via-transparent to-black/30" />
 
-                  {/* Play Overlay Button */}
-                  {hasVideo && (
-                    <button
-                      onClick={() => onOpenTrailer(trailer.youtubeId)}
-                      aria-label={`Play ${trailer.title}`}
-                      className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/25 transition-colors focus:outline-none"
-                    >
-                      <div className="w-16 h-16 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-[0_0_30px_rgba(255,79,163,0.7)] group-hover:scale-110 group-hover:bg-pink-500 transition-all duration-300">
-                        <Play className="w-7 h-7 fill-white translate-x-0.5" />
-                      </div>
-                    </button>
-                  )}
-
-                  {/* Top Badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md bg-black/70 text-pink-400 border border-pink-500/30 backdrop-blur-md">
-                      {trailer.isUpcoming ? 'Awaiting Premiere' : 'Official Premiere'}
-                    </span>
-                  </div>
-
-                  {/* Duration Badge */}
-                  {hasVideo && (
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 text-white text-xs font-mono backdrop-blur-md">
-                      <Clock className="w-3 h-3 text-cyan-400" />
-                      <span>{trailer.duration}</span>
-                    </div>
-                  )}
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-black/80 text-white border border-white/20 backdrop-blur-md">
+                    {video.badge}
+                  </span>
                 </div>
 
-                {/* Details */}
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-mono">
-                      <span>{trailer.releaseDate}</span>
-                      <span className="flex items-center gap-1 text-slate-300">
-                        <Eye className="w-3.5 h-3.5 text-pink-400" />
-                        <span>{trailer.viewCount}</span>
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-white group-hover:text-pink-300 transition-colors">
-                      {trailer.title}
-                    </h3>
-
-                    <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-                      {trailer.description}
-                    </p>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                    <Play className="w-6 h-6 fill-current translate-x-0.5" />
                   </div>
+                </div>
 
-                  {/* Action Link */}
-                  <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                    {hasVideo ? (
-                      <button
-                        onClick={() => onOpenTrailer(trailer.youtubeId)}
-                        className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-pink-400 hover:text-pink-300 transition-colors"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-pink-400" />
-                        <span>Watch in Cinematic Player</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-slate-500 font-mono">
-                        Official Trailer 2 date pending announcement
-                      </span>
-                    )}
-
-                    <a
-                      href={trailer.youtubeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
-                    >
-                      <span>YouTube</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
+                <div className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/80 text-white text-xs font-mono backdrop-blur-md">
+                  <Clock className="w-3.5 h-3.5 text-[#36B9E9]" />
+                  <span>{video.runtime}</span>
                 </div>
               </div>
-            );
-          })}
+
+              <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-2">
+                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Released {video.releaseDate}</span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-white transition-colors leading-snug">
+                    {video.title}
+                  </h3>
+
+                  <p className="mt-3 text-sm text-slate-300 leading-relaxed font-normal">
+                    {video.description}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-xs font-bold tracking-wider uppercase text-white flex items-center gap-2">
+                    <span>Play Video</span>
+                    <Play className="w-3 h-3 fill-current" />
+                  </span>
+
+                  <span className="text-xs font-mono text-slate-500">Official Rockstar Video</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Secondary Tier: Trailer 1 & Trailer 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {standardVideos.map((video) => (
+            <div
+              key={video.id}
+              onClick={() => handlePlayVideo(video)}
+              className="group cursor-pointer rounded-2xl bg-[#0D0E14] border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+            >
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
+                <img
+                  src={video.thumbnailUrl}
+                  alt={video.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0D0E14] via-transparent to-black/30" />
+
+                <div className="absolute top-3 left-3">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-black/80 text-white border border-white/20 backdrop-blur-md">
+                    {video.badge}
+                  </span>
+                </div>
+
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                    <Play className="w-5 h-5 fill-current translate-x-0.5" />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/80 text-white text-xs font-mono backdrop-blur-md">
+                  <Clock className="w-3 h-3 text-[#36B9E9]" />
+                  <span>{video.runtime}</span>
+                </div>
+              </div>
+
+              <div className="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Released {video.releaseDate}</span>
+                  </div>
+
+                  <h3 className="text-lg font-bold text-white transition-colors">
+                    {video.title}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+                    {video.description}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-semibold text-white flex items-center gap-1.5">
+                    <span>Watch Now</span>
+                    <Play className="w-3 h-3 fill-current" />
+                  </span>
+                  <span className="font-mono">{video.runtime}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Video Modal Player */}
-      {activeTrailerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-200">
-          <div className="relative w-full max-w-5xl aspect-[16/9] bg-black rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(255,79,163,0.3)] border border-pink-500/30">
-            <button
-              onClick={onCloseTrailer}
-              aria-label="Close Trailer Player"
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/70 text-white hover:bg-pink-500 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+      {selectedVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-black/95 backdrop-blur-2xl animate-in fade-in duration-200">
+          <div className="relative w-full max-w-6xl aspect-[16/9] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/15">
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+              <a
+                href={selectedVideo.officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider text-white bg-black/70 border border-white/20 hover:bg-white hover:text-black transition-colors"
+              >
+                Rockstar Hub
+              </a>
+              <button
+                onClick={handleClose}
+                aria-label="Close Player"
+                className="p-2 rounded-full bg-black/70 text-white hover:bg-red-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="absolute top-4 left-4 z-20 pointer-events-none hidden sm:block">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-black/80 text-white border border-white/20">
+                {selectedVideo.title} · {selectedVideo.runtime}
+              </span>
+            </div>
 
             <iframe
               className="w-full h-full"
-              src={`https://www.youtube-nocookie.com/embed/${activeTrailerModal}?autoplay=1&rel=0`}
-              title="GTA VI Official Trailer"
+              src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+              title={selectedVideo.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />

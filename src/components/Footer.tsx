@@ -1,81 +1,91 @@
 import React from 'react';
-import { ArrowUp, Play, Heart, ExternalLink } from 'lucide-react';
+import { ArrowUp, ExternalLink } from 'lucide-react';
 import { RELEASE_SPECS } from '../config/countdown';
 
 interface FooterProps {
-  onReplayIntro: () => void;
   onNavigate: (sectionId: string) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onReplayIntro, onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <footer className="relative bg-[#06070a] border-t border-white/10 pt-16 pb-12 overflow-hidden">
-      {/* Ambient Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-pink-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
-          {/* Col 1: Brand & Purpose */}
+    <footer className="relative bg-[#050608] border-t border-white/10 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16 border-b border-white/10">
+          {/* Official Brand & Description */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#171025] border border-pink-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(255,79,163,0.3)]">
-                <span className="text-base font-black italic tracking-tighter gta-gradient-text">VI</span>
-              </div>
-              <span className="text-xl font-black tracking-wider uppercase text-white">
-                GTA <span className="text-neon-pink">VI</span> COUNTDOWN
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              A cinematic countdown and intelligence portal dedicated to Grand Theft Auto VI, celebrating the upcoming return to the neon-drenched streets of Vice City and Leonida.
+            <img
+              src="/gta-vi-logo.svg"
+              alt="Grand Theft Auto VI"
+              className="h-9 w-auto object-contain"
+            />
+            <p className="text-xs text-slate-400 leading-relaxed font-normal">
+              An independent, professionally art-directed countdown and news intelligence portal dedicated to Grand Theft Auto VI and the return to Vice City.
             </p>
-            <div>
-              <button
-                onClick={onReplayIntro}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500 hover:text-white transition-all duration-300"
-              >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Replay Cinematic Intro</span>
-              </button>
-            </div>
           </div>
 
-          {/* Col 2: Navigation Links */}
+          {/* Minimal Navigation */}
           <div className="space-y-3">
-            <h4 className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300">
-              Quick Navigation
-            </h4>
+            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block">
+              Navigation
+            </span>
             <ul className="space-y-2 text-xs font-medium text-slate-400">
-              {['home', 'countdown', 'news', 'release-info', 'trailers'].map((id) => (
-                <li key={id}>
-                  <button
-                    onClick={() => onNavigate(id)}
-                    className="hover:text-pink-400 uppercase tracking-wider transition-colors"
-                  >
-                    {id.replace('-', ' ')}
-                  </button>
-                </li>
-              ))}
+              <li>
+                <button onClick={() => onNavigate('overview')} className="hover:text-white transition-colors">
+                  Overview
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('countdown')} className="hover:text-white transition-colors">
+                  Countdown
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('videos')} className="hover:text-white transition-colors">
+                  Videos
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('newswire')} className="hover:text-white transition-colors">
+                  Newswire
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('specifications')} className="hover:text-white transition-colors">
+                  Specifications
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Col 3: Official Portals */}
+          {/* Official Portals */}
           <div className="space-y-3">
-            <h4 className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300">
-              Official Rockstar Portals
-            </h4>
+            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block">
+              Official Channels
+            </span>
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li>
                 <a
                   href={RELEASE_SPECS.officialWebsite}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
                 >
-                  <span>Rockstar Games Official</span>
+                  <span>Rockstar Games</span>
+                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={RELEASE_SPECS.videoGalleryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  <span>Rockstar Video Hub</span>
                   <ExternalLink className="w-3 h-3 text-slate-500" />
                 </a>
               </li>
@@ -84,9 +94,9 @@ export const Footer: React.FC<FooterProps> = ({ onReplayIntro, onNavigate }) => 
                   href={RELEASE_SPECS.newswireUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
                 >
-                  <span>Rockstar Newswire Feed</span>
+                  <span>Rockstar Newswire</span>
                   <ExternalLink className="w-3 h-3 text-slate-500" />
                 </a>
               </li>
@@ -95,70 +105,58 @@ export const Footer: React.FC<FooterProps> = ({ onReplayIntro, onNavigate }) => 
                   href="https://www.take2games.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
                 >
                   <span>Take-Two Interactive</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.youtube.com/@RockstarGames"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors"
-                >
-                  <span>Rockstar Games YouTube</span>
                   <ExternalLink className="w-3 h-3 text-slate-500" />
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Col 4: Back to Top & Sync telemetry */}
+          {/* Release Status & Scroll to top */}
           <div className="space-y-4 flex flex-col justify-between">
             <div>
-              <h4 className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 mb-2">
-                Launch Target Status
-              </h4>
-              <p className="text-xs text-slate-400 font-mono">
-                Official Window: Fall 2026<br />
-                Target: Nov 19, 2026 EST<br />
-                Platforms: PS5 / Xbox Series
+              <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block mb-2">
+                Release Status
+              </span>
+              <p className="text-xs font-mono text-slate-400 leading-relaxed">
+                Preload: Nov 12, 2026 (Midnight Local)<br />
+                Launch: Nov 19, 2026 (Midnight Local)<br />
+                Platforms: PS5 / Xbox Series X|S
               </p>
             </div>
 
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 bg-white/5 border border-white/10 hover:border-pink-500/50 hover:text-white transition-all"
+              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-slate-300 bg-white/5 border border-white/10 hover:border-white/30 hover:text-white transition-colors"
             >
               <span>Back to Top</span>
-              <ArrowUp className="w-4 h-4 text-pink-400" />
+              <ArrowUp className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Samar Credits Section */}
-        <div className="py-10 text-center space-y-2 border-b border-white/10">
-          <span className="text-[11px] font-mono tracking-[0.3em] uppercase text-slate-500">
+        {/* Samar Creator Credits Section */}
+        <div className="py-12 text-center space-y-2 border-b border-white/10">
+          <span className="text-[11px] font-mono tracking-[0.3em] uppercase text-slate-400 block">
             Designed &amp; Developed By
           </span>
-          <h3 className="text-2xl sm:text-3xl font-black italic tracking-widest uppercase gta-gradient-text drop-shadow-[0_0_15px_rgba(255,79,163,0.5)]">
+          <h3 className="text-2xl sm:text-3xl font-black italic tracking-wider uppercase text-white">
             SAMAR
           </h3>
-          <p className="text-xs text-slate-400 tracking-wider">
-            A premium fan-made Grand Theft Auto VI countdown &amp; intelligence experience.
+          <p className="text-xs text-slate-400 font-normal tracking-wide">
+            A fan-made GTA VI countdown experience.
           </p>
         </div>
 
         {/* Legal Disclaimer & Copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-xs text-slate-500">
           <p className="max-w-2xl leading-relaxed">
-            This is an independent fan-made GTA VI countdown website. It is not affiliated with, endorsed by, or sponsored by Rockstar Games or Take-Two Interactive. Grand Theft Auto and related logos are trademarks of Take-Two Interactive.
+            This is an independent fan-made GTA VI countdown website. It is not affiliated with, endorsed by, or sponsored by Rockstar Games or Take-Two Interactive. Grand Theft Auto and related marks are trademarks of Take-Two Interactive.
           </p>
-
-          <p className="whitespace-nowrap font-mono text-[11px] text-slate-400">
-            &copy; 2026 Samar. Fan-made project.
+          <p className="font-mono text-[11px] text-slate-400 whitespace-nowrap">
+            &copy; 2026 Samar. Fan-made project. Not affiliated with Rockstar Games or Take-Two Interactive.
           </p>
         </div>
       </div>

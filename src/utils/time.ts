@@ -7,8 +7,29 @@ export interface TimeRemaining {
   isComplete: boolean;
 }
 
-export function calculateTimeRemaining(targetDateIso: string): TimeRemaining {
-  const targetTime = new Date(targetDateIso).getTime();
+/**
+ * Constructs a local midnight Date (00:00:00.000) for a given calendar date
+ * in the visitor's exact local timezone.
+ */
+export function getLocalMidnightDate(year: number, monthIndex: number, day: number): Date {
+  return new Date(year, monthIndex, day, 0, 0, 0, 0);
+}
+
+// Global Release: November 19, 2026 at 12:00 AM local time (month 10 = November)
+export function getGlobalReleaseLocalDate(): Date {
+  return getLocalMidnightDate(2026, 10, 19);
+}
+
+// Confirmed Preload: November 12, 2026 at 12:00 AM local time everywhere (month 10 = November)
+export function getPreloadLocalDate(): Date {
+  return getLocalMidnightDate(2026, 10, 12);
+}
+
+// Backward-compatible alias
+export const getEstimatedPreloadLocalDate = getPreloadLocalDate;
+
+export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining {
+  const targetTime = targetDate.getTime();
   const now = Date.now();
   const totalMs = targetTime - now;
 
@@ -38,11 +59,7 @@ export function calculateTimeRemaining(targetDateIso: string): TimeRemaining {
   };
 }
 
-export function formatTwoDigits(n: number): string {
-  return n.toString().padStart(2, '0');
-}
-
-export function getUserTimezone(): string {
+export function getUserLocalTimezoneName(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local Time';
   } catch {
@@ -50,15 +67,19 @@ export function getUserTimezone(): string {
   }
 }
 
-export function formatDateInUserTz(dateIso: string): string {
+export function formatLocalDateString(d: Date): string {
   try {
-    const d = new Date(dateIso);
     return new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'full',
-      timeStyle: 'short',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
     }).format(d);
   } catch {
-    return dateIso;
+    return d.toDateString();
   }
 }
 
@@ -69,9 +90,8 @@ export function formatTabTitle(remaining: TimeRemaining): string {
   return `GTA VI | ${remaining.days}d ${remaining.hours}h ${remaining.minutes}m Left`;
 }
 
-export function generateCalendarIcs(title: string, dateIso: string, description: string): void {
-  const target = new Date(dateIso);
-  const endTarget = new Date(target.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
+export function generateCalendarIcs(title: string, date: Date, description: string): void {
+  const endTarget = new Date(date.getTime() + 4 * 60 * 60 * 1000);
 
   const formatIcsDate = (d: Date) =>
     d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -79,13 +99,13 @@ export function generateCalendarIcs(title: string, dateIso: string, description:
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//GTA VI Countdown//Samar//EN',
+    'PRODID:-//Rockstar Games GTA VI Countdown//Samar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:gtavi-${target.getTime()}@gtavicountdown.com`,
+    `UID:gtavi-${date.getTime()}@gtavicountdown.com`,
     `DTSTAMP:${formatIcsDate(new Date())}`,
-    `DTSTART:${formatIcsDate(target)}`,
+    `DTSTART:${formatIcsDate(date)}`,
     `DTEND:${formatIcsDate(endTarget)}`,
     `SUMMARY:${title}`,
     `DESCRIPTION:${description}`,
