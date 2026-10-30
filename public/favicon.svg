@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4FA3" />
+      <stop offset="50%" stop-color="#C026D3" />
+      <stop offset="100%" stop-color="#36B9E9" />
+    </linearGradient>
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#08090D" />
+  <rect width="62" height="62" x="1" y="1" rx="13" fill="none" stroke="url(#gta-grad)" stroke-width="2" stroke-opacity="0.8" />
+  <text x="32" y="44" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="28" font-weight="900" font-style="italic" text-anchor="middle" fill="url(#gta-grad)" filter="url(#neon-glow)" letter-spacing="-1">VI</text>
+</svg>

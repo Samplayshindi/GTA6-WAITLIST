@@ -1,0 +1,6 @@
+{
+  "name": "GTA VI Countdown",
+  "description": "Premium cinematic countdown experience, official release and preload intelligence hub, and real-time news portal for Grand Theft Auto VI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
