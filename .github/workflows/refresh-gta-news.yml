@@ -1,0 +1,42 @@
+name: Refresh GTA VI News Feed
+
+on:
+  schedule:
+    # Run every 15 minutes via GitHub Actions external scheduler
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    # Allows manual trigger from the GitHub Actions UI for testing
+
+jobs:
+  refresh-news:
+    name: Trigger Automated Server-Side News Refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger Production News Refresh
+        run: |
+          TARGET_URL="${{ secrets.PRODUCTION_APP_URL }}"
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="https://gtaviwaitlist.vercel.app"
+          fi
+          
+          echo "Sending authenticated refresh request to ${TARGET_URL}/api/cron/refresh-news ..."
+          
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${TARGET_URL}/api/cron/refresh-news" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --max-time 30)
+          
+          HTTP_BODY=$(echo "$RESPONSE" | sed -e 's/HTTP_STATUS\:.*//g')
+          HTTP_STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTP_STATUS://')
+          
+          echo "Response Status Code: ${HTTP_STATUS}"
+          echo "Response Body: ${HTTP_BODY}"
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "Successfully refreshed GTA VI News Feed!"
+          else
+            echo "Error: News refresh failed with status code ${HTTP_STATUS}"
+            exit 1
+          fi
