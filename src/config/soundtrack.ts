@@ -28,7 +28,7 @@ export const SOUNDTRACK_LIBRARY: SoundtrackTrack[] = [
     artist: 'The Pointer Sisters',
     sourceLabel: 'Grand Theft Auto VI Trailer 2',
     coverUrl: '/images/hot-together-cover.svg',
-    youtubeId: 'CuJARUO_4VA',
+    youtubeId: 'H3Aay-47ZT0',
     durationSec: 252,
     durationText: '4:12',
     isPlayable: true,
