@@ -33,10 +33,32 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    const latestPublishedAt = articles.length > 0 ? articles[0].publishedAt : (metadata.latestPublishedAt || new Date().toISOString());
+    const allArticles = articles || [];
+    const totalCount = allArticles.length;
+    const latestPublishedAt = totalCount > 0 ? allArticles[0].publishedAt : (metadata.latestPublishedAt || new Date().toISOString());
+
+    // Parse pagination query parameters
+    const limitQuery = req.query?.limit;
+    const offsetQuery = req.query?.offset || req.query?.cursor;
+
+    let paginatedArticles = allArticles;
+    let hasMore = false;
+    let nextCursor: number | null = null;
+
+    if (limitQuery !== undefined) {
+      const limit = Math.max(1, parseInt(String(limitQuery), 10) || 6);
+      const offset = Math.max(0, parseInt(String(offsetQuery), 10) || 0);
+
+      paginatedArticles = allArticles.slice(offset, offset + limit);
+      hasMore = offset + limit < totalCount;
+      nextCursor = hasMore ? offset + limit : null;
+    }
 
     return res.status(200).json({
-      articles: articles || [],
+      articles: paginatedArticles,
+      totalCount,
+      hasMore,
+      nextCursor,
       lastSuccessfulRefresh: metadata.lastSuccessfulRefresh || new Date().toISOString(),
       latestPublishedAt,
       sourceStatus: metadata.sourceStatus || {},
@@ -48,6 +70,9 @@ export default async function handler(req: any, res: any) {
       error: 'Failed to retrieve stored news articles',
       details: err.message || String(err),
       articles: [],
+      totalCount: 0,
+      hasMore: false,
+      nextCursor: null,
       lastSuccessfulRefresh: new Date().toISOString(),
       latestPublishedAt: new Date().toISOString(),
       sourceStatus: {},

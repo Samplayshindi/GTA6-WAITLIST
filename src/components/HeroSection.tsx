@@ -29,7 +29,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const formattedLocalPreload = formatLocalDateString(preloadDate);
 
   return (
-    <section id="overview" className="relative min-h-screen pt-32 pb-24 flex flex-col justify-center">
+    <section id="overview" className="relative min-h-screen pt-32 pb-24 flex flex-col justify-center bg-gradient-to-b from-[#08090D] via-[#0B2425]/30 to-[#08090D]">
       {/* Cinematic Full-Width Official 4K Artwork Hero Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <img
@@ -37,10 +37,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           srcSet="/images/hero-4k.jpg 3840w, /official-gta-vi-hero.jpg 1920w"
           sizes="100vw"
           alt="Grand Theft Auto VI Official 4K Artwork"
-          className="w-full h-full object-cover object-center opacity-30 scale-105"
+          className="w-full h-full object-cover object-center opacity-25 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/80 to-[#08090D]/60" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/50 to-black/90" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 text-center">
@@ -54,7 +54,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
 
         {/* Tagline */}
-        <h2 className="text-sm sm:text-base md:text-lg font-mono font-bold tracking-[0.35em] uppercase text-white/90 mb-4">
+        <h2 className="text-sm sm:text-base md:text-lg font-mono font-bold tracking-[0.35em] uppercase text-[#F4F1ED]/90 mb-4">
           The Wait Is Almost Over.
         </h2>
 
@@ -63,10 +63,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           <button
             onClick={onOpenTrailerModal}
-            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-black bg-white hover:bg-slate-200 transition-colors shadow-2xl active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-black bg-[#F4F1ED] hover:bg-white transition-all shadow-2xl active:scale-95 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-black" />
             <span>Watch Trailers</span>
@@ -74,27 +74,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           <button
             onClick={() => onNavigate('newswire')}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-colors active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-[#F4F1ED] bg-[#0B2425]/80 hover:bg-[#102D2A] border border-[#F15A24]/30 hover:border-[#F15A24] transition-all active:scale-95 cursor-pointer"
           >
-            <Newspaper className="w-4 h-4" />
+            <Newspaper className="w-4 h-4 text-[#F15A24]" />
             <span>Explore Newswire</span>
           </button>
         </div>
 
-        {/* Dual Large Prominent Countdown Showcase: Preload on Left (1st on mobile) & Global Release on Right (2nd on mobile) */}
+        {/* Dual Large Prominent Countdown Showcase */}
         <div id="countdown" className="max-w-6xl mx-auto scroll-mt-28 w-full text-left">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-            {/* 1. PRELOAD COUNTDOWN — Left Panel on Desktop, First on Mobile */}
-            <div className="relative rounded-3xl bg-[#0D0E14]/95 border border-[#36B9E9]/35 hover:border-[#36B9E9]/60 p-6 sm:p-10 backdrop-blur-md transition-all duration-300 shadow-[0_0_35px_rgba(54,185,233,0.1)] flex flex-col justify-between overflow-hidden">
-              {/* Subtle Ambient Glow for upcoming milestone emphasis */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#36B9E9]/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#36B9E9] to-transparent opacity-75" />
+            
+            {/* 1. PRELOAD COUNTDOWN */}
+            <div className="relative rounded-2xl bg-[#0B2425]/70 border border-[#F15A24]/40 hover:border-[#F15A24] p-6 sm:p-10 backdrop-blur-md transition-all duration-300 shadow-2xl flex flex-col justify-between overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#F15A24]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
               <div>
-                {/* Header Badge & Title */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#36B9E9] bg-[#36B9E9]/10 border border-[#36B9E9]/25">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#36B9E9] animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] bg-[#F15A24]/10 border border-[#F15A24]/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#F15A24] animate-pulse" />
                     Preload Available Soon
                   </span>
                   <span className="text-[11px] font-mono font-semibold tracking-wider uppercase text-slate-400">
@@ -102,7 +100,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </span>
                 </div>
 
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-white tracking-tight">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-[#F4F1ED] tracking-tight">
                   Preload Begins In
                 </h3>
 
@@ -110,10 +108,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   Target: {formattedLocalPreload} (12:00 AM Local · {localTzName})
                 </p>
 
-                {/* Preload Countdown Numbers */}
                 {preloadRemaining.isComplete ? (
                   <div className="py-8 text-center space-y-2">
-                    <h4 className="text-2xl sm:text-3xl font-black uppercase text-[#36B9E9] tracking-tight">
+                    <h4 className="text-2xl sm:text-3xl font-black uppercase text-[#F15A24] tracking-tight">
                       Preload Is Now Live
                     </h4>
                     <p className="text-xs text-slate-400">
@@ -123,7 +120,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 ) : (
                   <div className="py-4 grid grid-cols-4 gap-2 sm:gap-4 divide-x divide-white/10 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {preloadRemaining.days}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -132,7 +129,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {preloadRemaining.hours.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -141,7 +138,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {preloadRemaining.minutes.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -150,7 +147,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {preloadRemaining.seconds.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -161,23 +158,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 )}
               </div>
 
-              {/* Informative Footer strip */}
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-400">
                 <span>PlayStation 5 &middot; Xbox Series X|S</span>
                 <span className="text-slate-500">Estimated Date</span>
               </div>
             </div>
 
-            {/* 2. GLOBAL RELEASE COUNTDOWN — Right Panel on Desktop, Second on Mobile */}
-            <div className="relative rounded-3xl bg-[#0D0E14]/95 border border-white/10 hover:border-white/25 p-6 sm:p-10 backdrop-blur-md transition-all duration-300 shadow-[0_0_35px_rgba(255,79,163,0.06)] flex flex-col justify-between overflow-hidden">
-              {/* Subtle Ambient Magenta Accent */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF4FA3]/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF4FA3]/60 to-transparent opacity-70" />
+            {/* 2. GLOBAL RELEASE COUNTDOWN */}
+            <div className="relative rounded-2xl bg-[#0B2425]/70 border border-[#FF4FA3]/40 hover:border-[#FF4FA3] p-6 sm:p-10 backdrop-blur-md transition-all duration-300 shadow-2xl flex flex-col justify-between overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF4FA3]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
               <div>
-                {/* Header Badge & Title */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#FF4FA3] bg-[#FF4FA3]/10 border border-[#FF4FA3]/25">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#FF4FA3] bg-[#FF4FA3]/10 border border-[#FF4FA3]/30">
                     Official Launch Date
                   </span>
                   <span className="text-[11px] font-mono font-semibold tracking-wider uppercase text-slate-400">
@@ -185,7 +178,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </span>
                 </div>
 
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-white tracking-tight">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-[#F4F1ED] tracking-tight">
                   Global Release
                 </h3>
 
@@ -193,7 +186,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   Target: {formattedLocalRelease} (12:00 AM Local · {localTzName})
                 </p>
 
-                {/* Global Release Countdown Numbers */}
                 {releaseRemaining.isComplete ? (
                   <div className="py-8 text-center space-y-2">
                     <h4 className="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight">
@@ -206,7 +198,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 ) : (
                   <div className="py-4 grid grid-cols-4 gap-2 sm:gap-4 divide-x divide-white/10 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {releaseRemaining.days}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -215,7 +207,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {releaseRemaining.hours.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -224,7 +216,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {releaseRemaining.minutes.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -233,7 +225,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2 sm:pl-4">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-white">
+                      <span className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tighter text-[#F4F1ED]">
                         {releaseRemaining.seconds.toString().padStart(2, '0')}
                       </span>
                       <span className="mt-2 text-[10px] sm:text-xs font-mono font-semibold tracking-[0.2em] uppercase text-slate-400">
@@ -244,12 +236,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 )}
               </div>
 
-              {/* Informative Footer strip */}
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-400">
                 <span>PlayStation 5 &middot; Xbox Series X|S</span>
                 <span className="text-slate-500">Confirmed Release</span>
               </div>
             </div>
+
           </div>
         </div>
       </div>

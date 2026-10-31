@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 py-4 ${
         isScrolled
           ? 'bg-[#08090D]/95 backdrop-blur-md border-b border-white/10 shadow-2xl'
-          : 'bg-[#08090D]/40 backdrop-blur-sm border-b border-white/5'
+          : 'bg-[#08090D]/50 backdrop-blur-sm border-b border-white/5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-8">
@@ -66,13 +66,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleLinkClick(link.id)}
                 className={`relative py-1.5 whitespace-nowrap transition-colors duration-200 focus:outline-none ${
                   isActive
-                    ? 'text-white'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'text-[#F4F1ED]'
+                    : 'text-slate-400 hover:text-[#F4F1ED]'
                 }`}
               >
                 <span>{link.label}</span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-white rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F15A24] rounded-full" />
                 )}
               </button>
             );
@@ -86,21 +86,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-2 text-slate-300 hover:text-white focus:outline-none"
             aria-label="Toggle navigation menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-6 h-6 text-[#F15A24]" /> : <Menu className="w-6 h-6 text-[#F4F1ED]" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#08090D] border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
+        <div className="md:hidden bg-[#08090D]/98 border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
           {navLinks.map((link) => (
             <button
               key={link.id}
               onClick={() => handleLinkClick(link.id)}
               className={`block w-full text-left py-2 text-xs font-bold tracking-[0.2em] uppercase transition-colors ${
                 activeSection === link.id
-                  ? 'text-white'
+                  ? 'text-[#F15A24]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >

@@ -12,18 +12,28 @@ export interface NewsArticle {
 
 export interface FetchNewsResult {
   articles: NewsArticle[];
+  totalCount: number;
+  hasMore: boolean;
+  nextCursor: number | null;
   lastSuccessfulRefresh: string;
   latestPublishedAt: string;
   sourceStatus: Record<string, 'ok' | 'error'>;
   stale: boolean;
 }
 
-export async function getNewsArticles(): Promise<FetchNewsResult> {
+export async function getNewsArticles(limit?: number, offset?: number): Promise<FetchNewsResult> {
   try {
+    const params = new URLSearchParams();
+    if (limit !== undefined) params.append('limit', String(limit));
+    if (offset !== undefined) params.append('offset', String(offset));
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/api/news?${queryString}` : '/api/news';
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
 
-    const res = await fetch('/api/news', {
+    const res = await fetch(endpoint, {
       method: 'GET',
       signal: controller.signal,
       headers: {
@@ -37,13 +47,15 @@ export async function getNewsArticles(): Promise<FetchNewsResult> {
     if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
       if (Array.isArray(data.articles)) {
-        // Sort strictly newest first by publication timestamp
         const sortedArticles = [...data.articles].sort(
           (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
         );
 
         return {
           articles: sortedArticles,
+          totalCount: typeof data.totalCount === 'number' ? data.totalCount : sortedArticles.length,
+          hasMore: Boolean(data.hasMore),
+          nextCursor: data.nextCursor !== undefined ? data.nextCursor : null,
           lastSuccessfulRefresh: data.lastSuccessfulRefresh || new Date().toISOString(),
           latestPublishedAt: data.latestPublishedAt || (sortedArticles.length > 0 ? sortedArticles[0].publishedAt : new Date().toISOString()),
           sourceStatus: data.sourceStatus || {},
@@ -57,6 +69,9 @@ export async function getNewsArticles(): Promise<FetchNewsResult> {
 
   return {
     articles: [],
+    totalCount: 0,
+    hasMore: false,
+    nextCursor: null,
     lastSuccessfulRefresh: new Date().toISOString(),
     latestPublishedAt: new Date().toISOString(),
     sourceStatus: {},

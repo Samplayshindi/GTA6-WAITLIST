@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Minimal Navigation */}
           <div className="space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block">
+            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] block">
               Navigation
             </span>
             <ul className="space-y-2 text-xs font-medium text-slate-400">
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li>
                 <button onClick={() => onNavigate('specifications')} className="hover:text-white transition-colors">
-                  Specifications
+                  Additional Details
                 </button>
               </li>
             </ul>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Official Portals */}
           <div className="space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block">
+            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] block">
               Official Channels
             </span>
             <ul className="space-y-2.5 text-xs text-slate-400">
@@ -117,7 +117,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Release Status & Scroll to top */}
           <div className="space-y-4 flex flex-col justify-between">
             <div>
-              <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-slate-300 block mb-2">
+              <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] block mb-2">
                 Release Status
               </span>
               <p className="text-xs font-mono text-slate-400 leading-relaxed">
@@ -129,10 +129,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-slate-300 bg-white/5 border border-white/10 hover:border-white/30 hover:text-white transition-colors"
+              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#F4F1ED] bg-[#0B2425] border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors"
             >
               <span>Back to Top</span>
-              <ArrowUp className="w-3.5 h-3.5" />
+              <ArrowUp className="w-3.5 h-3.5 text-[#F15A24]" />
             </button>
           </div>
         </div>
@@ -142,7 +142,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <span className="text-[11px] font-mono tracking-[0.3em] uppercase text-slate-400 block">
             Designed &amp; Developed By
           </span>
-          <h3 className="text-2xl sm:text-3xl font-black italic tracking-wider uppercase text-white">
+          <h3 className="text-2xl sm:text-3xl font-black italic tracking-wider uppercase text-[#F4F1ED]">
             SAMAR
           </h3>
           <p className="text-xs text-slate-400 font-normal tracking-wide">
