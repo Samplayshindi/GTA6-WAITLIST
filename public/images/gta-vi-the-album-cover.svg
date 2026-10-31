@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="albumBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F0C1B" />
+      <stop offset="40%" stop-color="#1A0D2E" />
+      <stop offset="80%" stop-color="#2D123D" />
+      <stop offset="100%" stop-color="#3B0E2B" />
+    </linearGradient>
+
+    <linearGradient id="gtaPinkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF3B81" />
+      <stop offset="50%" stop-color="#FF529B" />
+      <stop offset="100%" stop-color="#FFA843" />
+    </linearGradient>
+
+    <linearGradient id="gtaOrangeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF529B" />
+      <stop offset="100%" stop-color="#FF8A00" />
+    </linearGradient>
+
+    <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="600" fill="url(#albumBg)" />
+
+  <!-- Grid texture background -->
+  <g opacity="0.08" stroke="#FFFFFF" stroke-width="1">
+    <line x1="0" y1="100" x2="600" y2="100" />
+    <line x1="0" y1="200" x2="600" y2="200" />
+    <line x1="0" y1="300" x2="600" y2="300" />
+    <line x1="0" y1="400" x2="600" y2="400" />
+    <line x1="0" y1="500" x2="600" y2="500" />
+    <line x1="100" y1="0" x2="100" y2="600" />
+    <line x1="200" y1="0" x2="200" y2="600" />
+    <line x1="300" y1="0" x2="300" y2="600" />
+    <line x1="400" y1="0" x2="400" y2="600" />
+    <line x1="500" y1="0" x2="500" y2="600" />
+  </g>
+
+  <!-- Outer Frame -->
+  <rect x="20" y="20" width="560" height="560" fill="none" stroke="url(#gtaPinkGrad)" stroke-width="2" opacity="0.4" />
+
+  <!-- Top Badge: Atlantic Records & Rockstar Games -->
+  <g transform="translate(40, 50)">
+    <!-- Atlantic Records Style Badge -->
+    <rect x="0" y="0" width="130" height="26" rx="4" fill="#111625" stroke="#38BDF8" stroke-width="1" />
+    <text x="65" y="17" fill="#38BDF8" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="900" letter-spacing="1.5" text-anchor="middle">ATLANTIC</text>
+  </g>
+
+  <g transform="translate(430, 50)">
+    <!-- Rockstar Games R* Logo -->
+    <rect x="0" y="0" width="130" height="26" rx="4" fill="#FCB100" />
+    <text x="65" y="18" fill="#000000" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="2" text-anchor="middle">ROCKSTAR</text>
+  </g>
+
+  <!-- Central GTA VI Roman Numerals "VI" -->
+  <g filter="url(#glowEffect)" transform="translate(300, 260)">
+    <text x="0" y="0" fill="url(#gtaPinkGrad)" font-family="'Impact', 'Arial Black', sans-serif" font-size="170" font-weight="900" letter-spacing="-5" text-anchor="middle" font-style="italic">VI</text>
+  </g>
+
+  <!-- Overlay Title: GRAND THEFT AUTO -->
+  <text x="300" y="380" fill="#FFFFFF" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="6" text-anchor="middle">GRAND THEFT AUTO</text>
+
+  <!-- Banner: THE ALBUM -->
+  <rect x="140" y="405" width="320" height="42" fill="url(#gtaOrangeGrad)" rx="6" />
+  <text x="300" y="434" fill="#000000" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="8" text-anchor="middle">THE ALBUM</text>
+
+  <!-- Subtitle: OFFICIAL SOUNDTRACK -->
+  <text x="300" y="480" fill="#E2E8F0" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="4" text-anchor="middle" opacity="0.9">COMING NOVEMBER 19</text>
+
+  <!-- Bottom Vinyl / Stereo Audio Stamp -->
+  <line x1="80" y1="520" x2="520" y2="520" stroke="#FFFFFF" stroke-width="1" opacity="0.2" />
+  <text x="300" y="542" fill="#94A3B8" font-family="'Courier New', monospace" font-size="10" letter-spacing="2" text-anchor="middle">ATLANTIC RECORDS &amp; ROCKSTAR GAMES • EXCLUSIVE EDITION</text>
+</svg>

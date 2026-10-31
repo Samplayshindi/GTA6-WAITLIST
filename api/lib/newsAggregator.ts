@@ -1,10 +1,10 @@
 import { XMLParser } from 'fast-xml-parser';
 import { NewsArticleDB } from './db.ts';
+import { getDeterministicArticleImage } from './newsImageMapper.ts';
 
 export function isValidGtaViArticle(title: string, description: string): boolean {
   const combined = `${title} ${description}`.toLowerCase();
 
-  // Must explicitly mention GTA 6 / GTA VI / Grand Theft Auto VI or Leonida / Vice City in context
   const hasGtaViKeyword = 
     combined.includes('gta 6') ||
     combined.includes('gta vi') ||
@@ -17,7 +17,6 @@ export function isValidGtaViArticle(title: string, description: string): boolean
     return false;
   }
 
-  // Reject clickbait / unrelated titles / parodies
   const clickbaitNoise = [
     'south park',
     'dog poop',
@@ -140,7 +139,6 @@ export async function fetchLiveGtaArticles(): Promise<{
           articleUrl = typeof item.guid === 'string' ? item.guid : item.guid['#text'] || feed.url;
         }
 
-        // Determine publisher source
         let articleSource = feed.name;
         if (item.source) {
           if (typeof item.source === 'string') articleSource = item.source;
@@ -167,10 +165,11 @@ export async function fetchLiveGtaArticles(): Promise<{
           else if (combined.includes('release') || combined.includes('date') || combined.includes('launch') || combined.includes('window') || combined.includes('preload')) category = 'release';
           else if (combined.includes('gameplay') || combined.includes('map') || combined.includes('mechanic') || combined.includes('physics')) category = 'gameplay';
 
-          let thumbnailUrl = '/official-gta-vi-hero.jpg';
-          if (item['media:content']?.['@_url']) thumbnailUrl = item['media:content']['@_url'];
-          else if (item['media:thumbnail']?.['@_url']) thumbnailUrl = item['media:thumbnail']['@_url'];
-          else if (combined.includes('look') || combined.includes('gameplay')) thumbnailUrl = '/official-gta-vi-cover.png';
+          let thumbnailUrl = item['media:content']?.['@_url'] || item['media:thumbnail']?.['@_url'];
+          
+          if (!thumbnailUrl || thumbnailUrl.includes('googleusercontent') || thumbnailUrl.endsWith('.ico')) {
+            thumbnailUrl = getDeterministicArticleImage(title, description);
+          }
 
           const articleId = generateArticleId(articleSource, title, articleUrl);
 
@@ -195,7 +194,6 @@ export async function fetchLiveGtaArticles(): Promise<{
     }
   }
 
-  // Deduplicate articles by unique ID or clean title
   const seen = new Set<string>();
   const deduplicated: NewsArticleDB[] = [];
 
@@ -207,7 +205,6 @@ export async function fetchLiveGtaArticles(): Promise<{
     }
   }
 
-  // Sort strictly by publishedAt DESC (newest first)
   deduplicated.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   return {

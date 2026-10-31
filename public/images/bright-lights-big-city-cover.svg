@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="rockBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A0A00" />
+      <stop offset="50%" stop-color="#3B1700" />
+      <stop offset="100%" stop-color="#120500" />
+    </linearGradient>
+
+    <linearGradient id="flameOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5500" />
+      <stop offset="100%" stop-color="#FFCC00" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="600" fill="url(#rockBg)" />
+  <rect x="25" y="25" width="550" height="550" fill="none" stroke="#FF5500" stroke-width="2" opacity="0.4" />
+
+  <text x="300" y="180" fill="#FFCC00" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="5" text-anchor="middle">KEITH RICHARDS</text>
+
+  <text x="300" y="260" fill="#FFFFFF" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" letter-spacing="1" text-anchor="middle">BRIGHT LIGHTS, BIG CITY</text>
+
+  <rect x="170" y="310" width="260" height="36" fill="url(#flameOrange)" rx="6" />
+  <text x="300" y="333" fill="#000000" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="3" text-anchor="middle">GTA VI: THE ALBUM</text>
+
+  <text x="300" y="520" fill="#A1A1AA" font-family="'Courier New', monospace" font-size="11" letter-spacing="2" text-anchor="middle">MINDLESS / ATLANTIC / ROCKSTAR GAMES</text>
+</svg>

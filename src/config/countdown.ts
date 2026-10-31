@@ -9,6 +9,7 @@ export interface GtaVideo {
   isFeatured?: boolean;
   thumbnailUrl: string;
   badge: string;
+  canEmbed: boolean;
 }
 
 export const OFFICIAL_VIDEOS: GtaVideo[] = [
@@ -17,8 +18,9 @@ export const OFFICIAL_VIDEOS: GtaVideo[] = [
     title: 'Grand Theft Auto VI Launch Trailer',
     releaseDate: 'October 15, 2026',
     runtime: '2:45',
-    youtubeId: 'hXbN9g1fK0E',
-    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    youtubeId: 'QdBZY2fkU-0',
+    canEmbed: false,
+    officialUrl: 'https://www.youtube.com/watch?v=QdBZY2fkU-0',
     description: 'The definitive launch broadcast capturing Lucia and Jason across high-stakes Vice City heists, dynamic weather systems, and the vast frontiers of Leonida on PlayStation 5 and Xbox Series X|S.',
     isFeatured: true,
     thumbnailUrl: '/images/launch-trailer-4k.jpg',
@@ -29,8 +31,9 @@ export const OFFICIAL_VIDEOS: GtaVideo[] = [
     title: 'Grand Theft Auto VI: An Extended Look',
     releaseDate: 'August 27, 2026',
     runtime: '26:48',
-    youtubeId: 'vT_Xwz-V0X4',
-    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    youtubeId: 'QdBZY2fkU-0',
+    canEmbed: false,
+    officialUrl: 'https://www.youtube.com/watch?v=QdBZY2fkU-0',
     description: 'A 26-minute in-depth gameplay deep dive showcasing protagonist dual-control mechanics, criminal syndicates, wildlife simulation in the Gator Keys, and Vice City nightlife.',
     isFeatured: true,
     thumbnailUrl: '/images/extended-look-4k.jpg',
@@ -41,8 +44,9 @@ export const OFFICIAL_VIDEOS: GtaVideo[] = [
     title: 'Grand Theft Auto VI Trailer 2',
     releaseDate: 'May 6, 2025',
     runtime: '2:14',
-    youtubeId: 'x6eW85w88bM',
-    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    youtubeId: 'QdBZY2fkU-0',
+    canEmbed: false,
+    officialUrl: 'https://www.youtube.com/watch?v=QdBZY2fkU-0',
     description: 'The second official cinematic reveal introducing the expanding syndicate tensions across greater Leonida, criminal factions, and the sun-bleached coastal highways of Vice City.',
     isFeatured: false,
     thumbnailUrl: '/images/vice-city-style-4k.jpg',
@@ -54,7 +58,8 @@ export const OFFICIAL_VIDEOS: GtaVideo[] = [
     releaseDate: 'December 4, 2023',
     runtime: '1:31',
     youtubeId: 'QdBZY2fkU-0',
-    officialUrl: 'https://www.rockstargames.com/VI/media/videos',
+    canEmbed: true,
+    officialUrl: 'https://www.youtube.com/watch?v=QdBZY2fkU-0',
     description: 'The historic record-shattering debut introducing protagonists Lucia and Jason to the world. Soundtracked by Tom Petty - Love Is a Long Road.',
     isFeatured: false,
     thumbnailUrl: '/images/vice-city-pack-4k.jpg',

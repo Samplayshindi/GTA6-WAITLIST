@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="leanBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090A10" />
+      <stop offset="50%" stop-color="#141E30" />
+      <stop offset="100%" stop-color="#243B55" />
+    </linearGradient>
+
+    <linearGradient id="cyanNeon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="100%" stop-color="#4FACFE" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="600" fill="url(#leanBg)" />
+
+  <rect x="30" y="30" width="540" height="540" fill="none" stroke="#00F2FE" stroke-width="2" opacity="0.3" />
+
+  <!-- Atlantic Records & GTA VI Badge -->
+  <g transform="translate(40, 50)">
+    <rect x="0" y="0" width="160" height="28" rx="4" fill="#00F2FE" />
+    <text x="80" y="19" fill="#000000" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="2" text-anchor="middle">ATLANTIC SINGLE</text>
+  </g>
+
+  <!-- Title & Artist -->
+  <text x="300" y="220" fill="#88D1F1" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="4" text-anchor="middle">YUNG LEAN FEAT. FUTURE &amp; METRO BOOMIN</text>
+
+  <text x="300" y="310" fill="#FFFFFF" font-family="'Impact', 'Arial Black', sans-serif" font-size="76" font-weight="900" letter-spacing="2" text-anchor="middle">THAT'S IT</text>
+
+  <rect x="180" y="350" width="240" height="36" fill="url(#cyanNeon)" rx="18" />
+  <text x="300" y="373" fill="#000000" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="3" text-anchor="middle">GTA VI: THE ALBUM</text>
+
+  <text x="300" y="520" fill="#64748B" font-family="'Courier New', monospace" font-size="11" letter-spacing="2" text-anchor="middle">YEAR0001 / ATLANTIC / ROCKSTAR GAMES</text>
+</svg>

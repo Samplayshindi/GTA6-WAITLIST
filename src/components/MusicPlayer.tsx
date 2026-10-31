@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X } from 'lucide-react';
+import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, ExternalLink, Music2 } from 'lucide-react';
+import { SOUNDTRACK_LIBRARY, SoundtrackTrack } from '../config/soundtrack';
 
 declare global {
   interface Window {
@@ -8,19 +9,19 @@ declare global {
   }
 }
 
-const YOUTUBE_TRACK_ID = '-fW1M17EVdE';
-const TRACK_TITLE = 'Flower in a Hurricane';
-const TRACK_ARTIST = 'Justice feat. Tame Impala, SZA, King Gizzard & The Lizard Wizard';
-
 export const MusicPlayer: React.FC = () => {
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(20);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(230); // ~3:50 standard track duration
+  const [duration, setDuration] = useState<number>(SOUNDTRACK_LIBRARY[0].durationSec);
   const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
+
+  const currentTrack: SoundtrackTrack = SOUNDTRACK_LIBRARY[currentTrackIndex] || SOUNDTRACK_LIBRARY[0];
 
   const playerRef = useRef<any>(null);
   const manualPauseRef = useRef<boolean>(false);
@@ -34,10 +35,18 @@ export const MusicPlayer: React.FC = () => {
     const setupPlayer = () => {
       if (!window.YT || !window.YT.Player) return;
 
+      if (playerRef.current) {
+        try {
+          playerRef.current.destroy();
+        } catch {
+          // ignore
+        }
+      }
+
       playerRef.current = new window.YT.Player('yt-audio-element', {
         height: '0',
         width: '0',
-        videoId: YOUTUBE_TRACK_ID,
+        videoId: currentTrack.youtubeId,
         playerVars: {
           autoplay: 1,
           controls: 0,
@@ -45,7 +54,7 @@ export const MusicPlayer: React.FC = () => {
           fs: 0,
           rel: 0,
           loop: 1,
-          playlist: YOUTUBE_TRACK_ID,
+          playlist: currentTrack.youtubeId,
           playsinline: 1,
           origin: window.location.origin,
         },
@@ -53,7 +62,7 @@ export const MusicPlayer: React.FC = () => {
           onReady: (event: any) => {
             setIsReady(true);
             try {
-              event.target.setVolume(20);
+              event.target.setVolume(isMuted ? 0 : volume);
               event.target.playVideo();
             } catch {
               // autoplay blocked
@@ -65,7 +74,7 @@ export const MusicPlayer: React.FC = () => {
             } else if (event.data === 2) {
               setIsPlaying(false);
             } else if (event.data === 0) {
-              event.target.playVideo();
+              handleNextTrack();
             }
           },
         },
@@ -93,8 +102,8 @@ export const MusicPlayer: React.FC = () => {
         try {
           const curr = playerRef.current.getCurrentTime();
           const dur = playerRef.current.getDuration();
-          if (curr) setCurrentTime(curr);
-          if (dur && dur > 0) setDuration(dur);
+          if (typeof curr === 'number' && !isNaN(curr)) setCurrentTime(curr);
+          if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) setDuration(dur);
         } catch {
           // ignore
         }
@@ -104,7 +113,7 @@ export const MusicPlayer: React.FC = () => {
     return () => {
       if (checkInterval) clearInterval(checkInterval);
     };
-  }, [isDismissed]);
+  }, [currentTrack.youtubeId, isDismissed]);
 
   // Global user gesture unlock listener
   useEffect(() => {
@@ -113,7 +122,7 @@ export const MusicPlayer: React.FC = () => {
       if (manualPauseRef.current) return;
       if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
         try {
-          playerRef.current.setVolume(volume);
+          playerRef.current.setVolume(isMuted ? 0 : volume);
           playerRef.current.playVideo();
         } catch {
           // ignore
@@ -128,7 +137,42 @@ export const MusicPlayer: React.FC = () => {
       window.removeEventListener('pointerdown', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
     };
-  }, [volume, isDismissed]);
+  }, [volume, isMuted, isDismissed]);
+
+  const selectTrack = (index: number) => {
+    if (index === currentTrackIndex) {
+      togglePlay();
+      return;
+    }
+    setCurrentTrackIndex(index);
+    setCurrentTime(0);
+    setDuration(SOUNDTRACK_LIBRARY[index].durationSec);
+    manualPauseRef.current = false;
+    setIsPlaying(true);
+  };
+
+  const handleNextTrack = () => {
+    let nextIdx: number;
+    if (isShuffleOn) {
+      nextIdx = Math.floor(Math.random() * SOUNDTRACK_LIBRARY.length);
+      if (nextIdx === currentTrackIndex && SOUNDTRACK_LIBRARY.length > 1) {
+        nextIdx = (currentTrackIndex + 1) % SOUNDTRACK_LIBRARY.length;
+      }
+    } else {
+      nextIdx = (currentTrackIndex + 1) % SOUNDTRACK_LIBRARY.length;
+    }
+    selectTrack(nextIdx);
+  };
+
+  const handlePrevTrack = () => {
+    if (currentTime > 3 && playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      playerRef.current.seekTo(0, true);
+      setCurrentTime(0);
+      return;
+    }
+    const prevIdx = (currentTrackIndex - 1 + SOUNDTRACK_LIBRARY.length) % SOUNDTRACK_LIBRARY.length;
+    selectTrack(prevIdx);
+  };
 
   const togglePlay = () => {
     if (!playerRef.current || !isReady) return;
@@ -191,6 +235,7 @@ export const MusicPlayer: React.FC = () => {
   };
 
   const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '0:00';
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${m}:${s.toString().padStart(2, '0')}`;
@@ -225,51 +270,166 @@ export const MusicPlayer: React.FC = () => {
         <div id="yt-audio-element" />
       </div>
 
+      {/* Track Selection Library Modal / Slide-Up Drawer */}
+      {isLibraryOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-[#0B0D14] border border-white/10 w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[85vh] sm:max-h-[75vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#FF4FA3]/20 flex items-center justify-center text-[#FF4FA3]">
+                  <Music2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white tracking-wide">GTA VI Soundtrack Collection</h3>
+                  <p className="text-xs text-slate-400">Official Rockstar Games &amp; Atlantic Records Catalogue ({SOUNDTRACK_LIBRARY.length} Tracks)</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsLibraryOpen(false)}
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                aria-label="Close track list"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Track List */}
+            <div className="p-4 overflow-y-auto space-y-2 divide-y divide-white/5">
+              {SOUNDTRACK_LIBRARY.map((track, idx) => {
+                const isSelected = idx === currentTrackIndex;
+                return (
+                  <div
+                    key={track.id}
+                    onClick={() => selectTrack(idx)}
+                    className={`pt-2 first:pt-0 p-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-[#FF4FA3]/15 to-transparent border border-[#FF4FA3]/30'
+                        : 'hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="text-xs font-mono text-slate-500 w-4 text-center shrink-0">
+                        {isSelected && isPlaying ? (
+                          <span className="inline-flex items-center gap-0.5 text-[#FF4FA3] font-bold">
+                            <span className="w-1 h-3 bg-[#FF4FA3] animate-pulse" />
+                            <span className="w-1 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
+                            <span className="w-1 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
+                          </span>
+                        ) : (
+                          idx + 1
+                        )}
+                      </span>
+
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-black shrink-0 border border-white/10 relative group">
+                        <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                        <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          {isSelected && isPlaying ? (
+                            <Pause className="w-4 h-4 fill-white text-white" />
+                          ) : (
+                            <Play className="w-4 h-4 fill-white text-white translate-x-0.5" />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className={`text-sm font-bold truncate ${isSelected ? 'text-[#FF4FA3]' : 'text-white'}`}>
+                            {track.title}
+                          </h4>
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-slate-300 shrink-0 hidden sm:inline-block">
+                            {track.sourceLabel}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 truncate mt-0.5">{track.artist}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-xs font-mono text-slate-400">{track.durationText}</span>
+
+                      <a
+                        href={track.spotifyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Open on official streaming platform"
+                        className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-emerald-400 transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 border-t border-white/10 bg-black/40 flex items-center justify-between text-xs text-slate-400">
+              <span>Selected Track: <strong className="text-white">{currentTrack.title}</strong></span>
+              <span className="font-mono text-[#FF4FA3]">320 kbps High Fidelity</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Spotify Desktop Bottom Playback Bar */}
       <footer
         aria-label="GTA VI Soundtrack Player"
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
           {/* Left Side: Artwork & Track Meta */}
-          <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px] max-w-[300px]">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-md overflow-hidden bg-black shrink-0 border border-white/10">
+          <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px] max-w-[320px]">
+            <div
+              onClick={() => setIsLibraryOpen(true)}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-md overflow-hidden bg-black shrink-0 border border-white/10 cursor-pointer relative group"
+              title="Click to view full GTA VI Soundtrack Collection"
+            >
               <img
-                src="/images/hero-4k.jpg"
-                alt={TRACK_TITLE}
-                className="w-full h-full object-cover"
+                src={currentTrack.coverUrl}
+                alt={currentTrack.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <ListMusic className="w-4 h-4 text-white" />
+              </div>
             </div>
+
             <div className="min-w-0">
-              <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hover:underline cursor-pointer">
-                {TRACK_TITLE}
+              <h4
+                onClick={() => setIsLibraryOpen(true)}
+                className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hover:underline cursor-pointer"
+                title={currentTrack.title}
+              >
+                {currentTrack.title}
               </h4>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5 hover:underline cursor-pointer">
-                {TRACK_ARTIST}
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                {currentTrack.artist}
               </p>
+              <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
+                {currentTrack.sourceLabel}
+              </span>
             </div>
           </div>
 
           {/* Center: Controls & Progress Bar */}
           <div className="flex flex-col items-center max-w-xl w-full mx-auto px-2">
             {/* Top Control Buttons */}
-            <div className="flex items-center gap-4 sm:gap-6 mb-2">
+            <div className="flex items-center gap-4 sm:gap-6 mb-1.5">
               <button
                 onClick={() => setIsShuffleOn(!isShuffleOn)}
                 className={`transition-colors hidden sm:block ${isShuffleOn ? 'text-[#FF4FA3]' : 'text-slate-400 hover:text-white'}`}
-                title="Shuffle"
+                title={isShuffleOn ? 'Shuffle On' : 'Shuffle Off'}
                 aria-label="Shuffle"
               >
                 <Shuffle className="w-4 h-4" />
               </button>
 
               <button
-                onClick={() => {
-                  if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
-                    playerRef.current.seekTo(0, true);
-                  }
-                }}
+                onClick={handlePrevTrack}
                 className="text-slate-400 hover:text-white transition-colors hidden sm:block"
                 title="Previous Track"
                 aria-label="Previous Track"
@@ -290,16 +450,25 @@ export const MusicPlayer: React.FC = () => {
               </button>
 
               <button
-                onClick={() => {
-                  if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
-                    playerRef.current.seekTo(0, true);
-                  }
-                }}
+                onClick={handleNextTrack}
                 className="text-slate-400 hover:text-white transition-colors hidden sm:block"
                 title="Next Track"
                 aria-label="Next Track"
               >
                 <SkipForward className="w-4 h-4 fill-current" />
+              </button>
+
+              {/* Track Selector Toggle */}
+              <button
+                onClick={() => setIsLibraryOpen(!isLibraryOpen)}
+                className={`transition-colors relative p-1.5 rounded-lg ${isLibraryOpen ? 'bg-[#FF4FA3]/20 text-[#FF4FA3]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                title="View Soundtrack Library"
+                aria-label="Soundtrack Library"
+              >
+                <ListMusic className="w-4 h-4" />
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#FF4FA3] text-black text-[9px] font-bold flex items-center justify-center">
+                  {SOUNDTRACK_LIBRARY.length}
+                </span>
               </button>
             </div>
 
@@ -327,8 +496,19 @@ export const MusicPlayer: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Side: Volume & Close Button */}
-          <div className="flex items-center gap-3 sm:gap-4 min-w-[140px] sm:min-w-[180px] justify-end">
+          {/* Right Side: Volume, Official Link & Close Button */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-[140px] sm:min-w-[180px] justify-end">
+            <a
+              href={currentTrack.spotifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-full bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5"
+              title="Open Official Link"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Listen</span>
+            </a>
+
             <div className="hidden sm:flex items-center gap-2">
               <button
                 onClick={toggleMute}
@@ -351,7 +531,7 @@ export const MusicPlayer: React.FC = () => {
                 max="100"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 sm:w-24 h-1 bg-white/20 accent-[#FF4FA3] rounded-lg cursor-pointer appearance-none"
+                className="w-16 sm:w-20 h-1 bg-white/20 accent-[#FF4FA3] rounded-lg cursor-pointer appearance-none"
                 title={`Volume: ${isMuted ? 0 : volume}%`}
                 aria-label="Volume slider"
               />
@@ -360,7 +540,7 @@ export const MusicPlayer: React.FC = () => {
             {/* Close Button (X) */}
             <button
               onClick={handleDismiss}
-              className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors"
+              className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors ml-1"
               title="Close Soundtrack Player"
               aria-label="Close Soundtrack Player"
             >

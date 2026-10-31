@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hotBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#210313" />
+      <stop offset="50%" stop-color="#4A0E2E" />
+      <stop offset="100%" stop-color="#1A0210" />
+    </linearGradient>
+
+    <linearGradient id="neonPink" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF2E93" />
+      <stop offset="100%" stop-color="#FF8A00" />
+    </linearGradient>
+
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE600" />
+      <stop offset="100%" stop-color="#FF9900" />
+    </linearGradient>
+
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="600" height="600" fill="url(#hotBg)" />
+
+  <!-- Retro Sun Wave -->
+  <circle cx="300" cy="270" r="140" fill="url(#neonPink)" opacity="0.3" />
+  <circle cx="300" cy="270" r="110" fill="none" stroke="#FF2E93" stroke-width="2" opacity="0.6" />
+
+  <!-- Top Badge: GTA VI TRAILER 2 OFFICIAL TRACK -->
+  <rect x="130" y="45" width="340" height="30" fill="#FF2E93" rx="15" />
+  <text x="300" y="65" fill="#FFFFFF" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="3" text-anchor="middle">GTA VI TRAILER 2 OFFICIAL TRACK</text>
+
+  <!-- Artist Name: THE POINTER SISTERS -->
+  <text x="300" y="210" fill="#FFFFFF" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle">THE POINTER SISTERS</text>
+
+  <!-- Main Track Title: HOT TOGETHER -->
+  <g filter="url(#neonGlow)">
+    <text x="300" y="300" fill="url(#goldGrad)" font-family="'Impact', 'Arial Black', sans-serif" font-size="64" font-weight="900" letter-spacing="2" text-anchor="middle" font-style="italic">HOT TOGETHER</text>
+  </g>
+
+  <!-- Album Subtitle -->
+  <text x="300" y="350" fill="#FF8A00" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="6" text-anchor="middle">BREAK OUT • 1984 CLASSIC</text>
+
+  <!-- Palm Silhouette Deco -->
+  <path d="M120 500 Q 150 420 220 400 Q 160 410 120 500 Z" fill="#FF2E93" opacity="0.4" />
+  <path d="M480 500 Q 450 420 380 400 Q 440 410 480 500 Z" fill="#FF2E93" opacity="0.4" />
+
+  <!-- Bottom Label Stamp -->
+  <rect x="0" y="530" width="600" height="70" fill="#0A0108" />
+  <text x="300" y="560" fill="#94A3B8" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="2" text-anchor="middle">PLANET RECORDS / RCA • ROCKSTAR GAMES SOUNDTRACK</text>
+</svg>

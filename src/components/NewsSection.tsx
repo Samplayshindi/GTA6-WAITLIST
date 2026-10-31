@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
+import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 
 export const NewsSection: React.FC = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -22,7 +23,7 @@ export const NewsSection: React.FC = () => {
     }
   }, []);
 
-  // Show More click: Fetch next 6 articles starting at current articles count
+  // Show More click: Fetch next 6 articles
   const handleShowMore = async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -43,7 +44,7 @@ export const NewsSection: React.FC = () => {
     }
   };
 
-  // Background polling every 5 minutes for active tab
+  // Background polling every 5 minutes
   useEffect(() => {
     loadInitialNews();
 
@@ -119,7 +120,7 @@ export const NewsSection: React.FC = () => {
                 {/* Image Side */}
                 <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[320px]">
                   <img
-                    src={featuredArticle.thumbnailUrl || '/official-gta-vi-hero.jpg'}
+                    src={featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
                     alt={featuredArticle.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
@@ -175,6 +176,8 @@ export const NewsSection: React.FC = () => {
                     year: 'numeric',
                   }).format(new Date(article.publishedAt));
 
+                  const imgSrc = article.thumbnailUrl || getDeterministicArticleImage(article.title, article.description);
+
                   return (
                     <article
                       key={article.id}
@@ -182,7 +185,7 @@ export const NewsSection: React.FC = () => {
                     >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                         <img
-                          src={article.thumbnailUrl || '/official-gta-vi-cover.png'}
+                          src={imgSrc}
                           alt={article.title}
                           loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"
