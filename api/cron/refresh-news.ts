@@ -1,55 +1,79 @@
-import { getPersistentStore, savePersistentStore, fetchLiveGtaArticles } from '../lib/newsStore';
+import { fetchLiveGtaArticles } from '../lib/newsAggregator.ts';
+import { saveArticlesToDb, saveMetadataToDb, getArticlesFromDb, getMetadataFromDb, getDbConnectionInfo } from '../lib/db.ts';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-vercel-cron');
+  res.setHeader('Cache-Control', 'no-store, no-cache, max-age=0, must-revalidate');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Validate CRON_SECRET if configured
+  // Cron Security: Validate CRON_SECRET if present or check x-vercel-cron header
   const authHeader = req.headers['authorization'];
   const cronSecret = process.env.CRON_SECRET;
+  const isVercelCron = req.headers['x-vercel-cron'] === '1';
 
-  if (cronSecret) {
+  if (cronSecret && !isVercelCron) {
     if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid or missing CRON_SECRET' });
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized: Invalid or missing CRON_SECRET authorization header'
+      });
     }
   }
 
+  const nowIso = new Date().toISOString();
+
   try {
-    const currentStore = getPersistentStore();
     const { articles, sourceStatus } = await fetchLiveGtaArticles();
+    const dbInfo = getDbConnectionInfo();
 
-    const nowIso = new Date().toISOString();
-    const updatedStore = {
-      articles: articles.length > 0 ? articles : currentStore.articles,
-      lastSuccessfulRefresh: articles.length > 0 ? nowIso : currentStore.lastSuccessfulRefresh,
+    let latestPubDate = nowIso;
+    if (articles.length > 0) {
+      latestPubDate = articles[0].publishedAt;
+      await saveArticlesToDb(articles);
+    }
+
+    const currentArticles = await getArticlesFromDb();
+    const hasArticles = currentArticles.length > 0;
+    const finalLatestPub = hasArticles ? currentArticles[0].publishedAt : latestPubDate;
+
+    await saveMetadataToDb({
+      lastSuccessfulRefresh: articles.length > 0 ? nowIso : (await getMetadataFromDb()).lastSuccessfulRefresh,
+      latestPublishedAt: finalLatestPub,
       sourceStatus,
-      stale: articles.length === 0,
-    };
-
-    savePersistentStore(updatedStore);
+      lastCronExecution: nowIso,
+      stale: articles.length === 0 && !hasArticles
+    });
 
     return res.status(200).json({
       success: true,
-      refreshedAt: nowIso,
-      articlesCount: updatedStore.articles.length,
+      lastCronExecution: nowIso,
+      lastSuccessfulRefresh: articles.length > 0 ? nowIso : (await getMetadataFromDb()).lastSuccessfulRefresh,
+      latestPublishedAt: finalLatestPub,
+      fetchedCount: articles.length,
+      storedTotal: currentArticles.length,
+      database: dbInfo,
       sourceStatus,
-      stale: updatedStore.stale,
+      stale: articles.length === 0
     });
   } catch (err: any) {
-    console.error('[Cron Refresh News Error]:', err);
-    const currentStore = getPersistentStore();
-    return res.status(200).json({
+    console.error('[Cron News Refresh Error]:', err);
+    await saveMetadataToDb({
+      lastCronExecution: nowIso,
+      lastCronError: err.message || String(err),
+      stale: true
+    });
+
+    return res.status(500).json({
       success: false,
-      error: err.message || 'Unknown error during news refresh',
-      articlesCount: currentStore.articles.length,
-      stale: true,
-      lastSuccessfulRefresh: currentStore.lastSuccessfulRefresh,
+      error: err.message || 'Error occurred during scheduled news refresh',
+      lastCronExecution: nowIso,
+      stale: true
     });
   }
 }

@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import newsHandler from './api/news.ts';
 import cronHandler from './api/cron/refresh-news.ts';
+import diagHandler from './api/admin/news-status.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,16 @@ app.all('/api/cron/refresh-news', async (req: Request, res: Response) => {
   }
 });
 
+// Diagnostic endpoint
+app.all('/api/admin/news-status', async (req: Request, res: Response) => {
+  try {
+    await diagHandler(req, res);
+  } catch (err) {
+    console.error('Error in diagnostic handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/api/news/refresh', async (req: Request, res: Response) => {
   try {
     req.method = 'POST';
@@ -45,7 +56,7 @@ app.post('/api/news/refresh', async (req: Request, res: Response) => {
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
-} );
+});
 
 // Setup Vite middleware in dev or static serving in production
 async function startServer() {

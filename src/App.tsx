@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { TrailerGallery } from './components/TrailerGallery';
@@ -20,8 +20,8 @@ import {
 } from './utils/time';
 
 export default function App() {
-  const globalReleaseDate = getGlobalReleaseLocalDate();
-  const preloadDate = getPreloadLocalDate();
+  const globalReleaseDate = useMemo(() => getGlobalReleaseLocalDate(), []);
+  const preloadDate = useMemo(() => getPreloadLocalDate(), []);
 
   // Real-time Countdown states (computed from visitor's local midnight)
   const [releaseRemaining, setReleaseRemaining] = useState<TimeRemaining>(() =>
