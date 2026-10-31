@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, ExternalLink, Music2 } from 'lucide-react';
+import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, ExternalLink, Music2, AlertCircle } from 'lucide-react';
 import { SOUNDTRACK_LIBRARY, SoundtrackTrack } from '../config/soundtrack';
 
 declare global {
@@ -20,14 +20,20 @@ export const MusicPlayer: React.FC = () => {
   const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
+  const [hasPlaybackError, setHasPlaybackError] = useState<boolean>(false);
 
   const currentTrack: SoundtrackTrack = SOUNDTRACK_LIBRARY[currentTrackIndex] || SOUNDTRACK_LIBRARY[0];
 
   const playerRef = useRef<any>(null);
   const manualPauseRef = useRef<boolean>(false);
   const progressContainerRef = useRef<HTMLDivElement>(null);
+  const currentTrackIndexRef = useRef<number>(currentTrackIndex);
 
-  // Initialize YouTube Iframe Player
+  useEffect(() => {
+    currentTrackIndexRef.current = currentTrackIndex;
+  }, [currentTrackIndex]);
+
+  // Initial YouTube Iframe Player Initialization
   useEffect(() => {
     if (isDismissed) return;
     let checkInterval: any = null;
@@ -35,47 +41,46 @@ export const MusicPlayer: React.FC = () => {
     const setupPlayer = () => {
       if (!window.YT || !window.YT.Player) return;
 
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch {
-          // ignore
-        }
-      }
+      if (playerRef.current) return; // Already setup
 
       playerRef.current = new window.YT.Player('yt-audio-element', {
         height: '0',
         width: '0',
-        videoId: currentTrack.youtubeId,
+        videoId: SOUNDTRACK_LIBRARY[0].youtubeId,
         playerVars: {
           autoplay: 1,
           controls: 0,
           disablekb: 1,
           fs: 0,
           rel: 0,
-          loop: 1,
-          playlist: currentTrack.youtubeId,
+          loop: 0,
           playsinline: 1,
           origin: window.location.origin,
         },
         events: {
           onReady: (event: any) => {
             setIsReady(true);
+            setHasPlaybackError(false);
             try {
-              event.target.setVolume(isMuted ? 0 : volume);
+              event.target.setVolume(20);
               event.target.playVideo();
             } catch {
-              // autoplay blocked
+              // autoplay gesture restriction
             }
           },
           onStateChange: (event: any) => {
-            if (event.data === 1) {
+            if (event.data === 1) { // PLAYING
               setIsPlaying(true);
-            } else if (event.data === 2) {
+              setHasPlaybackError(false);
+            } else if (event.data === 2) { // PAUSED
               setIsPlaying(false);
-            } else if (event.data === 0) {
+            } else if (event.data === 0) { // ENDED
               handleNextTrack();
             }
+          },
+          onError: () => {
+            setHasPlaybackError(true);
+            setIsPlaying(false);
           },
         },
       });
@@ -102,8 +107,12 @@ export const MusicPlayer: React.FC = () => {
         try {
           const curr = playerRef.current.getCurrentTime();
           const dur = playerRef.current.getDuration();
-          if (typeof curr === 'number' && !isNaN(curr)) setCurrentTime(curr);
-          if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) setDuration(dur);
+          if (typeof curr === 'number' && !isNaN(curr) && curr >= 0) {
+            setCurrentTime(curr);
+          }
+          if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) {
+            setDuration(dur);
+          }
         } catch {
           // ignore
         }
@@ -113,9 +122,9 @@ export const MusicPlayer: React.FC = () => {
     return () => {
       if (checkInterval) clearInterval(checkInterval);
     };
-  }, [currentTrack.youtubeId, isDismissed]);
+  }, [isDismissed]);
 
-  // Global user gesture unlock listener
+  // Global user gesture unlock for browser autoplay policy
   useEffect(() => {
     if (isDismissed) return;
     const handleFirstInteraction = () => {
@@ -139,27 +148,52 @@ export const MusicPlayer: React.FC = () => {
     };
   }, [volume, isMuted, isDismissed]);
 
+  // Change Track Logic: Uses YouTube IFrame API loadVideoById
   const selectTrack = (index: number) => {
-    if (index === currentTrackIndex) {
+    if (index === currentTrackIndexRef.current) {
       togglePlay();
       return;
     }
+
+    const nextTrack = SOUNDTRACK_LIBRARY[index];
+    if (!nextTrack) return;
+
     setCurrentTrackIndex(index);
     setCurrentTime(0);
-    setDuration(SOUNDTRACK_LIBRARY[index].durationSec);
+    setDuration(nextTrack.durationSec);
+    setHasPlaybackError(false);
     manualPauseRef.current = false;
-    setIsPlaying(true);
+
+    if (playerRef.current) {
+      try {
+        if (typeof playerRef.current.loadVideoById === 'function') {
+          playerRef.current.loadVideoById({
+            videoId: nextTrack.youtubeId,
+            startSeconds: 0,
+          });
+          playerRef.current.setVolume(isMuted ? 0 : volume);
+          playerRef.current.playVideo();
+          setIsPlaying(true);
+        } else if (typeof playerRef.current.cueVideoById === 'function') {
+          playerRef.current.cueVideoById(nextTrack.youtubeId);
+          playerRef.current.playVideo();
+          setIsPlaying(true);
+        }
+      } catch (err) {
+        console.error('Error switching audio track:', err);
+      }
+    }
   };
 
   const handleNextTrack = () => {
     let nextIdx: number;
     if (isShuffleOn) {
       nextIdx = Math.floor(Math.random() * SOUNDTRACK_LIBRARY.length);
-      if (nextIdx === currentTrackIndex && SOUNDTRACK_LIBRARY.length > 1) {
-        nextIdx = (currentTrackIndex + 1) % SOUNDTRACK_LIBRARY.length;
+      if (nextIdx === currentTrackIndexRef.current && SOUNDTRACK_LIBRARY.length > 1) {
+        nextIdx = (currentTrackIndexRef.current + 1) % SOUNDTRACK_LIBRARY.length;
       }
     } else {
-      nextIdx = (currentTrackIndex + 1) % SOUNDTRACK_LIBRARY.length;
+      nextIdx = (currentTrackIndexRef.current + 1) % SOUNDTRACK_LIBRARY.length;
     }
     selectTrack(nextIdx);
   };
@@ -170,7 +204,7 @@ export const MusicPlayer: React.FC = () => {
       setCurrentTime(0);
       return;
     }
-    const prevIdx = (currentTrackIndex - 1 + SOUNDTRACK_LIBRARY.length) % SOUNDTRACK_LIBRARY.length;
+    const prevIdx = (currentTrackIndexRef.current - 1 + SOUNDTRACK_LIBRARY.length) % SOUNDTRACK_LIBRARY.length;
     selectTrack(prevIdx);
   };
 
@@ -179,12 +213,20 @@ export const MusicPlayer: React.FC = () => {
 
     if (isPlaying) {
       manualPauseRef.current = true;
-      playerRef.current.pauseVideo();
+      try {
+        playerRef.current.pauseVideo();
+      } catch {
+        // ignore
+      }
       setIsPlaying(false);
     } else {
       manualPauseRef.current = false;
-      playerRef.current.setVolume(isMuted ? 0 : volume);
-      playerRef.current.playVideo();
+      try {
+        playerRef.current.setVolume(isMuted ? 0 : volume);
+        playerRef.current.playVideo();
+      } catch {
+        // ignore
+      }
       setIsPlaying(true);
     }
   };
@@ -199,9 +241,13 @@ export const MusicPlayer: React.FC = () => {
     }
 
     if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
-      playerRef.current.setVolume(val);
-      if (val > 0 && typeof playerRef.current.unMute === 'function') {
-        playerRef.current.unMute();
+      try {
+        playerRef.current.setVolume(val);
+        if (val > 0 && typeof playerRef.current.unMute === 'function') {
+          playerRef.current.unMute();
+        }
+      } catch {
+        // ignore
       }
     }
   };
@@ -211,15 +257,24 @@ export const MusicPlayer: React.FC = () => {
 
     if (isMuted) {
       setIsMuted(false);
-      playerRef.current.setVolume(volume > 0 ? volume : 20);
+      const targetVol = volume > 0 ? volume : 20;
       if (volume === 0) setVolume(20);
-      if (typeof playerRef.current.unMute === 'function') {
-        playerRef.current.unMute();
+      try {
+        playerRef.current.setVolume(targetVol);
+        if (typeof playerRef.current.unMute === 'function') {
+          playerRef.current.unMute();
+        }
+      } catch {
+        // ignore
       }
     } else {
       setIsMuted(true);
-      if (typeof playerRef.current.mute === 'function') {
-        playerRef.current.mute();
+      try {
+        if (typeof playerRef.current.mute === 'function') {
+          playerRef.current.mute();
+        }
+      } catch {
+        // ignore
       }
     }
   };
@@ -231,7 +286,11 @@ export const MusicPlayer: React.FC = () => {
     const ratio = Math.max(0, Math.min(1, clickX / rect.width));
     const seekTime = ratio * duration;
     setCurrentTime(seekTime);
-    playerRef.current.seekTo(seekTime, true);
+    try {
+      playerRef.current.seekTo(seekTime, true);
+    } catch {
+      // ignore
+    }
   };
 
   const formatTime = (secs: number) => {
@@ -270,7 +329,7 @@ export const MusicPlayer: React.FC = () => {
         <div id="yt-audio-element" />
       </div>
 
-      {/* Track Selection Library Modal / Slide-Up Drawer */}
+      {/* Track Selection Library Modal / Drawer */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-[#0B0D14] border border-white/10 w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[85vh] sm:max-h-[75vh] flex flex-col shadow-2xl overflow-hidden">
@@ -368,7 +427,7 @@ export const MusicPlayer: React.FC = () => {
             {/* Modal Footer */}
             <div className="px-6 py-3 border-t border-white/10 bg-black/40 flex items-center justify-between text-xs text-slate-400">
               <span>Selected Track: <strong className="text-white">{currentTrack.title}</strong></span>
-              <span className="font-mono text-[#FF4FA3]">320 kbps High Fidelity</span>
+              <span className="font-mono text-[#FF4FA3]">High Quality Stereo Audio</span>
             </div>
           </div>
         </div>
@@ -409,9 +468,16 @@ export const MusicPlayer: React.FC = () => {
               <p className="text-[11px] text-slate-400 truncate mt-0.5">
                 {currentTrack.artist}
               </p>
-              <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
-                {currentTrack.sourceLabel}
-              </span>
+              {hasPlaybackError ? (
+                <span className="inline-flex items-center gap-1 text-[9px] text-amber-400 font-mono tracking-wider uppercase mt-0.5">
+                  <AlertCircle className="w-3 h-3 text-amber-400" />
+                  <span>Use Official Listen Link</span>
+                </span>
+              ) : (
+                <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
+                  {currentTrack.sourceLabel}
+                </span>
+              )}
             </div>
           </div>
 
@@ -503,7 +569,7 @@ export const MusicPlayer: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="p-1.5 rounded-full bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5"
-              title="Open Official Link"
+              title="Open Official Streaming Link"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Listen</span>
