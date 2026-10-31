@@ -18,6 +18,14 @@ export const NewsSection: React.FC = () => {
 
   useEffect(() => {
     loadNews();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadNews();
+      }
+    }, 5 * 60 * 1000); // 5 minutes polling
+
+    return () => clearInterval(interval);
   }, [loadNews]);
 
   const featuredArticle = articles[0];

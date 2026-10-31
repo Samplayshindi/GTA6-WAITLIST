@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import handler from './api/news.ts';
+import newsHandler from './api/news.ts';
+import cronHandler from './api/cron/refresh-news.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,9 +15,19 @@ app.use(express.json());
 // Forward /api/news to the serverless handler
 app.all('/api/news', async (req: Request, res: Response) => {
   try {
-    await handler(req, res);
+    await newsHandler(req, res);
   } catch (err) {
     console.error('Error in news handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Forward /api/cron/refresh-news to the cron handler
+app.all('/api/cron/refresh-news', async (req: Request, res: Response) => {
+  try {
+    await cronHandler(req, res);
+  } catch (err) {
+    console.error('Error in cron refresh handler:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -24,7 +35,7 @@ app.all('/api/news', async (req: Request, res: Response) => {
 app.post('/api/news/refresh', async (req: Request, res: Response) => {
   try {
     req.method = 'POST';
-    await handler(req, res);
+    await newsHandler(req, res);
   } catch (err) {
     console.error('Error refreshing news:', err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -34,7 +45,7 @@ app.post('/api/news/refresh', async (req: Request, res: Response) => {
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
-});
+} );
 
 // Setup Vite middleware in dev or static serving in production
 async function startServer() {
