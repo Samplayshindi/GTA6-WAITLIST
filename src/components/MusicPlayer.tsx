@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Volume1, VolumeX, Disc3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -10,7 +10,7 @@ declare global {
 
 const YOUTUBE_TRACK_ID = '-fW1M17EVdE';
 const TRACK_TITLE = 'Flower in a Hurricane';
-const TRACK_ARTIST = 'Justice feat. Tame Impala, SZA, King Gizzard';
+const TRACK_ARTIST = 'Justice feat. Tame Impala, SZA, King Gizzard & The Lizard Wizard';
 
 export const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -19,8 +19,8 @@ export const MusicPlayer: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(230); // ~3:50 standard track duration
-  const [isBlocked, setIsBlocked] = useState<boolean>(true);
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
+  const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   const playerRef = useRef<any>(null);
   const manualPauseRef = useRef<boolean>(false);
@@ -28,6 +28,7 @@ export const MusicPlayer: React.FC = () => {
 
   // Initialize YouTube Iframe Player
   useEffect(() => {
+    if (isDismissed) return;
     let checkInterval: any = null;
 
     const setupPlayer = () => {
@@ -53,24 +54,17 @@ export const MusicPlayer: React.FC = () => {
             setIsReady(true);
             try {
               event.target.setVolume(20);
-              // Attempt audible autoplay
               event.target.playVideo();
             } catch {
-              setIsBlocked(true);
+              // autoplay blocked
             }
           },
           onStateChange: (event: any) => {
-            // YT.PlayerState.PLAYING === 1
             if (event.data === 1) {
               setIsPlaying(true);
-              setIsBlocked(false);
-            }
-            // YT.PlayerState.PAUSED === 2
-            else if (event.data === 2) {
+            } else if (event.data === 2) {
               setIsPlaying(false);
-            }
-            // YT.PlayerState.ENDED === 0
-            else if (event.data === 0) {
+            } else if (event.data === 0) {
               event.target.playVideo();
             }
           },
@@ -81,7 +75,6 @@ export const MusicPlayer: React.FC = () => {
     if (window.YT && window.YT.Player) {
       setupPlayer();
     } else {
-      // Check if tag already exists
       const existingScript = document.getElementById('youtube-iframe-api');
       if (!existingScript) {
         const tag = document.createElement('script');
@@ -95,7 +88,6 @@ export const MusicPlayer: React.FC = () => {
       };
     }
 
-    // Polling progress timer
     checkInterval = setInterval(() => {
       if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
         try {
@@ -104,33 +96,25 @@ export const MusicPlayer: React.FC = () => {
           if (curr) setCurrentTime(curr);
           if (dur && dur > 0) setDuration(dur);
         } catch {
-          // ignore transient iframe access error
+          // ignore
         }
       }
     }, 500);
 
     return () => {
       if (checkInterval) clearInterval(checkInterval);
-      if (playerRef.current && typeof playerRef.current.destroy === 'function') {
-        try {
-          playerRef.current.destroy();
-        } catch {
-          // ignore
-        }
-      }
     };
-  }, []);
+  }, [isDismissed]);
 
-  // Global user gesture unlock listener:
-  // If browser policy blocked audible autoplay, unlock on the first user interaction
+  // Global user gesture unlock listener
   useEffect(() => {
+    if (isDismissed) return;
     const handleFirstInteraction = () => {
       if (manualPauseRef.current) return;
       if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
         try {
           playerRef.current.setVolume(volume);
           playerRef.current.playVideo();
-          setIsBlocked(false);
         } catch {
           // ignore
         }
@@ -144,9 +128,8 @@ export const MusicPlayer: React.FC = () => {
       window.removeEventListener('pointerdown', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
     };
-  }, [volume]);
+  }, [volume, isDismissed]);
 
-  // Play / Pause toggle
   const togglePlay = () => {
     if (!playerRef.current || !isReady) return;
 
@@ -159,11 +142,9 @@ export const MusicPlayer: React.FC = () => {
       playerRef.current.setVolume(isMuted ? 0 : volume);
       playerRef.current.playVideo();
       setIsPlaying(true);
-      setIsBlocked(false);
     }
   };
 
-  // Volume slider change
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     setVolume(val);
@@ -181,7 +162,6 @@ export const MusicPlayer: React.FC = () => {
     }
   };
 
-  // Mute / Unmute toggle
   const toggleMute = () => {
     if (!playerRef.current) return;
 
@@ -200,7 +180,6 @@ export const MusicPlayer: React.FC = () => {
     }
   };
 
-  // Seek on progress bar click
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressContainerRef.current || !playerRef.current || duration <= 0) return;
     const rect = progressContainerRef.current.getBoundingClientRect();
@@ -217,6 +196,26 @@ export const MusicPlayer: React.FC = () => {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const handleDismiss = () => {
+    if (playerRef.current && typeof playerRef.current.stopVideo === 'function') {
+      try {
+        playerRef.current.stopVideo();
+      } catch {
+        // ignore
+      }
+    }
+    setIsPlaying(false);
+    setIsDismissed(true);
+  };
+
+  if (isDismissed) {
+    return (
+      <div className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none opacity-0 -z-50" aria-hidden="true">
+        <div id="yt-audio-element" />
+      </div>
+    );
+  }
+
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -226,155 +225,151 @@ export const MusicPlayer: React.FC = () => {
         <div id="yt-audio-element" />
       </div>
 
-      {/* Floating Bottom-Right Soundtrack Player */}
-      <aside
+      {/* Spotify Desktop Bottom Playback Bar */}
+      <footer
         aria-label="GTA VI Soundtrack Player"
-        className="fixed bottom-5 right-5 z-40 max-w-[340px] sm:max-w-[380px] w-full transition-all duration-300"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
       >
-        <div className="rounded-2xl bg-[#0D0E14]/95 border border-white/15 backdrop-blur-xl shadow-2xl p-4 overflow-hidden border-l-4 border-l-[#FF4FA3]">
-          {/* Header Row */}
-          <div className="flex items-center justify-between gap-3 mb-2.5">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="relative flex h-2 w-2">
-                {isPlaying ? (
-                  <>
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF4FA3] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF4FA3]" />
-                  </>
-                ) : (
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500" />
-                )}
-              </span>
-              <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-[#FF4FA3] truncate">
-                GTA VI SOUNDTRACK
-              </span>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          
+          {/* Left Side: Artwork & Track Meta */}
+          <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px] max-w-[300px]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-md overflow-hidden bg-black shrink-0 border border-white/10">
+              <img
+                src="/images/hero-4k.jpg"
+                alt={TRACK_TITLE}
+                className="w-full h-full object-cover"
+              />
             </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              {isBlocked && !isPlaying && (
-                <button
-                  onClick={togglePlay}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#FF4FA3] text-black hover:bg-white transition-colors animate-pulse"
-                >
-                  PLAY MUSIC
-                </button>
-              )}
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1 rounded-md text-slate-400 hover:text-white transition-colors"
-                title={isExpanded ? 'Collapse Player' : 'Expand Player'}
-                aria-label={isExpanded ? 'Collapse Player' : 'Expand Player'}
-              >
-                {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Main Track Info & Primary Controls */}
-          <div className="flex items-center gap-3">
-            {/* Spinning Disc / Cover Icon */}
-            <div
-              onClick={togglePlay}
-              className="relative w-11 h-11 rounded-xl bg-gradient-to-tr from-[#FF4FA3]/20 via-[#36B9E9]/20 to-white/10 border border-white/15 flex items-center justify-center shrink-0 cursor-pointer group"
-              title={isPlaying ? 'Pause' : 'Play'}
-            >
-              <Disc3 className={`w-6 h-6 text-slate-200 transition-transform ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : 'group-hover:scale-110'}`} />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
-                {isPlaying ? <Pause className="w-4 h-4 text-white fill-white" /> : <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />}
-              </div>
-            </div>
-
-            {/* Song Meta */}
-            <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-bold text-white tracking-wide truncate">
+            <div className="min-w-0">
+              <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hover:underline cursor-pointer">
                 {TRACK_TITLE}
               </h4>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+              <p className="text-[11px] text-slate-400 truncate mt-0.5 hover:underline cursor-pointer">
                 {TRACK_ARTIST}
               </p>
             </div>
+          </div>
 
-            {/* Play/Pause Button */}
+          {/* Center: Controls & Progress Bar */}
+          <div className="flex flex-col items-center max-w-xl w-full mx-auto px-2">
+            {/* Top Control Buttons */}
+            <div className="flex items-center gap-4 sm:gap-6 mb-2">
+              <button
+                onClick={() => setIsShuffleOn(!isShuffleOn)}
+                className={`transition-colors hidden sm:block ${isShuffleOn ? 'text-[#FF4FA3]' : 'text-slate-400 hover:text-white'}`}
+                title="Shuffle"
+                aria-label="Shuffle"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => {
+                  if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+                    playerRef.current.seekTo(0, true);
+                  }
+                }}
+                className="text-slate-400 hover:text-white transition-colors hidden sm:block"
+                title="Previous Track"
+                aria-label="Previous Track"
+              >
+                <SkipBack className="w-4 h-4 fill-current" />
+              </button>
+
+              <button
+                onClick={togglePlay}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 fill-black" />
+                ) : (
+                  <Play className="w-4 h-4 fill-black translate-x-0.5" />
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+                    playerRef.current.seekTo(0, true);
+                  }
+                }}
+                className="text-slate-400 hover:text-white transition-colors hidden sm:block"
+                title="Next Track"
+                aria-label="Next Track"
+              >
+                <SkipForward className="w-4 h-4 fill-current" />
+              </button>
+            </div>
+
+            {/* Progress Bar & Timestamps */}
+            <div className="w-full flex items-center gap-2">
+              <span className="text-[10px] font-mono text-slate-400 w-8 text-right">
+                {formatTime(currentTime)}
+              </span>
+
+              <div
+                ref={progressContainerRef}
+                onClick={handleSeek}
+                className="flex-1 h-1 bg-white/15 hover:h-1.5 rounded-full cursor-pointer relative overflow-hidden transition-all group"
+                title="Seek"
+              >
+                <div
+                  className="h-full bg-white group-hover:bg-[#FF4FA3] rounded-full transition-[width] duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
+              <span className="text-[10px] font-mono text-slate-400 w-8">
+                {formatTime(duration)}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Side: Volume & Close Button */}
+          <div className="flex items-center gap-3 sm:gap-4 min-w-[140px] sm:min-w-[180px] justify-end">
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                onClick={toggleMute}
+                className="text-slate-400 hover:text-white transition-colors"
+                title={isMuted ? 'Unmute' : 'Mute'}
+                aria-label={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="w-4 h-4 text-rose-400" />
+                ) : volume < 50 ? (
+                  <Volume1 className="w-4 h-4 text-slate-300" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-slate-300" />
+                )}
+              </button>
+
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-20 sm:w-24 h-1 bg-white/20 accent-[#FF4FA3] rounded-lg cursor-pointer appearance-none"
+                title={`Volume: ${isMuted ? 0 : volume}%`}
+                aria-label="Volume slider"
+              />
+            </div>
+
+            {/* Close Button (X) */}
             <button
-              onClick={togglePlay}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-              className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center hover:bg-slate-200 transition-transform active:scale-90 shrink-0 shadow-lg"
+              onClick={handleDismiss}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors"
+              title="Close Soundtrack Player"
+              aria-label="Close Soundtrack Player"
             >
-              {isPlaying ? (
-                <Pause className="w-4 h-4 fill-black" />
-              ) : (
-                <Play className="w-4 h-4 fill-black translate-x-0.5" />
-              )}
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Expandable Extended Controls: Progress bar & Volume slider */}
-          {isExpanded && (
-            <div className="mt-3 pt-2.5 border-t border-white/10 space-y-2.5">
-              {/* Progress Bar */}
-              <div>
-                <div
-                  ref={progressContainerRef}
-                  onClick={handleSeek}
-                  className="w-full h-1.5 bg-white/10 hover:h-2 rounded-full cursor-pointer relative overflow-hidden transition-all group"
-                  title="Click to seek"
-                >
-                  <div
-                    className="h-full bg-gradient-to-r from-[#FF4FA3] to-[#36B9E9] rounded-full transition-[width] duration-300"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-1">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-                </div>
-              </div>
-
-              {/* Volume Slider & Sound Wave */}
-              <div className="flex items-center justify-between gap-3 pt-0.5">
-                <div className="flex items-center gap-2 flex-1">
-                  <button
-                    onClick={toggleMute}
-                    className="text-slate-400 hover:text-white transition-colors"
-                    title={isMuted ? 'Unmute' : 'Mute'}
-                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted || volume === 0 ? (
-                      <VolumeX className="w-3.5 h-3.5 text-rose-400" />
-                    ) : volume < 50 ? (
-                      <Volume1 className="w-3.5 h-3.5 text-slate-300" />
-                    ) : (
-                      <Volume2 className="w-3.5 h-3.5 text-slate-300" />
-                    )}
-                  </button>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-24 h-1 bg-white/20 accent-[#FF4FA3] rounded-lg cursor-pointer appearance-none"
-                    title={`Volume: ${isMuted ? 0 : volume}%`}
-                    aria-label="Volume slider"
-                  />
-                  <span className="text-[10px] font-mono text-slate-400 w-7">
-                    {isMuted ? '0%' : `${volume}%`}
-                  </span>
-                </div>
-
-                {/* Animated Equalizer Visualizer */}
-                <div className="flex items-end gap-0.5 h-3 shrink-0" aria-hidden="true">
-                  <span className={`w-0.5 bg-[#FF4FA3] rounded-full transition-all duration-300 ${isPlaying ? 'h-3 animate-pulse' : 'h-1'}`} />
-                  <span className={`w-0.5 bg-[#36B9E9] rounded-full transition-all duration-200 ${isPlaying ? 'h-2 animate-bounce' : 'h-1'}`} />
-                  <span className={`w-0.5 bg-[#FF9B54] rounded-full transition-all duration-300 ${isPlaying ? 'h-3.5 animate-pulse' : 'h-1'}`} />
-                  <span className={`w-0.5 bg-white rounded-full transition-all duration-150 ${isPlaying ? 'h-1.5 animate-bounce' : 'h-1'}`} />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      </aside>
+      </footer>
     </>
   );
 };

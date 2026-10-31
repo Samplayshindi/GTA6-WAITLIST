@@ -57,7 +57,7 @@ export const ReleaseInformation: React.FC = () => {
             Official Production Information
           </span>
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
-            Game <span className="text-[#FF4FA3]">Specifications</span>
+            Additional <span className="text-[#FF4FA3]">Details</span>
           </h2>
           <p className="mt-2 text-sm text-slate-400">
             Authoritative production details authenticated through Rockstar Games announcements and Take-Two Interactive investor disclosures.

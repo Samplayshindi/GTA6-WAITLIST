@@ -84,7 +84,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative">
+    <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative pb-28">
       {/* Minimal Editorial Navigation Bar */}
       <Navbar activeSection={activeSection} onNavigate={handleNavigate} />
 

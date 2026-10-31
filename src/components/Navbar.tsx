@@ -26,7 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'countdown', label: 'COUNTDOWN' },
     { id: 'videos', label: 'VIDEOS' },
     { id: 'newswire', label: 'NEWSWIRE' },
-    { id: 'specifications', label: 'SPECIFICATIONS' },
+    { id: 'specifications', label: 'ADDITIONAL DETAILS' },
   ];
 
   const handleLinkClick = (id: string) => {
@@ -36,10 +36,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 py-4 ${
         isScrolled
-          ? 'bg-[#08090D]/95 backdrop-blur-md border-b border-white/10 py-4 shadow-2xl'
-          : 'bg-transparent py-6'
+          ? 'bg-[#08090D]/95 backdrop-blur-md border-b border-white/10 shadow-2xl'
+          : 'bg-[#08090D]/40 backdrop-blur-sm border-b border-white/5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-8">
