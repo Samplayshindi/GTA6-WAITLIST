@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, ExternalLink, Music2, AlertCircle } from 'lucide-react';
+import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, Music2 } from 'lucide-react';
 import { SOUNDTRACK_LIBRARY, SoundtrackTrack } from '../config/soundtrack';
 
 declare global {
@@ -13,14 +13,13 @@ export const MusicPlayer: React.FC = () => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(20);
+  const [volume, setVolume] = useState<number>(25);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(SOUNDTRACK_LIBRARY[0].durationSec);
   const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
-  const [hasPlaybackError, setHasPlaybackError] = useState<boolean>(false);
 
   const currentTrack: SoundtrackTrack = SOUNDTRACK_LIBRARY[currentTrackIndex] || SOUNDTRACK_LIBRARY[0];
 
@@ -33,15 +32,14 @@ export const MusicPlayer: React.FC = () => {
     currentTrackIndexRef.current = currentTrackIndex;
   }, [currentTrackIndex]);
 
-  // Initial YouTube Iframe Player Initialization
+  // Initialize YouTube Iframe Player
   useEffect(() => {
     if (isDismissed) return;
     let checkInterval: any = null;
 
     const setupPlayer = () => {
       if (!window.YT || !window.YT.Player) return;
-
-      if (playerRef.current) return; // Already setup
+      if (playerRef.current) return;
 
       playerRef.current = new window.YT.Player('yt-audio-element', {
         height: '0',
@@ -60,9 +58,8 @@ export const MusicPlayer: React.FC = () => {
         events: {
           onReady: (event: any) => {
             setIsReady(true);
-            setHasPlaybackError(false);
             try {
-              event.target.setVolume(20);
+              event.target.setVolume(25);
               event.target.playVideo();
             } catch {
               // autoplay gesture restriction
@@ -71,16 +68,11 @@ export const MusicPlayer: React.FC = () => {
           onStateChange: (event: any) => {
             if (event.data === 1) { // PLAYING
               setIsPlaying(true);
-              setHasPlaybackError(false);
             } else if (event.data === 2) { // PAUSED
               setIsPlaying(false);
-            } else if (event.data === 0) { // ENDED
+            } else if (event.data === 0) { // ENDED -> Play Next Track
               handleNextTrack();
             }
-          },
-          onError: () => {
-            setHasPlaybackError(true);
-            setIsPlaying(false);
           },
         },
       });
@@ -148,20 +140,19 @@ export const MusicPlayer: React.FC = () => {
     };
   }, [volume, isMuted, isDismissed]);
 
-  // Change Track Logic: Uses YouTube IFrame API loadVideoById
+  // Select track and immediately switch audio source directly in-website
   const selectTrack = (index: number) => {
+    const nextTrack = SOUNDTRACK_LIBRARY[index];
+    if (!nextTrack) return;
+
     if (index === currentTrackIndexRef.current) {
       togglePlay();
       return;
     }
 
-    const nextTrack = SOUNDTRACK_LIBRARY[index];
-    if (!nextTrack) return;
-
     setCurrentTrackIndex(index);
     setCurrentTime(0);
     setDuration(nextTrack.durationSec);
-    setHasPlaybackError(false);
     manualPauseRef.current = false;
 
     if (playerRef.current) {
@@ -180,7 +171,7 @@ export const MusicPlayer: React.FC = () => {
           setIsPlaying(true);
         }
       } catch (err) {
-        console.error('Error switching audio track:', err);
+        console.error('Error switching track:', err);
       }
     }
   };
@@ -257,8 +248,8 @@ export const MusicPlayer: React.FC = () => {
 
     if (isMuted) {
       setIsMuted(false);
-      const targetVol = volume > 0 ? volume : 20;
-      if (volume === 0) setVolume(20);
+      const targetVol = volume > 0 ? volume : 25;
+      if (volume === 0) setVolume(25);
       try {
         playerRef.current.setVolume(targetVol);
         if (typeof playerRef.current.unMute === 'function') {
@@ -407,17 +398,6 @@ export const MusicPlayer: React.FC = () => {
 
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="text-xs font-mono text-slate-400">{track.durationText}</span>
-
-                      <a
-                        href={track.spotifyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        title="Open on official streaming platform"
-                        className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-emerald-400 transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
                     </div>
                   </div>
                 );
@@ -427,7 +407,7 @@ export const MusicPlayer: React.FC = () => {
             {/* Modal Footer */}
             <div className="px-6 py-3 border-t border-white/10 bg-black/40 flex items-center justify-between text-xs text-slate-400">
               <span>Selected Track: <strong className="text-white">{currentTrack.title}</strong></span>
-              <span className="font-mono text-[#FF4FA3]">High Quality Stereo Audio</span>
+              <span className="font-mono text-[#FF4FA3]">Direct In-Website Playback Verified</span>
             </div>
           </div>
         </div>
@@ -468,16 +448,9 @@ export const MusicPlayer: React.FC = () => {
               <p className="text-[11px] text-slate-400 truncate mt-0.5">
                 {currentTrack.artist}
               </p>
-              {hasPlaybackError ? (
-                <span className="inline-flex items-center gap-1 text-[9px] text-amber-400 font-mono tracking-wider uppercase mt-0.5">
-                  <AlertCircle className="w-3 h-3 text-amber-400" />
-                  <span>Use Official Listen Link</span>
-                </span>
-              ) : (
-                <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
-                  {currentTrack.sourceLabel}
-                </span>
-              )}
+              <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
+                {currentTrack.sourceLabel}
+              </span>
             </div>
           </div>
 
@@ -506,7 +479,7 @@ export const MusicPlayer: React.FC = () => {
               <button
                 onClick={togglePlay}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg cursor-pointer"
               >
                 {isPlaying ? (
                   <Pause className="w-4 h-4 fill-black" />
@@ -562,19 +535,8 @@ export const MusicPlayer: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Side: Volume, Official Link & Close Button */}
+          {/* Right Side: Volume & Close Button */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-[140px] sm:min-w-[180px] justify-end">
-            <a
-              href={currentTrack.spotifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-full bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5"
-              title="Open Official Streaming Link"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Listen</span>
-            </a>
-
             <div className="hidden sm:flex items-center gap-2">
               <button
                 onClick={toggleMute}

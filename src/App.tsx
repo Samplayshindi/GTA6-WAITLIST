@@ -94,7 +94,7 @@ export default function App() {
           releaseRemaining={releaseRemaining}
           preloadRemaining={preloadRemaining}
           onNavigate={handleNavigate}
-          onOpenTrailerModal={() => setActiveTrailerModal('launch-trailer')}
+          onOpenTrailerModal={() => setActiveTrailerModal('trailer-1')}
         />
 
         <TrailerGallery

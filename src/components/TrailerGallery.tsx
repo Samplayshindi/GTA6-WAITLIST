@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, ExternalLink, X, Clock, Calendar } from 'lucide-react';
 import { OFFICIAL_VIDEOS, GtaVideo, RELEASE_SPECS } from '../config/countdown';
 
@@ -15,9 +15,24 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
 }) => {
   const [selectedVideo, setSelectedVideo] = useState<GtaVideo | null>(null);
 
+  useEffect(() => {
+    if (activeTrailerModal) {
+      const match = OFFICIAL_VIDEOS.find((v) => v.id === activeTrailerModal);
+      if (match && match.canEmbed) {
+        setSelectedVideo(match);
+      }
+    } else {
+      setSelectedVideo(null);
+    }
+  }, [activeTrailerModal]);
+
   const handlePlayVideo = (video: GtaVideo) => {
-    setSelectedVideo(video);
-    onOpenTrailer(video.id);
+    if (video.canEmbed) {
+      setSelectedVideo(video);
+      onOpenTrailer(video.id);
+    } else {
+      window.open(video.officialUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleClose = () => {
@@ -116,8 +131,8 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
 
                 <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
                   <span className="text-xs font-bold tracking-wider uppercase text-[#F15A24] group-hover:text-[#FF4FA3] transition-colors flex items-center gap-2">
-                    <span>PLAY VIDEO</span>
-                    <Play className="w-3 h-3 fill-current" />
+                    <span>{video.buttonText}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </span>
 
                   <span className="text-xs font-mono text-slate-500">Official Rockstar Video</span>
@@ -160,7 +175,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
                 </div>
 
                 <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/80 text-[#F4F1ED] text-xs font-mono backdrop-blur-md">
-                  <Clock className="w-3 h-3 text-[#F15A24]" />
+                  <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
                   <span>{video.runtime}</span>
                 </div>
               </div>
@@ -183,8 +198,8 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
 
                 <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
                   <span className="font-semibold text-[#F15A24] group-hover:text-[#FF4FA3] transition-colors flex items-center gap-1.5">
-                    <span>WATCH NOW</span>
-                    <Play className="w-3 h-3 fill-current" />
+                    <span>{video.buttonText}</span>
+                    {video.canEmbed ? <Play className="w-3 h-3 fill-current" /> : <ExternalLink className="w-3 h-3" />}
                   </span>
                   <span className="font-mono">{video.runtime}</span>
                 </div>
@@ -194,8 +209,8 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
         </div>
       </div>
 
-      {/* Video Modal Player */}
-      {selectedVideo && (
+      {/* Embedded Video Modal Player for Trailer 1 */}
+      {selectedVideo && selectedVideo.canEmbed && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-black/95 backdrop-blur-2xl animate-in fade-in duration-200">
           <div className="relative w-full max-w-6xl aspect-[16/9] bg-[#08090D] rounded-2xl overflow-hidden shadow-2xl border border-white/15">
             <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
@@ -223,51 +238,13 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
               </span>
             </div>
 
-            {selectedVideo.canEmbed ? (
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-                title={selectedVideo.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <div className="relative w-full h-full flex flex-col justify-end p-8 sm:p-12 overflow-hidden bg-black">
-                <img
-                  src={selectedVideo.thumbnailUrl}
-                  alt={selectedVideo.title}
-                  className="absolute inset-0 w-full h-full object-cover opacity-50 scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/70 to-transparent" />
-
-                <div className="relative z-10 max-w-3xl space-y-4">
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#F15A24] text-white">
-                    {selectedVideo.badge}
-                  </span>
-
-                  <h3 className="text-2xl sm:text-4xl font-black text-[#F4F1ED] uppercase tracking-tight leading-tight">
-                    {selectedVideo.title}
-                  </h3>
-
-                  <p className="text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
-                    {selectedVideo.description}
-                  </p>
-
-                  <div className="pt-4 flex items-center gap-4">
-                    <a
-                      href={selectedVideo.officialUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase text-white bg-[#F15A24] hover:bg-[#FF4FA3] transition-all shadow-2xl cursor-pointer"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      <span>WATCH ON YOUTUBE</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            )}
+            <iframe
+              className="w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+              title={selectedVideo.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
       )}
