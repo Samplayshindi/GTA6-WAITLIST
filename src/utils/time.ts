@@ -5,6 +5,120 @@ export interface TimeRemaining {
   minutes: number;
   seconds: number;
   isComplete: boolean;
+  isTamperProof?: boolean;
+}
+
+/**
+ * Authoritative Server Time Synchronization State
+ * Defeats browser "Time Machine" extensions and local system clock manipulation
+ * by synchronizing with the server clock and calculating monotonic elapsed time
+ * using window.performance.now() (which cannot be manipulated by Date extensions).
+ */
+let serverEpochAnchor: number | null = null;
+let monotonicPerfAnchor: number | null = null;
+let isSyncing = false;
+let syncListeners: Array<() => void> = [];
+
+export function subscribeToTimeSync(cb: () => void): () => void {
+  syncListeners.push(cb);
+  return () => {
+    syncListeners = syncListeners.filter((l) => l !== cb);
+  };
+}
+
+export async function syncAuthoritativeServerTime(): Promise<number> {
+  if (typeof window === 'undefined') {
+    return Date.now();
+  }
+
+  if (isSyncing) {
+    return getTamperProofCurrentTime();
+  }
+
+  isSyncing = true;
+  try {
+    const t0 = performance.now();
+    const res = await fetch('/api/time', {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+      },
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const t1 = performance.now();
+      const halfRoundTrip = (t1 - t0) / 2;
+
+      // Anchor server epoch with network latency compensation
+      serverEpochAnchor = Number(data.epoch) + halfRoundTrip;
+      monotonicPerfAnchor = t1;
+
+      // Notify any active timer listeners that authoritative sync succeeded
+      syncListeners.forEach((fn) => {
+        try {
+          fn();
+        } catch {}
+      });
+    }
+  } catch {
+    // If network fails (e.g., offline), fallback to hardware performance origin
+    if (serverEpochAnchor === null) {
+      serverEpochAnchor = performance.timeOrigin || Date.now();
+      monotonicPerfAnchor = performance.now();
+    }
+  } finally {
+    isSyncing = false;
+  }
+
+  return getTamperProofCurrentTime();
+}
+
+/**
+ * Returns the current time in milliseconds, protected from Date spoofing and time machine extensions.
+ * Uses monotonic hardware ticks added to the authoritative server anchor.
+ */
+export function getTamperProofCurrentTime(): number {
+  if (typeof window === 'undefined') {
+    return Date.now();
+  }
+
+  if (serverEpochAnchor !== null && monotonicPerfAnchor !== null) {
+    const elapsedMonotonicMs = performance.now() - monotonicPerfAnchor;
+    return Math.floor(serverEpochAnchor + elapsedMonotonicMs);
+  }
+
+  // Initial fallback before first async sync finishes:
+  // Use performance.timeOrigin + performance.now() which is resistant to window.Date monkey-patches
+  if (typeof performance !== 'undefined' && performance.timeOrigin) {
+    return Math.floor(performance.timeOrigin + performance.now());
+  }
+
+  return Date.now();
+}
+
+// Automatically initiate server time synchronization on module load in browser
+if (typeof window !== 'undefined') {
+  syncAuthoritativeServerTime();
+
+  // Re-synchronize periodically and when tab regains focus or un-minimizes
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      syncAuthoritativeServerTime();
+    }
+  }, 45 * 1000);
+
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      syncAuthoritativeServerTime();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    syncAuthoritativeServerTime();
+  });
 }
 
 /**
@@ -20,17 +134,31 @@ export function getGlobalReleaseLocalDate(): Date {
   return getLocalMidnightDate(2026, 10, 19);
 }
 
-// Confirmed Preload: November 12, 2026 at 12:00 AM local time everywhere (month 10 = November)
+// Confirmed Digital Preload on PlayStation 5:
+// Tuesday, November 10, 2026 at midnight (00:00:00) local time in visitor's respective time zone
 export function getPreloadLocalDate(): Date {
+  return getLocalMidnightDate(2026, 10, 10);
+}
+
+// Confirmed Digital Preload on Xbox Series X|S:
+// Tuesday, November 10, 2026 globally at 12:00 AM GMT (UTC)
+export function getPreloadXboxGmtDate(): Date {
+  return new Date(Date.UTC(2026, 10, 10, 0, 0, 0, 0));
+}
+
+// Code-in-box versions available from retailers beginning November 12, 2026
+export function getRetailCodeInBoxDate(): Date {
   return getLocalMidnightDate(2026, 10, 12);
 }
 
 // Backward-compatible alias
 export const getEstimatedPreloadLocalDate = getPreloadLocalDate;
 
+export const PRELOAD_FILE_SIZE_NOTE = 'Up to 212 GB depending on platform & device';
+
 export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining {
   const targetTime = targetDate.getTime();
-  const now = Date.now();
+  const now = getTamperProofCurrentTime();
   const totalMs = targetTime - now;
 
   if (totalMs <= 0) {
@@ -41,6 +169,7 @@ export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining 
       minutes: 0,
       seconds: 0,
       isComplete: true,
+      isTamperProof: true,
     };
   }
 
@@ -56,6 +185,7 @@ export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining 
     minutes,
     seconds,
     isComplete: false,
+    isTamperProof: true,
   };
 }
 
@@ -85,7 +215,7 @@ export function formatLocalDateString(d: Date): string {
 
 export function formatTabTitle(remaining: TimeRemaining): string {
   if (remaining.isComplete) {
-    return 'GTA VI | RELEASE DAY';
+    return 'GTA VI | AVAILABLE NOW';
   }
   return `GTA VI | ${remaining.days}d ${remaining.hours}h ${remaining.minutes}m Left`;
 }

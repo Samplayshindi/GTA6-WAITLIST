@@ -413,10 +413,10 @@ export const MusicPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Spotify Desktop Bottom Playback Bar */}
+      {/* Spotify Desktop Bottom Playback Bar (Hidden on Mobile screens as requested) */}
       <footer
         aria-label="GTA VI Soundtrack Player"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
+        className="hidden md:block fixed bottom-0 left-0 right-0 z-40 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           

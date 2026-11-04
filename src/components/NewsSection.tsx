@@ -73,7 +73,7 @@ export const NewsSection: React.FC = () => {
   const gridArticles = articles.slice(1);
 
   return (
-    <section id="newswire" className="relative py-28 bg-gradient-to-b from-[#08090D] via-[#0B2425]/40 to-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
+    <section id="newswire" className="relative py-16 sm:py-20 md:py-28 bg-gradient-to-b from-[#08090D] via-[#0B2425]/40 to-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
       {/* Background Subtle Geometric Diagonal Glow */}
       <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#102D2A] via-[#08090D] to-transparent" />
       <div className="absolute top-1/4 -right-40 w-96 h-96 bg-[#F15A24]/5 rounded-full blur-3xl pointer-events-none" />
@@ -81,30 +81,30 @@ export const NewsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Hero Header */}
-        <div className="max-w-3xl mb-16">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="max-w-3xl mb-10 sm:mb-14">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
             <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
               OFFICIAL DISPATCHES
             </span>
           </div>
 
-          <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-[#F4F1ED]">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#F4F1ED]">
             GTA VI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] via-[#F15A24] to-[#F4F1ED]">NEWSWIRE</span>
           </h2>
 
-          <p className="mt-3 text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+          <p className="mt-2 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-300 font-normal leading-relaxed">
             The latest developments, announcements and coverage surrounding Grand Theft Auto VI.
           </p>
         </div>
 
         {/* Initial Loading Skeleton */}
         {loading && articles.length === 0 && (
-          <div className="space-y-8 animate-pulse">
-            <div className="h-96 rounded-2xl bg-white/5" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-6 sm:space-y-8 animate-pulse">
+            <div className="h-72 sm:h-96 rounded-2xl bg-white/5" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="h-72 rounded-xl bg-white/5" />
+                <div key={n} className="h-64 sm:h-72 rounded-xl bg-white/5" />
               ))}
             </div>
           </div>
@@ -112,13 +112,13 @@ export const NewsSection: React.FC = () => {
 
         {/* Content Area */}
         {!loading && articles.length > 0 && (
-          <div className="space-y-16">
+          <div className="space-y-10 sm:space-y-16">
             
             {/* 1. Large Featured Lead Story */}
             {featuredArticle && (
               <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-[#F15A24]/40 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
                 {/* Image Side */}
-                <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[320px]">
+                <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
                   <img
                     src={featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
                     alt={featuredArticle.title}
@@ -129,8 +129,8 @@ export const NewsSection: React.FC = () => {
                 </div>
 
                 {/* Content Side */}
-                <div className="lg:col-span-5 p-8 sm:p-12 flex flex-col justify-between">
-                  <div className="space-y-4">
+                <div className="lg:col-span-5 p-5 sm:p-8 md:p-10 flex flex-col justify-between">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
                       <span className="font-bold uppercase tracking-wider text-[#F15A24]">
                         {featuredArticle.source}

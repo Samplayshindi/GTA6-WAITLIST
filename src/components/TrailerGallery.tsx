@@ -44,11 +44,11 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
   const standardVideos = OFFICIAL_VIDEOS.filter((v) => !v.isFeatured);
 
   return (
-    <section id="videos" className="relative py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20">
+    <section id="videos" className="relative py-16 sm:py-20 md:py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
@@ -56,10 +56,10 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
                 Rockstar Games Video Gallery
               </span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
               Official <span className="text-[#FF4FA3]">Videos</span>
             </h2>
-            <p className="mt-2 text-sm text-slate-300 max-w-xl">
+            <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-xl">
               Authentic broadcast media and gameplay presentations captured in-engine on PlayStation 5 and Xbox Series X|S.
             </p>
           </div>
@@ -68,7 +68,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
             href={RELEASE_SPECS.videoGalleryUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-[#F4F1ED] bg-[#0B2425]/80 border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors self-start md:self-auto"
+            className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-[#F4F1ED] bg-[#0B2425]/80 border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors self-start md:self-auto"
           >
             <span>Rockstar Video Portal</span>
             <ExternalLink className="w-3.5 h-3.5 text-[#F15A24]" />
@@ -76,7 +76,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = ({
         </div>
 
         {/* Featured Video Tier: Launch Trailer & Extended Look */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {featuredVideos.map((video) => (
             <div
               key={video.id}

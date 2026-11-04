@@ -58,6 +58,19 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Authoritative server time endpoint to defeat time machine extensions
+app.get('/api/time', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  const now = new Date();
+  res.json({
+    now: now.toISOString(),
+    epoch: now.getTime(),
+    source: 'authoritative-server-time',
+  });
+});
+
 // Setup Vite middleware in dev or static serving in production
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
