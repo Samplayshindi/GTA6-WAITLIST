@@ -60,33 +60,34 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
             >
               {/* Thumbnail Container */}
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
+                {/* 16:9 Landscape Artwork with zero artificial cropping or blur layers */}
                 <img
                   src={video.thumbnailUrl}
                   srcSet={`${video.thumbnailUrl} 3840w`}
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   alt={video.title}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
+                  className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-transparent to-black/30" />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
 
                 {/* Badge */}
-                <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30">
                   <span className="px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
                     {video.badge}
                   </span>
                 </div>
 
                 {/* Large Center Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 z-30 flex items-center justify-center">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#F4F1ED] text-black flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-[#F15A24] group-hover:text-white transition-all duration-300">
                     <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current translate-x-0.5" />
                   </div>
                 </div>
 
                 {/* Runtime Pill */}
-                <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] sm:text-xs font-mono backdrop-blur-md border border-white/10">
+                <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-30 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] sm:text-xs font-mono backdrop-blur-md border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
                   <span>{video.runtime}</span>
                 </div>
@@ -135,33 +136,34 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
             >
               {/* Thumbnail Container */}
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
+                {/* 16:9 Landscape Artwork with zero artificial cropping or blur layers */}
                 <img
                   src={video.thumbnailUrl}
                   srcSet={`${video.thumbnailUrl} 3840w`}
                   sizes="(min-width: 768px) 50vw, 100vw"
                   alt={video.title}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
+                  className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-transparent to-black/30" />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
 
                 {/* Badge */}
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 z-30">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
                     {video.badge}
                   </span>
                 </div>
 
                 {/* Center Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 z-30 flex items-center justify-center">
                   <div className="w-12 h-12 rounded-full bg-[#F4F1ED] text-black flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:bg-[#F15A24] group-hover:text-white transition-all duration-300">
                     <Play className="w-5 h-5 fill-current translate-x-0.5" />
                   </div>
                 </div>
 
                 {/* Runtime Pill */}
-                <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] font-mono backdrop-blur-md border border-white/10">
+                <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] font-mono backdrop-blur-md border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
                   <span>{video.runtime}</span>
                 </div>

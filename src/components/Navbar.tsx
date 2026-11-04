@@ -3,12 +3,14 @@ import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock } from 'luc
 
 interface NavbarProps {
   activeSection: string;
+  currentPath?: string;
   onNavigate: (sectionId: string) => void;
   onOpenSearch?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
+  currentPath,
   onNavigate,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,13 +31,24 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'overview', label: 'Overview', icon: Clock },
-    { id: 'countdown', label: 'Countdowns', icon: Clock },
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'newswire', label: 'Newswire', icon: Newspaper },
     { id: 'timeline', label: 'Timeline', icon: Calendar },
     { id: 'faq', label: 'FAQ', icon: HelpCircle },
     { id: 'specifications', label: 'Specs', icon: Cpu },
   ];
+
+  const isLinkActive = (id: string) => {
+    if (currentPath !== undefined) {
+      if (id === 'overview') return currentPath === '/';
+      if (id === 'videos') return currentPath === '/videos';
+      if (id === 'newswire') return currentPath === '/newswire';
+      if (id === 'timeline') return currentPath === '/timeline';
+      if (id === 'faq') return currentPath === '/faq';
+      if (id === 'specifications') return currentPath === '/specs' || currentPath === '/specifications';
+    }
+    return activeSection === id;
+  };
 
   return (
     <>
@@ -62,13 +75,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Desktop Editorial Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-bold tracking-[0.18em] uppercase">
+          <nav className="hidden lg:flex items-center gap-7 xl:gap-9 text-xs font-bold tracking-[0.18em] uppercase">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
                 className={`py-1.5 transition-colors cursor-pointer min-h-[36px] ${
-                  activeSection === link.id
+                  isLinkActive(link.id)
                     ? 'text-[#F5F5F5] border-b-2 border-[#F15A24]'
                     : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
                 }`}

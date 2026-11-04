@@ -200,6 +200,26 @@ export const MusicPlayer: React.FC = () => {
     };
   }, [volume, isMuted, isDismissed]);
 
+  // Support external triggers (e.g. from Compact Soundtrack Preview on Desktop Homepage)
+  useEffect(() => {
+    const handleExternalPlay = (e: any) => {
+      if (typeof e.detail?.index === 'number') {
+        selectTrack(e.detail.index);
+      }
+    };
+    const handleExternalQueue = () => {
+      setIsQueueOpen(true);
+    };
+
+    window.addEventListener('gta-play-track', handleExternalPlay as EventListener);
+    window.addEventListener('gta-open-queue', handleExternalQueue as EventListener);
+
+    return () => {
+      window.removeEventListener('gta-play-track', handleExternalPlay as EventListener);
+      window.removeEventListener('gta-open-queue', handleExternalQueue as EventListener);
+    };
+  }, []);
+
   const selectTrack = (index: number) => {
     const nextTrack = SOUNDTRACK_LIBRARY[index];
     if (!nextTrack) return;
