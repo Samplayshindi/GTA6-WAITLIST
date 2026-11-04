@@ -12,11 +12,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="relative bg-[#050608] border-t border-white/10 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="relative bg-[#050608] border-t border-white/10 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-12 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 pb-12 sm:pb-16 border-b border-white/10">
           
-          {/* Official Brand & Description */}
+          {/* Brand & Narrative */}
           <div className="space-y-4">
             <img
               src="/gta-vi-logo.svg"
@@ -28,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          {/* Media & Coverage Navigation */}
+          {/* Media & Intel Navigation */}
           <div className="space-y-3">
             <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] block">
               Media &amp; Intel
@@ -37,43 +37,43 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('overview')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
+                  <Clock className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
                   <span>Overview &amp; Launch Timers</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => onNavigate('countdown')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
+                  <Clock className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
                   <span>Pre-load &amp; Release Countdowns</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => onNavigate('videos')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Video className="w-3.5 h-3.5 text-[#FF4FA3]" />
+                  <Video className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
                   <span>Official Videos Hub</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => onNavigate('newswire')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Newspaper className="w-3.5 h-3.5 text-[#00F5D4]" />
+                  <Newspaper className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
                   <span>Live Newswire Feed</span>
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Archive & Information Navigation */}
+          {/* Archive & Specs Navigation */}
           <div className="space-y-3">
             <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#FF4FA3] block">
               Archive &amp; Specs
@@ -82,34 +82,34 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('timeline')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-[#00F5D4]" />
+                  <Calendar className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
                   <span>Development Timeline</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => onNavigate('faq')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <HelpCircle className="w-3.5 h-3.5 text-[#FF4FA3]" />
+                  <HelpCircle className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
                   <span>FAQ &amp; Knowledgebase</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => onNavigate('specifications')}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Cpu className="w-3.5 h-3.5 text-[#F15A24]" />
+                  <Cpu className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
                   <span>Production Details &amp; Storage</span>
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Official Channels & Scroll To Top */}
+          {/* Official Portals & Back to Top */}
           <div className="space-y-4 flex flex-col justify-between">
             <div>
               <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#00F5D4] block mb-2.5">
@@ -121,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     href={RELEASE_SPECS.officialWebsite}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors py-1"
                   >
                     <span>Rockstar Games VI</span>
                     <ExternalLink className="w-3 h-3 text-slate-500" />
@@ -132,7 +132,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     href={RELEASE_SPECS.videoGalleryUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors py-1"
                   >
                     <span>Rockstar Video Portal</span>
                     <ExternalLink className="w-3 h-3 text-slate-500" />
@@ -143,7 +143,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     href={RELEASE_SPECS.newswireUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 hover:text-white transition-colors py-1"
                   >
                     <span>Rockstar Newswire</span>
                     <ExternalLink className="w-3 h-3 text-slate-500" />
@@ -154,7 +154,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#F4F1ED] bg-[#0B2425] border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors cursor-pointer w-full sm:w-auto"
+              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#F4F1ED] bg-[#0B2425] border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors cursor-pointer w-full sm:w-auto min-h-[44px]"
             >
               <span>Back to Top</span>
               <ArrowUp className="w-3.5 h-3.5 text-[#F15A24]" />
@@ -162,7 +162,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Samar Creator Credits Section */}
+        {/* Creator Attribution Section (Mandatory SAMAR attribution) */}
         <div className="py-8 sm:py-12 text-center space-y-1.5 border-b border-white/10">
           <span className="text-[10px] sm:text-[11px] font-mono tracking-[0.3em] uppercase text-slate-400 block">
             Designed &amp; Developed By

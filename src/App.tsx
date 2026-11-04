@@ -13,7 +13,6 @@ import { FaqSection } from './components/FaqSection';
 import { ReleaseInformation } from './components/ReleaseInformation';
 import { Footer } from './components/Footer';
 import { MusicPlayer } from './components/MusicPlayer';
-import { GlobalSearchModal } from './components/GlobalSearchModal';
 import {
   calculateTimeRemainingFromDate,
   getGlobalReleaseLocalDate,
@@ -35,10 +34,8 @@ export default function App() {
     calculateTimeRemainingFromDate(preloadDate)
   );
 
-  // Active Navigation, Video Modal & Search Modal states
+  // Active Navigation state
   const [activeSection, setActiveSection] = useState<string>('overview');
-  const [activeTrailerModal, setActiveTrailerModal] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   // Update countdown every second & sync browser tab title
   useEffect(() => {
@@ -97,19 +94,6 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Keyboard shortcut listener for Global Search (Cmd+K / Ctrl+K)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((prev) => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId);
     const el = document.getElementById(sectionId);
@@ -119,31 +103,25 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative pb-6 md:pb-28">
+    <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative pb-20 sm:pb-24 md:pb-28 w-full max-w-full overflow-x-hidden">
       {/* Editorial Navigation Bar */}
       <Navbar
         activeSection={activeSection}
         onNavigate={handleNavigate}
-        onOpenSearch={() => setIsSearchOpen(true)}
       />
 
       {/* Main Content Flow */}
-      <main className="relative z-10">
+      <main className="relative z-10 w-full max-w-full overflow-x-hidden">
         
         {/* 1. Hero & Countdowns */}
         <HeroSection
           releaseRemaining={releaseRemaining}
           preloadRemaining={preloadRemaining}
           onNavigate={handleNavigate}
-          onOpenTrailerModal={() => setActiveTrailerModal('trailer-1')}
         />
 
         {/* 2. Official Videos & Broadcasts */}
-        <TrailerGallery
-          activeTrailerModal={activeTrailerModal}
-          onOpenTrailer={(id) => setActiveTrailerModal(id)}
-          onCloseTrailer={() => setActiveTrailerModal(null)}
-        />
+        <TrailerGallery />
 
         {/* 3. Live GTA VI Newswire Intelligence */}
         <NewsSection />
@@ -162,15 +140,8 @@ export default function App() {
       {/* Editorial Footer */}
       <Footer onNavigate={handleNavigate} />
 
-      {/* Fixed Spotify-Style GTA VI Soundtrack Bottom Player (Hidden on mobile) */}
+      {/* Fixed Spotify-Style GTA VI Soundtrack Bottom Player (Fluid Mobile & Desktop) */}
       <MusicPlayer />
-
-      {/* Omnipresent Global Content Search Modal */}
-      <GlobalSearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onNavigateToSection={handleNavigate}
-      />
     </div>
   );
 }

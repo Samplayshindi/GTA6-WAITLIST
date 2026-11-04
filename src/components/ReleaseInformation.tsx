@@ -61,27 +61,27 @@ export const ReleaseInformation: React.FC = () => {
   ];
 
   return (
-    <section id="specifications" className="relative py-16 sm:py-20 md:py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="specifications" className="relative py-16 sm:py-20 md:py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
         <div className="max-w-3xl mb-10 sm:mb-14">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
-            <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
+            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
               Official Production Information
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            Production <span className="text-[#FF4FA3]">Specifications</span>
+            Production <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] to-[#F15A24]">Specifications</span>
           </h2>
-          <p className="mt-2 text-xs sm:text-sm text-slate-300">
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
             Authoritative release milestones, digital pre-loading schedules, storage footprints, and technology specifications authenticated through official studio announcements.
           </p>
         </div>
 
         {/* Specifications Editorial Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
           {specs.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -91,7 +91,7 @@ export const ReleaseInformation: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#F15A24]" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#F15A24] shrink-0" />
                     <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-slate-400">
                       {item.label}
                     </span>
@@ -111,22 +111,22 @@ export const ReleaseInformation: React.FC = () => {
         </div>
 
         {/* Official Rockstar Verification Links */}
-        <div className="mt-8 sm:mt-12 p-6 sm:p-8 rounded-2xl bg-[#0B2425]/60 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
+        <div className="mt-8 sm:mt-12 p-6 sm:p-8 rounded-2xl bg-[#0B2425]/60 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl w-full">
           <div>
             <h4 className="text-base sm:text-lg font-bold uppercase text-[#F4F1ED] tracking-tight">
               Direct Rockstar Games Verification Links
             </h4>
-            <p className="text-xs text-slate-300 mt-1">
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
               Verify all release updates, trailers, and news intelligence directly on official studio channels.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
             <a
               href={RELEASE_SPECS.officialWebsite}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-black bg-[#F4F1ED] hover:bg-white transition-colors w-full sm:w-auto text-center"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-black bg-[#F4F1ED] hover:bg-white transition-colors w-full sm:w-auto text-center min-h-[44px]"
             >
               <span>Rockstar VI</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ export const ReleaseInformation: React.FC = () => {
               href={RELEASE_SPECS.newswireUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#F4F1ED] bg-white/10 hover:bg-white/20 transition-colors w-full sm:w-auto text-center"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-[#F4F1ED] bg-white/10 hover:bg-white/20 transition-colors w-full sm:w-auto text-center min-h-[44px]"
             >
               <span>Newswire</span>
               <ExternalLink className="w-3.5 h-3.5" />

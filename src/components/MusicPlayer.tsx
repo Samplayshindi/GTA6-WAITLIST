@@ -1,5 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Volume1, VolumeX, Shuffle, SkipBack, SkipForward, X, ListMusic, Music2 } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  Volume2,
+  Volume1,
+  VolumeX,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Repeat,
+  Repeat1,
+  X,
+  ListMusic,
+  Heart,
+  Music2,
+} from 'lucide-react';
 import { SOUNDTRACK_LIBRARY, SoundtrackTrack } from '../config/soundtrack';
 
 declare global {
@@ -13,13 +28,15 @@ export const MusicPlayer: React.FC = () => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(25);
+  const [volume, setVolume] = useState<number>(30);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(SOUNDTRACK_LIBRARY[0].durationSec);
   const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
+  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('all');
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
-  const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
+  const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
+  const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(() => new Set(['flower-in-a-hurricane']));
 
   const currentTrack: SoundtrackTrack = SOUNDTRACK_LIBRARY[currentTrackIndex] || SOUNDTRACK_LIBRARY[0];
 
@@ -27,10 +44,53 @@ export const MusicPlayer: React.FC = () => {
   const manualPauseRef = useRef<boolean>(false);
   const progressContainerRef = useRef<HTMLDivElement>(null);
   const currentTrackIndexRef = useRef<number>(currentTrackIndex);
+  const repeatModeRef = useRef<'off' | 'all' | 'one'>(repeatMode);
+  const isShuffleOnRef = useRef<boolean>(isShuffleOn);
 
   useEffect(() => {
     currentTrackIndexRef.current = currentTrackIndex;
   }, [currentTrackIndex]);
+
+  useEffect(() => {
+    repeatModeRef.current = repeatMode;
+  }, [repeatMode]);
+
+  useEffect(() => {
+    isShuffleOnRef.current = isShuffleOn;
+  }, [isShuffleOn]);
+
+  // Handle Track Completion based on Repeat and Shuffle rules
+  const handleTrackEnded = () => {
+    const curIdx = currentTrackIndexRef.current;
+    const mode = repeatModeRef.current;
+    const shuffle = isShuffleOnRef.current;
+
+    if (mode === 'one') {
+      if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+        playerRef.current.seekTo(0, true);
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+      }
+      return;
+    }
+
+    if (shuffle) {
+      let nextIdx = Math.floor(Math.random() * SOUNDTRACK_LIBRARY.length);
+      if (nextIdx === curIdx && SOUNDTRACK_LIBRARY.length > 1) {
+        nextIdx = (curIdx + 1) % SOUNDTRACK_LIBRARY.length;
+      }
+      selectTrack(nextIdx);
+      return;
+    }
+
+    if (curIdx < SOUNDTRACK_LIBRARY.length - 1) {
+      selectTrack(curIdx + 1);
+    } else if (mode === 'all') {
+      selectTrack(0);
+    } else {
+      setIsPlaying(false);
+    }
+  };
 
   // Initialize YouTube Iframe Player
   useEffect(() => {
@@ -59,10 +119,10 @@ export const MusicPlayer: React.FC = () => {
           onReady: (event: any) => {
             setIsReady(true);
             try {
-              event.target.setVolume(25);
+              event.target.setVolume(30);
               event.target.playVideo();
             } catch {
-              // autoplay gesture restriction
+              // autoplay gesture restriction handled below
             }
           },
           onStateChange: (event: any) => {
@@ -70,8 +130,8 @@ export const MusicPlayer: React.FC = () => {
               setIsPlaying(true);
             } else if (event.data === 2) { // PAUSED
               setIsPlaying(false);
-            } else if (event.data === 0) { // ENDED -> Play Next Track
-              handleNextTrack();
+            } else if (event.data === 0) { // ENDED
+              handleTrackEnded();
             }
           },
         },
@@ -109,7 +169,7 @@ export const MusicPlayer: React.FC = () => {
           // ignore
         }
       }
-    }, 500);
+    }, 400);
 
     return () => {
       if (checkInterval) clearInterval(checkInterval);
@@ -140,7 +200,6 @@ export const MusicPlayer: React.FC = () => {
     };
   }, [volume, isMuted, isDismissed]);
 
-  // Select track and immediately switch audio source directly in-website
   const selectTrack = (index: number) => {
     const nextTrack = SOUNDTRACK_LIBRARY[index];
     if (!nextTrack) return;
@@ -248,8 +307,8 @@ export const MusicPlayer: React.FC = () => {
 
     if (isMuted) {
       setIsMuted(false);
-      const targetVol = volume > 0 ? volume : 25;
-      if (volume === 0) setVolume(25);
+      const targetVol = volume > 0 ? volume : 30;
+      if (volume === 0) setVolume(30);
       try {
         playerRef.current.setVolume(targetVol);
         if (typeof playerRef.current.unMute === 'function') {
@@ -284,6 +343,25 @@ export const MusicPlayer: React.FC = () => {
     }
   };
 
+  const cycleRepeatMode = () => {
+    if (repeatMode === 'off') setRepeatMode('all');
+    else if (repeatMode === 'all') setRepeatMode('one');
+    else setRepeatMode('off');
+  };
+
+  const toggleLike = (trackId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLikedTrackIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(trackId)) {
+        next.delete(trackId);
+      } else {
+        next.add(trackId);
+      }
+      return next;
+    });
+  };
+
   const formatTime = (secs: number) => {
     if (isNaN(secs) || secs < 0) return '0:00';
     const m = Math.floor(secs / 60);
@@ -312,6 +390,7 @@ export const MusicPlayer: React.FC = () => {
   }
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const isCurrentTrackLiked = likedTrackIds.has(currentTrack.id);
 
   return (
     <>
@@ -320,84 +399,124 @@ export const MusicPlayer: React.FC = () => {
         <div id="yt-audio-element" />
       </div>
 
-      {/* Track Selection Library Modal / Drawer */}
-      {isLibraryOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-[#0B0D14] border border-white/10 w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[85vh] sm:max-h-[75vh] flex flex-col shadow-2xl overflow-hidden">
+      {/* Spotify-Inspired Queue / Tracklist Drawer Modal */}
+      {isQueueOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Soundtrack Queue"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setIsQueueOpen(false)}
+        >
+          <div
+            className="bg-[#08090C] border border-[#24262B] w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[82vh] sm:max-h-[74vh] flex flex-col shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#FF4FA3]/20 flex items-center justify-center text-[#FF4FA3]">
+            <div className="px-5 sm:px-6 py-4 border-b border-[#24262B] flex items-center justify-between bg-[#08090C]">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF4FA3] shrink-0 border border-white/10">
                   <Music2 className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-white tracking-wide">GTA VI Soundtrack Collection</h3>
-                  <p className="text-xs text-slate-400">Official Rockstar Games &amp; Atlantic Records Catalogue ({SOUNDTRACK_LIBRARY.length} Tracks)</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-[#F5F5F5] tracking-tight truncate">
+                    Play Queue &middot; Grand Theft Auto VI
+                  </h3>
+                  <p className="text-xs text-[#A1A1AA] truncate">
+                    Rockstar Games Official Soundtrack &middot; {SOUNDTRACK_LIBRARY.length} Tracks
+                  </p>
                 </div>
               </div>
 
               <button
-                onClick={() => setIsLibraryOpen(false)}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                onClick={() => setIsQueueOpen(false)}
+                className="p-2 rounded-full text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-white/5 transition-colors cursor-pointer shrink-0"
                 aria-label="Close track list"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Track List */}
-            <div className="p-4 overflow-y-auto space-y-2 divide-y divide-white/5">
+            {/* Track Rows */}
+            <div className="p-2 sm:p-3 overflow-y-auto space-y-1">
               {SOUNDTRACK_LIBRARY.map((track, idx) => {
                 const isSelected = idx === currentTrackIndex;
+                const isLiked = likedTrackIds.has(track.id);
+
                 return (
                   <div
                     key={track.id}
                     onClick={() => selectTrack(idx)}
-                    className={`pt-2 first:pt-0 p-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all ${
+                    className={`group px-3 py-2.5 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-gradient-to-r from-[#FF4FA3]/15 to-transparent border border-[#FF4FA3]/30'
-                        : 'hover:bg-white/5 border border-transparent'
+                        ? 'bg-[#18191E] border border-[#FF4FA3]/30'
+                        : 'hover:bg-[#121318] border border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="text-xs font-mono text-slate-500 w-4 text-center shrink-0">
+                      {/* Track Number / Equalizer Animation */}
+                      <span className="text-xs font-mono text-[#A1A1AA] w-5 text-center shrink-0">
                         {isSelected && isPlaying ? (
-                          <span className="inline-flex items-center gap-0.5 text-[#FF4FA3] font-bold">
-                            <span className="w-1 h-3 bg-[#FF4FA3] animate-pulse" />
-                            <span className="w-1 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
-                            <span className="w-1 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
+                          <span className="inline-flex items-end justify-center gap-0.5 h-3.5">
+                            <span className="w-0.5 h-3 bg-[#FF4FA3] animate-pulse" />
+                            <span className="w-0.5 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
+                            <span className="w-0.5 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
                           </span>
                         ) : (
                           idx + 1
                         )}
                       </span>
 
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-black shrink-0 border border-white/10 relative group">
+                      {/* Square Sharp Album Art */}
+                      <div className="w-10 h-10 rounded-sm overflow-hidden bg-black shrink-0 border border-[#24262B] relative">
                         <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
-                        <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div
+                          className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${
+                            isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
                           {isSelected && isPlaying ? (
-                            <Pause className="w-4 h-4 fill-white text-white" />
+                            <Pause className="w-3.5 h-3.5 fill-white text-white" />
                           ) : (
-                            <Play className="w-4 h-4 fill-white text-white translate-x-0.5" />
+                            <Play className="w-3.5 h-3.5 fill-white text-white translate-x-0.5" />
                           )}
                         </div>
                       </div>
 
+                      {/* Title & Artist */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className={`text-sm font-bold truncate ${isSelected ? 'text-[#FF4FA3]' : 'text-white'}`}>
+                          <h4
+                            className={`text-xs sm:text-sm font-semibold truncate ${
+                              isSelected ? 'text-[#FF4FA3]' : 'text-[#F5F5F5]'
+                            }`}
+                          >
                             {track.title}
                           </h4>
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-slate-300 shrink-0 hidden sm:inline-block">
-                            {track.sourceLabel}
-                          </span>
                         </div>
-                        <p className="text-xs text-slate-400 truncate mt-0.5">{track.artist}</p>
+                        <p className="text-[11px] text-[#A1A1AA] truncate mt-0.5">{track.artist}</p>
                       </div>
                     </div>
 
+                    {/* Metadata & Actions */}
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs font-mono text-slate-400">{track.durationText}</span>
+                      <span className="hidden md:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/5 text-[#A1A1AA]">
+                        {track.sourceLabel.replace('Grand Theft Auto VI: ', '')}
+                      </span>
+
+                      <button
+                        onClick={(e) => toggleLike(track.id, e)}
+                        className={`p-1.5 rounded hover:bg-white/5 transition-colors cursor-pointer ${
+                          isLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+                        }`}
+                        aria-label="Save to favorite"
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
+                      </button>
+
+                      <span className="text-xs font-mono text-[#A1A1AA] w-10 text-right">
+                        {track.durationText}
+                      </span>
                     </div>
                   </div>
                 );
@@ -405,151 +524,268 @@ export const MusicPlayer: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3 border-t border-white/10 bg-black/40 flex items-center justify-between text-xs text-slate-400">
-              <span>Selected Track: <strong className="text-white">{currentTrack.title}</strong></span>
-              <span className="font-mono text-[#FF4FA3]">Direct In-Website Playback Verified</span>
+            <div className="px-5 sm:px-6 py-3 border-t border-[#24262B] bg-[#08090C] flex items-center justify-between text-xs text-[#A1A1AA]">
+              <span className="truncate">
+                Now Playing: <strong className="text-[#F5F5F5]">{currentTrack.title}</strong>
+              </span>
+              <span className="font-mono text-[#FF4FA3] shrink-0 ml-2">Official Audio</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Spotify Desktop Bottom Playback Bar (Hidden on Mobile screens as requested) */}
+      {/* Spotify-Inspired Bottom Playback Bar */}
       <footer
         aria-label="GTA VI Soundtrack Player"
-        className="hidden md:block fixed bottom-0 left-0 right-0 z-40 bg-[#08090D]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-[#08090C] border-t border-[#24262B] select-none shadow-[0_-8px_24px_rgba(0,0,0,0.85)] max-w-full overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        {/* Mobile Mini-Progress Top Bar */}
+        <div
+          ref={progressContainerRef}
+          onClick={handleSeek}
+          className="sm:hidden w-full h-[3px] bg-[#24262B] cursor-pointer relative"
+          title="Seek playback"
+        >
+          <div
+            className="h-full bg-[#FF4FA3] transition-[width] duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Player Layout Container */}
+        <div className="max-w-7xl mx-auto h-[62px] sm:h-[80px] px-3 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sm:gap-6">
           
-          {/* Left Side: Artwork & Track Meta */}
-          <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px] max-w-[320px]">
+          {/* =========================================
+              LEFT SECTION: Album Artwork & Track Details
+             ========================================= */}
+          <div className="flex items-center gap-3 min-w-0 max-w-[200px] sm:max-w-[260px] md:max-w-[300px] shrink-0">
+            {/* Square Sharp Album Art (52-56px desktop, 44px mobile) */}
             <div
-              onClick={() => setIsLibraryOpen(true)}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-md overflow-hidden bg-black shrink-0 border border-white/10 cursor-pointer relative group"
-              title="Click to view full GTA VI Soundtrack Collection"
+              onClick={() => setIsQueueOpen(true)}
+              className="w-11 h-11 sm:w-14 sm:h-14 rounded-none sm:rounded-sm overflow-hidden bg-black shrink-0 border border-[#24262B] cursor-pointer relative group shadow-md"
+              title="Click to view full GTA VI tracklist"
             >
               <img
                 src={currentTrack.coverUrl}
                 alt={currentTrack.title}
                 className="w-full h-full object-cover transition-transform group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <ListMusic className="w-4 h-4 text-white" />
               </div>
             </div>
 
-            <div className="min-w-0">
+            {/* Title & Artist */}
+            <div className="min-w-0 flex-1">
               <h4
-                onClick={() => setIsLibraryOpen(true)}
-                className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hover:underline cursor-pointer"
+                onClick={() => setIsQueueOpen(true)}
+                className="text-xs sm:text-sm font-semibold text-[#F5F5F5] tracking-tight truncate hover:underline cursor-pointer"
                 title={currentTrack.title}
               >
                 {currentTrack.title}
               </h4>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+              <p
+                className="text-[10px] sm:text-[11px] text-[#A1A1AA] truncate mt-0.5"
+                title={currentTrack.artist}
+              >
                 {currentTrack.artist}
               </p>
-              <span className="inline-block text-[9px] text-[#FF4FA3] font-mono tracking-wider uppercase mt-0.5 truncate">
-                {currentTrack.sourceLabel}
-              </span>
             </div>
+
+            {/* Heart / Favorite Button */}
+            <button
+              onClick={(e) => toggleLike(currentTrack.id, e)}
+              className={`hidden md:block p-1.5 transition-colors cursor-pointer shrink-0 ${
+                isCurrentTrackLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+              }`}
+              title={isCurrentTrackLiked ? 'Remove from favorites' : 'Save to favorites'}
+              aria-label="Save track"
+            >
+              <Heart className={`w-4 h-4 ${isCurrentTrackLiked ? 'fill-current' : ''}`} />
+            </button>
           </div>
 
-          {/* Center: Controls & Progress Bar */}
-          <div className="flex flex-col items-center max-w-xl w-full mx-auto px-2">
-            {/* Top Control Buttons */}
+          {/* =========================================
+              CENTER SECTION: Controls & Timeline (Desktop)
+             ========================================= */}
+          <div className="hidden sm:flex flex-col items-center flex-1 max-w-xl mx-auto px-2 min-w-0">
+            {/* Control Buttons Row */}
             <div className="flex items-center gap-4 sm:gap-6 mb-1.5">
+              {/* Shuffle Button */}
               <button
                 onClick={() => setIsShuffleOn(!isShuffleOn)}
-                className={`transition-colors hidden sm:block ${isShuffleOn ? 'text-[#FF4FA3]' : 'text-slate-400 hover:text-white'}`}
-                title={isShuffleOn ? 'Shuffle On' : 'Shuffle Off'}
+                className={`relative transition-colors p-1 cursor-pointer ${
+                  isShuffleOn ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+                }`}
+                title={isShuffleOn ? 'Shuffle enabled' : 'Shuffle disabled'}
                 aria-label="Shuffle"
               >
                 <Shuffle className="w-4 h-4" />
+                {isShuffleOn && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF4FA3]" />
+                )}
               </button>
 
+              {/* Previous Track */}
               <button
                 onClick={handlePrevTrack}
-                className="text-slate-400 hover:text-white transition-colors hidden sm:block"
+                className="text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors p-1 cursor-pointer"
                 title="Previous Track"
                 aria-label="Previous Track"
               >
                 <SkipBack className="w-4 h-4 fill-current" />
               </button>
 
+              {/* Compact Play / Pause Button (34px, NOT oversized) */}
               <button
                 onClick={togglePlay}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-md cursor-pointer shrink-0"
               >
                 {isPlaying ? (
-                  <Pause className="w-4 h-4 fill-black" />
+                  <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-black" />
                 ) : (
-                  <Play className="w-4 h-4 fill-black translate-x-0.5" />
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-black translate-x-0.5" />
                 )}
               </button>
 
+              {/* Next Track */}
               <button
                 onClick={handleNextTrack}
-                className="text-slate-400 hover:text-white transition-colors hidden sm:block"
+                className="text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors p-1 cursor-pointer"
                 title="Next Track"
                 aria-label="Next Track"
               >
                 <SkipForward className="w-4 h-4 fill-current" />
               </button>
 
-              {/* Track Selector Toggle */}
+              {/* Repeat Mode Toggle */}
               <button
-                onClick={() => setIsLibraryOpen(!isLibraryOpen)}
-                className={`transition-colors relative p-1.5 rounded-lg ${isLibraryOpen ? 'bg-[#FF4FA3]/20 text-[#FF4FA3]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-                title="View Soundtrack Library"
-                aria-label="Soundtrack Library"
+                onClick={cycleRepeatMode}
+                className={`relative transition-colors p-1 cursor-pointer ${
+                  repeatMode !== 'off' ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+                }`}
+                title={`Repeat: ${repeatMode}`}
+                aria-label="Repeat mode"
               >
-                <ListMusic className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#FF4FA3] text-black text-[9px] font-bold flex items-center justify-center">
-                  {SOUNDTRACK_LIBRARY.length}
-                </span>
+                {repeatMode === 'one' ? (
+                  <Repeat1 className="w-4 h-4" />
+                ) : (
+                  <Repeat className="w-4 h-4" />
+                )}
+                {repeatMode !== 'off' && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF4FA3]" />
+                )}
               </button>
             </div>
 
-            {/* Progress Bar & Timestamps */}
+            {/* Desktop Minimal Progress Bar & Timestamps */}
             <div className="w-full flex items-center gap-2">
-              <span className="text-[10px] font-mono text-slate-400 w-8 text-right">
+              <span className="text-[11px] font-mono text-[#A1A1AA] w-9 text-right tabular-nums shrink-0">
                 {formatTime(currentTime)}
               </span>
 
               <div
                 ref={progressContainerRef}
                 onClick={handleSeek}
-                className="flex-1 h-1 bg-white/15 hover:h-1.5 rounded-full cursor-pointer relative overflow-hidden transition-all group"
+                className="flex-1 h-1 hover:h-1.5 bg-[#24262B] group hover:bg-[#3E4048] rounded-full cursor-pointer relative transition-all"
                 title="Seek"
               >
                 <div
-                  className="h-full bg-white group-hover:bg-[#FF4FA3] rounded-full transition-[width] duration-300"
+                  className="h-full bg-[#F5F5F5] group-hover:bg-[#FF4FA3] rounded-full relative"
                   style={{ width: `${progressPercent}%` }}
-                />
+                >
+                  {/* Subtle Thumb indicator on hover */}
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
 
-              <span className="text-[10px] font-mono text-slate-400 w-8">
+              <span className="text-[11px] font-mono text-[#A1A1AA] w-9 text-left tabular-nums shrink-0">
                 {formatTime(duration)}
               </span>
             </div>
           </div>
 
-          {/* Right Side: Volume & Close Button */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-[140px] sm:min-w-[180px] justify-end">
-            <div className="hidden sm:flex items-center gap-2">
+          {/* =========================================
+              MOBILE COMPACT CONTROLS (< sm)
+             ========================================= */}
+          <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+            <button
+              onClick={(e) => toggleLike(currentTrack.id, e)}
+              className={`p-2 transition-colors cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center ${
+                isCurrentTrackLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA]'
+              }`}
+              aria-label="Save track"
+            >
+              <Heart className={`w-4 h-4 ${isCurrentTrackLiked ? 'fill-current' : ''}`} />
+            </button>
+
+            {/* Compact Mobile Play/Pause Button */}
+            <button
+              onClick={togglePlay}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+              className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-md cursor-pointer shrink-0"
+            >
+              {isPlaying ? (
+                <Pause className="w-3.5 h-3.5 fill-black" />
+              ) : (
+                <Play className="w-3.5 h-3.5 fill-black translate-x-0.5" />
+              )}
+            </button>
+
+            {/* Next Track */}
+            <button
+              onClick={handleNextTrack}
+              className="text-[#A1A1AA] p-2 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+              aria-label="Next track"
+            >
+              <SkipForward className="w-4 h-4 fill-current" />
+            </button>
+
+            {/* Queue Toggle */}
+            <button
+              onClick={() => setIsQueueOpen(!isQueueOpen)}
+              className={`p-2 rounded-lg cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center ${
+                isQueueOpen ? 'text-[#FF4FA3]' : 'text-[#A1A1AA]'
+              }`}
+              aria-label="Open queue"
+            >
+              <ListMusic className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* =========================================
+              RIGHT SECTION: Queue, Volume & Dismiss (Desktop)
+             ========================================= */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            {/* Queue Button */}
+            <button
+              onClick={() => setIsQueueOpen(!isQueueOpen)}
+              className={`p-2 rounded transition-colors cursor-pointer relative ${
+                isQueueOpen
+                  ? 'text-[#FF4FA3] bg-white/5'
+                  : 'text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-white/5'
+              }`}
+              title="Tracklist Queue"
+              aria-label="Queue"
+            >
+              <ListMusic className="w-4 h-4" />
+            </button>
+
+            {/* Volume Icon & Slider */}
+            <div className="hidden md:flex items-center gap-2 group">
               <button
                 onClick={toggleMute}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors p-1 cursor-pointer"
                 title={isMuted ? 'Unmute' : 'Mute'}
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="w-4 h-4 text-rose-400" />
                 ) : volume < 50 ? (
-                  <Volume1 className="w-4 h-4 text-slate-300" />
+                  <Volume1 className="w-4 h-4" />
                 ) : (
-                  <Volume2 className="w-4 h-4 text-slate-300" />
+                  <Volume2 className="w-4 h-4" />
                 )}
               </button>
 
@@ -559,18 +795,18 @@ export const MusicPlayer: React.FC = () => {
                 max="100"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-16 sm:w-20 h-1 bg-white/20 accent-[#FF4FA3] rounded-lg cursor-pointer appearance-none"
+                className="w-20 lg:w-24 h-1 bg-[#24262B] group-hover:bg-[#3E4048] accent-[#F5F5F5] rounded-full cursor-pointer appearance-none transition-all"
                 title={`Volume: ${isMuted ? 0 : volume}%`}
                 aria-label="Volume slider"
               />
             </div>
 
-            {/* Close Button (X) */}
+            {/* Subtle Dismiss Button */}
             <button
               onClick={handleDismiss}
-              className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors ml-1"
-              title="Close Soundtrack Player"
-              aria-label="Close Soundtrack Player"
+              className="p-1.5 rounded text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-white/5 transition-colors cursor-pointer"
+              title="Close player"
+              aria-label="Close soundtrack player"
             >
               <X className="w-4 h-4" />
             </button>
