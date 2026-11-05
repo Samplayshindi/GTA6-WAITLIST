@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
@@ -12,17 +13,22 @@
     --ocean-blue: #36B9E9;
   }
 
-  html, body, button, input, select, textarea {
-    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  }
-
-  body {
+  html, body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #08090D;
     color: #F8FAFC;
     overflow-x: hidden;
     scroll-behavior: smooth;
     min-height: 100vh;
     padding-bottom: max(80px, env(safe-area-inset-bottom, 80px));
+  }
+
+  h1, h2, h3, h4, h5, h6, nav {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
   }
 }
 

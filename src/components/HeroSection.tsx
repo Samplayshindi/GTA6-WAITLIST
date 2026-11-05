@@ -115,7 +115,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         ) : (
           /* STATE A: BEFORE PRELOAD */
           <>
-            <h2 className="text-sm sm:text-base md:text-xl font-mono font-bold tracking-[0.25em] sm:tracking-[0.35em] uppercase text-[#F4F1ED]/95 mb-3 sm:mb-4 px-2">
+            <h2 className="text-sm sm:text-base md:text-xl font-display font-bold tracking-[0.25em] sm:tracking-[0.35em] uppercase text-[#F4F1ED]/95 mb-3 sm:mb-4 px-2">
               THE WAIT IS ALMOST OVER.
             </h2>
             <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal mb-6 sm:mb-8 px-4">
