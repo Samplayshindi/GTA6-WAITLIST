@@ -22,6 +22,7 @@
     overflow-x: hidden;
     scroll-behavior: smooth;
     min-height: 100vh;
+    padding-bottom: max(80px, env(safe-area-inset-bottom, 80px));
   }
 }
 

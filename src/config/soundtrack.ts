@@ -120,65 +120,22 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
   },
 ];
 
-/**
- * Officially Announced Album Tracks
- * Revealed through official Rockstar GTA VI Music announcements.
- * Styled with square official album cover art and 'Announced' badge.
- * Audio playback is disabled until legitimate public streaming sources are officially published.
- */
-export const ANNOUNCED_ALBUM_TRACKS: SoundtrackTrack[] = [
-  {
-    id: 'vice-city-nights',
-    title: 'Vice City Nights (Theme)',
-    artist: 'Rockstar Games / Tangerine Dream & Woody Jackson',
-    sourceLabel: 'Grand Theft Auto VI: The Album',
-    coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
-    durationSec: 215,
-    durationText: '3:35',
-    isPlayable: false,
-    status: 'announced',
-    albumReleaseDate: 'November 19, 2026',
-  },
-  {
-    id: 'leonida-sunshine',
-    title: 'Leonida Sunshine',
-    artist: 'Kavinsky & SebastiAn',
-    sourceLabel: 'Grand Theft Auto VI: The Album',
-    coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
-    durationSec: 240,
-    durationText: '4:00',
-    isPlayable: false,
-    status: 'announced',
-    albumReleaseDate: 'November 19, 2026',
-  },
-  {
-    id: 'coastal-highway-patrol',
-    title: 'Coastal Highway Run',
-    artist: 'Giorgio Moroder & Daft Punk Collaborators',
-    sourceLabel: 'Grand Theft Auto VI: The Album',
-    coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
-    durationSec: 228,
-    durationText: '3:48',
-    isPlayable: false,
-    status: 'announced',
-    albumReleaseDate: 'November 19, 2026',
-  },
-];
-
 export const SOUNDTRACK_LIBRARY: SoundtrackTrack[] = [
   ...VERIFIED_PLAYABLE_TRACKS,
-  ...ANNOUNCED_ALBUM_TRACKS,
 ];
 
 /**
- * Merges newly discovered tracks from server or external feed
- * while strictly preserving existing tracks and preventing duplicates.
+ * Merges newly discovered tracks from server or external feed on/after Nov 19, 2026
+ * while strictly preserving existing tracks, preventing duplicates, and ensuring
+ * only verified playable tracks with valid audio sources are added.
  */
 export function mergeDiscoveredTracks(
   base: SoundtrackTrack[],
   incoming: SoundtrackTrack[]
 ): SoundtrackTrack[] {
   const existingIds = new Set(base.map((t) => t.id));
-  const newTracks = incoming.filter((t) => !existingIds.has(t.id));
-  return [...base, ...newTracks];
+  const newPlayable = incoming.filter(
+    (t) => !existingIds.has(t.id) && t.isPlayable && (t.youtubeId || t.status === 'playable')
+  );
+  return [...base, ...newPlayable];
 }

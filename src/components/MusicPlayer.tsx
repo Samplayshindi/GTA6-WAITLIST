@@ -171,53 +171,47 @@ export const MusicPlayer: React.FC = () => {
 
             {/* Track Rows */}
             <div className="p-2 sm:p-3 overflow-y-auto space-y-1">
-              {tracks.map((track, idx) => {
-                const isSelected = idx === currentTrackIndex;
-                const isLiked = likedTrackIds.has(track.id);
-                const isAnnounced = track.status === 'announced' || !track.isPlayable;
+              {tracks
+                .filter((t) => t.isPlayable)
+                .map((track, idx) => {
+                  const isSelected = idx === currentTrackIndex;
+                  const isLiked = likedTrackIds.has(track.id);
 
-                return (
-                  <div
-                    key={track.id}
-                    onClick={() => {
-                      if (!isAnnounced) {
-                        selectTrack(idx);
-                      }
-                    }}
-                    className={`group px-3 py-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors ${
-                      isAnnounced
-                        ? 'opacity-70 bg-[#0C0D12] border border-white/5 cursor-not-allowed'
-                        : isSelected
-                        ? 'bg-[#18191E] border border-[#FF4FA3]/30 cursor-pointer'
-                        : 'hover:bg-[#121318] border border-transparent cursor-pointer'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      {/* Track Number / Equalizer Animation */}
-                      <span className="text-xs font-mono text-[#A1A1AA] w-5 text-center shrink-0">
-                        {isSelected && isPlaying ? (
-                          <span className="inline-flex items-end justify-center gap-0.5 h-3.5">
-                            <span className="w-0.5 h-3 bg-[#FF4FA3] animate-pulse" />
-                            <span className="w-0.5 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
-                            <span className="w-0.5 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
-                          </span>
-                        ) : (
-                          idx + 1
-                        )}
-                      </span>
+                  return (
+                    <div
+                      key={track.id}
+                      onClick={() => selectTrack(idx)}
+                      className={`group px-3 py-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors ${
+                        isSelected
+                          ? 'bg-[#18191E] border border-[#FF4FA3]/30 cursor-pointer'
+                          : 'hover:bg-[#121318] border border-transparent cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {/* Track Number / Equalizer Animation */}
+                        <span className="text-xs font-mono text-[#A1A1AA] w-5 text-center shrink-0">
+                          {isSelected && isPlaying ? (
+                            <span className="inline-flex items-end justify-center gap-0.5 h-3.5">
+                              <span className="w-0.5 h-3 bg-[#FF4FA3] animate-pulse" />
+                              <span className="w-0.5 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
+                              <span className="w-0.5 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
+                            </span>
+                          ) : (
+                            idx + 1
+                          )}
+                        </span>
 
-                      {/* Square Sharp 1:1 Album Art */}
-                      <div className="w-10 h-10 aspect-square rounded-sm overflow-hidden bg-black shrink-0 border border-[#24262B] relative">
-                        <img
-                          src={track.coverUrl}
-                          alt={track.title}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
-                          }}
-                        />
-                        {!isAnnounced && (
+                        {/* Square Sharp 1:1 Album Art */}
+                        <div className="w-10 h-10 aspect-square rounded-sm overflow-hidden bg-black shrink-0 border border-[#24262B] relative">
+                          <img
+                            src={track.coverUrl}
+                            alt={track.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
+                            }}
+                          />
                           <div
                             className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${
                               isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
@@ -229,12 +223,10 @@ export const MusicPlayer: React.FC = () => {
                               <Play className="w-3.5 h-3.5 fill-white text-white translate-x-0.5" />
                             )}
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      {/* Title & Artist */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        {/* Title & Artist */}
+                        <div className="min-w-0 flex-1">
                           <h4
                             className={`text-xs sm:text-sm font-semibold truncate ${
                               isSelected ? 'text-[#FF4FA3]' : 'text-[#F5F5F5]'
@@ -242,23 +234,16 @@ export const MusicPlayer: React.FC = () => {
                           >
                             {track.title}
                           </h4>
-                          {isAnnounced && (
-                            <span className="text-[9px] uppercase font-mono font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 shrink-0">
-                              Announced
-                            </span>
-                          )}
+                          <p className="text-[11px] text-[#A1A1AA] truncate mt-0.5">{track.artist}</p>
                         </div>
-                        <p className="text-[11px] text-[#A1A1AA] truncate mt-0.5">{track.artist}</p>
                       </div>
-                    </div>
 
-                    {/* Metadata & Actions */}
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="hidden md:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/5 text-[#A1A1AA]">
-                        {track.sourceLabel.replace('Grand Theft Auto VI: ', '')}
-                      </span>
+                      {/* Metadata & Actions */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="hidden md:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/5 text-[#A1A1AA]">
+                          {track.sourceLabel.replace('Grand Theft Auto VI: ', '')}
+                        </span>
 
-                      {!isAnnounced ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -271,19 +256,14 @@ export const MusicPlayer: React.FC = () => {
                         >
                           <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
                         </button>
-                      ) : (
-                        <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">
-                          Album Release Nov 19
-                        </span>
-                      )}
 
-                      <span className="text-xs font-mono text-[#A1A1AA] w-10 text-right">
-                        {track.durationText}
-                      </span>
+                        <span className="text-xs font-mono text-[#A1A1AA] w-10 text-right">
+                          {track.durationText}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
 
             {/* Modal Footer */}
@@ -302,18 +282,26 @@ export const MusicPlayer: React.FC = () => {
         aria-label="GTA VI Soundtrack Player"
         className="fixed bottom-0 left-0 right-0 z-40 bg-[#08090D] border-t border-[#24262B] select-none shadow-[0_-8px_24px_rgba(0,0,0,0.85)] max-w-full overflow-hidden"
       >
-        {/* Mobile Mini-Progress Top Bar (Scrubbable) */}
+        {/* Mobile Mini-Progress Top Bar (Scrubbable with Prominent Circular Thumb Knob) */}
         <div
           ref={mobileProgressRef}
           onPointerDown={createSeekHandler(mobileProgressRef)}
           onTouchStart={createSeekHandler(mobileProgressRef)}
-          className="sm:hidden w-full h-[6px] bg-[#24262B] cursor-pointer relative touch-none select-none py-1"
+          className="sm:hidden w-full h-4 bg-[#08090D] border-b border-[#24262B] cursor-pointer relative touch-none select-none flex items-center px-2 z-10"
           title="Seek playback"
         >
-          <div
-            className="h-full bg-[#FF4FA3] transition-[width] duration-75"
-            style={{ width: `${progressPercent}%` }}
-          />
+          <div className="w-full h-2 bg-[#1C1D24] border border-white/10 rounded-full relative overflow-visible">
+            {/* Filled Progress Line */}
+            <div
+              className="h-full bg-gradient-to-r from-[#F15A24] to-[#FF4FA3] rounded-full relative"
+              style={{ width: `${progressPercent}%` }}
+            />
+            {/* Always-Visible Circular Thumb Knob */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#FF4FA3] shadow-[0_0_10px_rgba(255,79,163,0.95)] cursor-grab active:cursor-grabbing pointer-events-none"
+              style={{ left: `calc(${progressPercent}% - 8px)` }}
+            />
+          </div>
         </div>
 
         {/* Player Layout Container */}
@@ -422,15 +410,17 @@ export const MusicPlayer: React.FC = () => {
                 ref={desktopProgressRef}
                 onPointerDown={createSeekHandler(desktopProgressRef)}
                 onTouchStart={createSeekHandler(desktopProgressRef)}
-                className="flex-1 h-1.5 hover:h-2 bg-[#24262B] group hover:bg-[#3E4048] rounded-full cursor-pointer relative transition-all touch-none select-none"
+                className="flex-1 h-2 bg-[#1C1D24] border border-white/10 group hover:bg-[#2A2C38] rounded-full cursor-pointer relative transition-all touch-none select-none my-1"
                 title="Seek"
               >
                 <div
-                  className="h-full bg-[#F5F5F5] group-hover:bg-[#FF4FA3] rounded-full relative"
+                  className="h-full bg-gradient-to-r from-[#F15A24] to-[#FF4FA3] rounded-full relative"
                   style={{ width: `${progressPercent}%` }}
-                >
-                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#FF4FA3] shadow-[0_0_8px_rgba(255,79,163,0.9)] transition-transform group-hover:scale-110 active:scale-125 cursor-grab active:cursor-grabbing pointer-events-none"
+                  style={{ left: `calc(${progressPercent}% - 7px)` }}
+                />
               </div>
 
               <span className="text-[11px] font-mono text-[#A1A1AA] w-9 text-left tabular-nums shrink-0">

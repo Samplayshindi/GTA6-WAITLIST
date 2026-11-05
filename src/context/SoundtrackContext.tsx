@@ -114,12 +114,16 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
             const merged = [...prevTracks];
             const existingIds = new Set(prevTracks.map((t) => t.id));
             for (const incomingTrack of data.tracks) {
-              if (!existingIds.has(incomingTrack.id)) {
+              if (
+                !existingIds.has(incomingTrack.id) &&
+                incomingTrack.isPlayable &&
+                (incomingTrack.youtubeId || incomingTrack.status === 'playable')
+              ) {
                 merged.push(incomingTrack);
                 existingIds.add(incomingTrack.id);
               }
             }
-            return merged;
+            return merged.filter((t) => t.isPlayable);
           });
         }
       })

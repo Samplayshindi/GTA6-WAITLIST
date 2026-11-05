@@ -19,8 +19,6 @@ interface LaunchStateContextValue {
   isReleaseLive: boolean;
   selectedConsole: 'ps5' | 'xbox';
   setSelectedConsole: (c: 'ps5' | 'xbox') => void;
-  devOverrideState: LaunchState | null;
-  setDevOverrideState: (state: LaunchState | null) => void;
 }
 
 const LaunchStateContext = createContext<LaunchStateContextValue | undefined>(undefined);
@@ -41,32 +39,8 @@ export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     calculateTimeRemainingFromDate(activePreloadDate)
   );
 
-  // Development-only testing override (isolated to local dev/test mode)
-  const [devOverrideState, setDevOverrideState] = useState<LaunchState | null>(() => {
-    if (typeof window !== 'undefined' && import.meta.env.DEV) {
-      const saved = sessionStorage.getItem('gta_dev_launch_state');
-      if (saved === 'BEFORE_PRELOAD' || saved === 'PRELOAD_LIVE' || saved === 'RELEASE_LIVE') {
-        return saved;
-      }
-    }
-    return null;
-  });
-
-  const handleSetDevOverride = (state: LaunchState | null) => {
-    setDevOverrideState(state);
-    if (typeof window !== 'undefined') {
-      if (state) {
-        sessionStorage.setItem('gta_dev_launch_state', state);
-      } else {
-        sessionStorage.removeItem('gta_dev_launch_state');
-      }
-    }
-  };
-
-  // Compute launch state from real timestamps or dev override
+  // Compute launch state strictly from real timestamps
   const launchState: LaunchState = useMemo(() => {
-    if (devOverrideState) return devOverrideState;
-
     if (releaseRemaining.isComplete) {
       return 'RELEASE_LIVE';
     }
@@ -74,7 +48,7 @@ export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ childre
       return 'PRELOAD_LIVE';
     }
     return 'BEFORE_PRELOAD';
-  }, [devOverrideState, releaseRemaining.isComplete, preloadRemaining.isComplete]);
+  }, [releaseRemaining.isComplete, preloadRemaining.isComplete]);
 
   // Update countdown timers and browser tab title every second
   useEffect(() => {
@@ -117,8 +91,6 @@ export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ childre
         isReleaseLive: launchState === 'RELEASE_LIVE',
         selectedConsole,
         setSelectedConsole,
-        devOverrideState,
-        setDevOverrideState: handleSetDevOverride,
       }}
     >
       {children}

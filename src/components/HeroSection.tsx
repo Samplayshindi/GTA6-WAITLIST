@@ -52,7 +52,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     setSelectedConsole,
   } = useLaunchState();
 
-  const localTzName = getUserLocalTimezoneName();
+  const [localTzName, setLocalTzName] = React.useState<string>('Local Time');
+
+  React.useEffect(() => {
+    setLocalTzName(getUserLocalTimezoneName());
+  }, []);
   const globalReleaseDate = getGlobalReleaseLocalDate();
   const ps5PreloadDate = getPreloadLocalDate();
   const xboxPreloadDate = getPreloadXboxGmtDate();
