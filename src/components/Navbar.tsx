@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   activeSection: string;
@@ -55,13 +56,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 py-3 sm:py-3.5 ${
           isScrolled
-            ? 'bg-[#08090C]/95 backdrop-blur-md border-b border-[#24262B] shadow-2xl'
-            : 'bg-[#08090C]/80 backdrop-blur-sm border-b border-white/5'
+            ? 'bg-[#08090D]/95 backdrop-blur-md border-b border-[#24262B] shadow-2xl'
+            : 'bg-[#08090D]/80 backdrop-blur-sm border-b border-white/5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 w-full">
           
-          {/* Official GTA VI Logo */}
+          {/* Zone 1: Official GTA VI Logo */}
           <button
             onClick={() => handleLinkClick('overview')}
             className="flex items-center gap-2 group shrink-0 focus:outline-none cursor-pointer p-1"
@@ -74,13 +75,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
           </button>
 
-          {/* Desktop Editorial Navigation */}
+          {/* Zone 2: Desktop Editorial Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7 xl:gap-9 text-xs font-bold tracking-[0.18em] uppercase">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
-                className={`py-1.5 transition-colors cursor-pointer min-h-[36px] ${
+                className={`py-1.5 transition-colors cursor-pointer min-h-[36px] whitespace-nowrap shrink-0 ${
                   isLinkActive(link.id)
                     ? 'text-[#F5F5F5] border-b-2 border-[#F15A24]'
                     : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
@@ -91,8 +92,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </nav>
 
-          {/* Mobile Menu Trigger */}
-          <div className="lg:hidden flex items-center">
+          {/* Zone 3: Primary Action & Install Button */}
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
+            <PWAInstallButton variant="nav" />
+          </div>
+
+          {/* Mobile Right Controls: Install Button + Menu Toggle */}
+          <div className="lg:hidden flex items-center gap-2">
+            <PWAInstallButton variant="nav" />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 sm:p-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white focus:outline-none cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
@@ -108,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile & Tablet Full-Width Responsive Menu Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200 flex flex-col w-full max-w-full overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-[#24262B] bg-[#08090C]">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-[#24262B] bg-[#08090D]">
             <img
               src="/gta-vi-logo.svg"
               alt="Grand Theft Auto VI"
@@ -146,7 +153,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          <div className="p-4 border-t border-[#24262B] bg-[#08090C] text-center">
+          <div className="p-4 border-t border-[#24262B] bg-[#08090D] text-center space-y-2">
+            <div className="flex justify-center">
+              <PWAInstallButton variant="footer" />
+            </div>
             <p className="text-[11px] font-mono text-slate-500">
               Grand Theft Auto VI &middot; November 19, 2026
             </p>

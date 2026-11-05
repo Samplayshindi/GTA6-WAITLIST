@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /api/*
+
+Sitemap: https://gtaviwaitlist.vercel.app/sitemap.xml

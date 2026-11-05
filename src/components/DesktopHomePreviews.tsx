@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, ExternalLink, ArrowRight, Clock, Newspaper, Music2, Disc3 } from 'lucide-react';
 import { OFFICIAL_VIDEOS, RELEASE_SPECS } from '../config/countdown';
-import { SOUNDTRACK_LIBRARY } from '../config/soundtrack';
+import { SOUNDTRACK_LIBRARY, OFFICIAL_ALBUM_ARTWORK_URL } from '../config/soundtrack';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 
@@ -239,7 +239,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
               </span>
             </div>
             <h2 className="text-2xl lg:text-3xl font-black uppercase text-[#F4F1ED] tracking-tight">
-              Official Soundtrack <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] to-[#F15A24]">&amp; Afrobank</span>
+              Official Soundtrack <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] to-[#F15A24]">Library</span>
             </h2>
             <p className="mt-1 text-xs lg:text-sm text-slate-300 max-w-xl">
               Authentic GTA VI broadcast releases, singles, and radio curation playable right here via the bottom player.
@@ -270,6 +270,9 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                   src={track.coverUrl}
                   alt={track.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
+                  }}
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Play className="w-5 h-5 text-white fill-current" />

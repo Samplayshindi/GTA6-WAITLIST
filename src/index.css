@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
 @layer base {
   :root {
     --bg-deep: #08090D;
@@ -7,10 +12,13 @@
     --ocean-blue: #36B9E9;
   }
 
+  html, body, button, input, select, textarea {
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+
   body {
     background-color: #08090D;
     color: #F8FAFC;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     scroll-behavior: smooth;
     min-height: 100vh;
@@ -39,4 +47,27 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #2C2F3D;
+}
+
+/* 60 FPS Lightweight Countdown Digit Transition */
+@keyframes digitTick {
+  0% {
+    transform: translateY(-2px);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-digit-tick {
+  animation: digitTick 0.15s cubic-bezier(0, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-digit-tick {
+    animation: none !important;
+  }
 }

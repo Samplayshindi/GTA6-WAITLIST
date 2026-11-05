@@ -191,10 +191,17 @@ export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining 
 
 export function getUserLocalTimezoneName(): string {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local Time';
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz) {
+      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(new Date());
+      const shortCode = parts.find((p) => p.type === 'timeZoneName')?.value;
+      const cleanTz = tz.replace(/_/g, ' ');
+      return shortCode && !cleanTz.includes(shortCode) ? `${cleanTz} (${shortCode})` : cleanTz;
+    }
   } catch {
-    return 'Local Time';
+    // Graceful fallback
   }
+  return 'Local Time';
 }
 
 export function formatLocalDateString(d: Date): string {

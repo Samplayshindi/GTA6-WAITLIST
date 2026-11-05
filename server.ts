@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import newsHandler from './api/news.ts';
 import cronHandler from './api/cron/refresh-news.ts';
 import diagHandler from './api/admin/news-status.ts';
+import soundtrackHandler from './api/soundtrack.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,7 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 // Forward /api/news to the serverless handler
 app.all('/api/news', async (req: Request, res: Response) => {
@@ -19,6 +21,16 @@ app.all('/api/news', async (req: Request, res: Response) => {
     await newsHandler(req, res);
   } catch (err) {
     console.error('Error in news handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Forward /api/soundtrack to the soundtrack handler
+app.all('/api/soundtrack', async (req: Request, res: Response) => {
+  try {
+    await soundtrackHandler(req, res);
+  } catch (err) {
+    console.error('Error in soundtrack handler:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

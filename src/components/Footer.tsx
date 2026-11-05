@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clock } from 'lucide-react';
 import { RELEASE_SPECS } from '../config/countdown';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
@@ -26,6 +27,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <p className="text-xs text-slate-400 leading-relaxed font-normal">
               An authoritative GTA VI countdown and intelligence platform delivering verified release timers, digital pre-loading schedules, official broadcasts, and live newswire updates.
             </p>
+            <div className="pt-2">
+              <PWAInstallButton variant="footer" />
+            </div>
           </div>
 
           {/* Media & Intel Navigation */}
@@ -180,7 +184,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <p className="max-w-2xl leading-relaxed text-[11px]">
             This is an independent fan-made GTA VI media and information platform. It is not affiliated with, endorsed by, or sponsored by Rockstar Games or Take-Two Interactive. Grand Theft Auto and related marks are trademarks of Take-Two Interactive Software, Inc.
           </p>
-          <p className="font-mono text-[10px] sm:text-[11px] text-slate-400 whitespace-nowrap">
+          <p className="font-mono text-[10px] sm:text-[11px] text-slate-400 text-center md:text-right whitespace-normal break-words max-w-full leading-relaxed">
             &copy; 2026 Samar. Independent platform. All rights to original media belong to Rockstar Games.
           </p>
         </div>

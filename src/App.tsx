@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { TrailerGallery } from './components/TrailerGallery';
@@ -15,36 +15,27 @@ import { Footer } from './components/Footer';
 import { MusicPlayer } from './components/MusicPlayer';
 import { DesktopHomePreviews } from './components/DesktopHomePreviews';
 import { PageHeaderBanner } from './components/PageHeaderBanner';
-import {
-  calculateTimeRemainingFromDate,
-  getGlobalReleaseLocalDate,
-  getPreloadLocalDate,
-  formatTabTitle,
-  subscribeToTimeSync,
-  TimeRemaining,
-} from './utils/time';
+import { AtmosphericBackground } from './components/AtmosphericBackground';
+import { BackToTopButton } from './components/BackToTopButton';
+import { LaunchStateProvider } from './context/LaunchStateContext';
+import { SoundtrackProvider } from './context/SoundtrackContext';
 
 function normalizePath(rawPath: string): string {
   const clean = rawPath.toLowerCase().split('?')[0].split('#')[0];
   if (clean === '/specifications') return '/specs';
-  if (clean === '/videos' || clean === '/newswire' || clean === '/timeline' || clean === '/faq' || clean === '/specs') {
+  if (
+    clean === '/videos' ||
+    clean === '/newswire' ||
+    clean === '/timeline' ||
+    clean === '/faq' ||
+    clean === '/specs'
+  ) {
     return clean;
   }
   return '/';
 }
 
-export default function App() {
-  const globalReleaseDate = useMemo(() => getGlobalReleaseLocalDate(), []);
-  const preloadDate = useMemo(() => getPreloadLocalDate(), []);
-
-  // Real-time Countdown states (computed with tamper-proof server-synced time)
-  const [releaseRemaining, setReleaseRemaining] = useState<TimeRemaining>(() =>
-    calculateTimeRemainingFromDate(globalReleaseDate)
-  );
-  const [preloadRemaining, setPreloadRemaining] = useState<TimeRemaining>(() =>
-    calculateTimeRemainingFromDate(preloadDate)
-  );
-
+function MainAppContent() {
   // Desktop route tracking (e.g. '/', '/videos', '/newswire', '/timeline', '/faq', '/specs')
   const [currentPath, setCurrentPath] = useState<string>(() =>
     typeof window !== 'undefined' ? normalizePath(window.location.pathname) : '/'
@@ -71,7 +62,6 @@ export default function App() {
     const handlePopState = () => {
       const normalized = normalizePath(window.location.pathname);
       setCurrentPath(normalized);
-      // Map path to activeSection
       if (normalized === '/videos') setActiveSection('videos');
       else if (normalized === '/newswire') setActiveSection('newswire');
       else if (normalized === '/timeline') setActiveSection('timeline');
@@ -83,32 +73,6 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  // Update countdown every second & sync browser tab title
-  useEffect(() => {
-    const updateCountdown = () => {
-      const rel = calculateTimeRemainingFromDate(globalReleaseDate);
-      const pre = calculateTimeRemainingFromDate(preloadDate);
-      setReleaseRemaining(rel);
-      setPreloadRemaining(pre);
-
-      // Update browser tab title dynamically
-      document.title = formatTabTitle(rel);
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-
-    // Re-evaluate immediately when authoritative server time sync arrives
-    const unsubscribeSync = subscribeToTimeSync(() => {
-      updateCountdown();
-    });
-
-    return () => {
-      clearInterval(interval);
-      unsubscribeSync();
-    };
-  }, [globalReleaseDate, preloadDate]);
 
   // Mobile & Single-page scroll spy
   useEffect(() => {
@@ -158,13 +122,18 @@ export default function App() {
 
   // Unified navigation handler
   const handleNavigate = (sectionId: string) => {
-    // Map sectionId to route path
     let targetPath = '/';
     if (sectionId === 'videos' || sectionId === '/videos') targetPath = '/videos';
     else if (sectionId === 'newswire' || sectionId === '/newswire') targetPath = '/newswire';
     else if (sectionId === 'timeline' || sectionId === '/timeline') targetPath = '/timeline';
     else if (sectionId === 'faq' || sectionId === '/faq') targetPath = '/faq';
-    else if (sectionId === 'specifications' || sectionId === 'specs' || sectionId === '/specs' || sectionId === '/specifications') targetPath = '/specs';
+    else if (
+      sectionId === 'specifications' ||
+      sectionId === 'specs' ||
+      sectionId === '/specs' ||
+      sectionId === '/specifications'
+    )
+      targetPath = '/specs';
     else if (sectionId === 'overview' || sectionId === '/') targetPath = '/';
     else if (sectionId === 'countdown') targetPath = '/';
 
@@ -198,27 +167,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative pb-20 sm:pb-24 md:pb-28 w-full max-w-full overflow-x-hidden">
-      {/* Editorial Navigation Bar */}
+      {/* 1. Subtle Cinematic Atmospheric Video Background */}
+      <AtmosphericBackground />
+
+      {/* 2. Editorial Top Navigation Bar */}
       <Navbar
         activeSection={activeSection}
         currentPath={isDesktop ? currentPath : undefined}
         onNavigate={handleNavigate}
       />
 
-      {/* Main Content Flow */}
+      {/* 3. Main Content Flow */}
       <main className="relative z-10 w-full max-w-full overflow-x-hidden">
         {isDesktop ? (
           /* DESKTOP ROUTED PAGES */
           <>
             {currentPath === '/' && (
               <>
-                {/* 1. Hero & Countdowns */}
-                <HeroSection
-                  releaseRemaining={releaseRemaining}
-                  preloadRemaining={preloadRemaining}
-                  onNavigate={handleNavigate}
-                />
-                {/* 2. Compact Desktop Previews (Videos, Newswire, Soundtrack) */}
+                {/* Hero & Dynamic Launch State Countdowns */}
+                <HeroSection onNavigate={handleNavigate} />
+                {/* Compact Previews */}
                 <DesktopHomePreviews onNavigate={handleNavigate} />
               </>
             )}
@@ -284,28 +252,19 @@ export default function App() {
             )}
           </>
         ) : (
-          /* MOBILE LAYOUT: CONTINUOUS SINGLE-PAGE SCROLL (UNCHANGED) */
+          /* MOBILE LAYOUT: CONTINUOUS SINGLE-PAGE SCROLL */
           <>
-            {/* 1. Hero & Countdowns */}
-            <HeroSection
-              releaseRemaining={releaseRemaining}
-              preloadRemaining={preloadRemaining}
-              onNavigate={handleNavigate}
-            />
-
-            {/* 2. Official Videos & Broadcasts */}
+            {/* Hero & Countdowns */}
+            <HeroSection onNavigate={handleNavigate} />
+            {/* Official Videos */}
             <TrailerGallery />
-
-            {/* 3. Live GTA VI Newswire Intelligence */}
+            {/* Live Newswire Intelligence */}
             <NewsSection />
-
-            {/* 4. History & Development Timeline */}
+            {/* Development Timeline */}
             <TimelineSection />
-
-            {/* 5. FAQ & Knowledgebase */}
+            {/* FAQ */}
             <FaqSection />
-
-            {/* 6. Production Specifications & Preload Details */}
+            {/* Specifications */}
             <ReleaseInformation />
           </>
         )}
@@ -314,8 +273,21 @@ export default function App() {
       {/* Editorial Footer (With SAMAR attribution preserved) */}
       <Footer onNavigate={handleNavigate} />
 
-      {/* Fixed Spotify-Style GTA VI Soundtrack Bottom Player */}
+      {/* Persistent Spotify-Style GTA VI Soundtrack Bottom Player */}
       <MusicPlayer />
+
+      {/* Clean Minimal Back to Top Button */}
+      <BackToTopButton />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LaunchStateProvider>
+      <SoundtrackProvider>
+        <MainAppContent />
+      </SoundtrackProvider>
+    </LaunchStateProvider>
   );
 }
