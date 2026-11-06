@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Film, Play, Pause } from 'lucide-react';
 
 export const SLIDESHOW_IMAGES: string[] = [
   'https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_15.0m-_zb~mcy2zr.jpg?akim=1&imdensity=1&imwidth=1920',
@@ -33,10 +34,23 @@ const DEFAULT_STATIC_POSTER = '/images/hero-4k.jpg';
 const DISPLAY_DURATION_MS = 12000; // 12 seconds per image
 const CROSSFADE_DURATION_MS = 1500; // 1.5 seconds crossfade
 const PRELOAD_LEAD_TIME_MS = 3500; // Preload next image 3.5s before transition
+const PAUSE_STORAGE_KEY = 'gtavi_slideshow_paused';
 
 export const AtmosphericBackground: React.FC = () => {
   const [isDesktopSlideshow, setIsDesktopSlideshow] = useState<boolean>(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+
+  // Slideshow user play/pause preference
+  const [isPaused, setIsPaused] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem(PAUSE_STORAGE_KEY) === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
 
   // Memory-optimized dual slots (Slot A and Slot B)
   const [activeSlot, setActiveSlot] = useState<'A' | 'B'>('A');
@@ -55,6 +69,19 @@ export const AtmosphericBackground: React.FC = () => {
   const isTransitioningRef = useRef<boolean>(false);
   const rotationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const preloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Toggle play/pause state
+  const togglePlayPause = useCallback(() => {
+    setIsPaused((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(PAUSE_STORAGE_KEY, String(next));
+      } catch {
+        // Fallback
+      }
+      return next;
+    });
+  }, []);
 
   // Pick a next random image index without consecutive repetition or failed images
   const getNextRandomIndex = useCallback(
@@ -118,7 +145,7 @@ export const AtmosphericBackground: React.FC = () => {
 
   // Transition to next image slot
   const executeTransition = useCallback(async () => {
-    if (isTransitioningRef.current) return;
+    if (isTransitioningRef.current || isPaused) return;
     isTransitioningRef.current = true;
 
     // Determine next random index
@@ -131,7 +158,7 @@ export const AtmosphericBackground: React.FC = () => {
       isReady = await preloadNextImage(nextIdx);
     }
 
-    if (!isReady) {
+    if (!isReady || isPaused) {
       isTransitioningRef.current = false;
       return;
     }
@@ -164,16 +191,16 @@ export const AtmosphericBackground: React.FC = () => {
       setCurrentIndex(nextIdx);
       isTransitioningRef.current = false;
     }, CROSSFADE_DURATION_MS);
-  }, [activeSlot, currentIndex, failedIndices, getNextRandomIndex, preloadNextImage]);
+  }, [activeSlot, currentIndex, failedIndices, getNextRandomIndex, isPaused, preloadNextImage]);
 
   // Main timer loop for slideshow rotation
   useEffect(() => {
-    if (!isDesktopSlideshow) return;
+    if (!isDesktopSlideshow || isPaused) return;
 
     let isTabHidden = document.visibilityState === 'hidden';
 
     const scheduleNextRotation = () => {
-      if (isTabHidden) return;
+      if (isTabHidden || isPaused) return;
 
       // 1. Preload lead timer (at t = 8.5 seconds)
       preloadTimerRef.current = setTimeout(() => {
@@ -194,7 +221,7 @@ export const AtmosphericBackground: React.FC = () => {
       if (isTabHidden) {
         if (preloadTimerRef.current) clearTimeout(preloadTimerRef.current);
         if (rotationTimerRef.current) clearTimeout(rotationTimerRef.current);
-      } else {
+      } else if (!isPaused) {
         scheduleNextRotation();
       }
     };
@@ -213,6 +240,7 @@ export const AtmosphericBackground: React.FC = () => {
     };
   }, [
     isDesktopSlideshow,
+    isPaused,
     currentIndex,
     failedIndices,
     executeTransition,
@@ -221,67 +249,97 @@ export const AtmosphericBackground: React.FC = () => {
   ]);
 
   return (
-    <div
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none bg-[#08090D]"
-      aria-hidden="true"
-    >
-      {/* 1. Mobile & Static Baseline Fallback Layer (Used on Mobile <1024px or Reduced Motion) */}
-      <img
-        src={DEFAULT_STATIC_POSTER}
-        alt=""
-        loading="eager"
-        className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
-          isDesktopSlideshow && (slotASrc || slotBSrc) ? 'opacity-0' : 'opacity-30 scale-100'
-        }`}
-      />
+    <>
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none bg-[#08090D]"
+        aria-hidden="true"
+      >
+        {/* 1. Mobile & Static Baseline Fallback Layer (Used on Mobile <1024px or Reduced Motion) */}
+        <img
+          src={DEFAULT_STATIC_POSTER}
+          alt=""
+          loading="eager"
+          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+            isDesktopSlideshow && (slotASrc || slotBSrc) ? 'opacity-0' : 'opacity-40 scale-100'
+          }`}
+        />
 
-      {/* 2. Desktop Cinematic Ken Burns Slideshow Layers (Memory Optimized - Max 2 Images Active) */}
+        {/* 2. Desktop Cinematic Ken Burns Slideshow Layers (Bright & Vibrant - 72% opacity) */}
+        {isDesktopSlideshow && (
+          <>
+            {/* Image Slot A */}
+            {slotASrc && (
+              <img
+                src={slotASrc}
+                alt=""
+                loading="lazy"
+                onError={() => {
+                  const idx = SLIDESHOW_IMAGES.indexOf(slotASrc);
+                  if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
+                }}
+                style={{
+                  opacity: slotAOpacity * 0.72, // Significantly brighter artwork (72% opacity)
+                  transform: slotAZoom ? 'scale(1.08)' : 'scale(1.00)',
+                  transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
+                }}
+                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+              />
+            )}
+
+            {/* Image Slot B */}
+            {slotBSrc && (
+              <img
+                src={slotBSrc}
+                alt=""
+                loading="lazy"
+                onError={() => {
+                  const idx = SLIDESHOW_IMAGES.indexOf(slotBSrc);
+                  if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
+                }}
+                style={{
+                  opacity: slotBOpacity * 0.72, // Significantly brighter artwork (72% opacity)
+                  transform: slotBZoom ? 'scale(1.08)' : 'scale(1.00)',
+                  transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
+                }}
+                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+              />
+            )}
+          </>
+        )}
+
+        {/* 3. Subtle & Lightened Contrast Gradient Scrims for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#08090D]/60 via-transparent to-[#08090D]/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#FF4FA3]/5 via-transparent to-black/30" />
+      </div>
+
+      {/* 4. Desktop Slideshow Play/Pause Control (Preserved and active across every tab) */}
       {isDesktopSlideshow && (
-        <>
-          {/* Image Slot A */}
-          {slotASrc && (
-            <img
-              src={slotASrc}
-              alt=""
-              loading="lazy"
-              onError={() => {
-                const idx = SLIDESHOW_IMAGES.indexOf(slotASrc);
-                if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
-              }}
-              style={{
-                opacity: slotAOpacity * 0.35, // 35% opacity blended with dark overlays
-                transform: slotAZoom ? 'scale(1.08)' : 'scale(1.00)',
-                transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
-              }}
-              className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-            />
+        <button
+          type="button"
+          onClick={togglePlayPause}
+          aria-label={isPaused ? 'Play background slideshow' : 'Pause background slideshow'}
+          title={isPaused ? 'Play background slideshow' : 'Pause background slideshow'}
+          className="fixed right-3 sm:right-6 bottom-[124px] sm:bottom-[144px] md:bottom-[92px] md:right-20 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#121318]/90 hover:bg-[#1C1D24] border border-[#24262B] hover:border-[#FF4FA3]/50 text-slate-300 hover:text-white shadow-[0_8px_20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer text-xs font-mono select-none pointer-events-auto"
+        >
+          <Film className="w-3.5 h-3.5 text-[#FF4FA3]" />
+          {isPaused ? (
+            <>
+              <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
+              <span className="hidden xs:inline text-[10px] sm:text-xs tracking-wider text-slate-300 font-medium">
+                SLIDESHOW PAUSED
+              </span>
+            </>
+          ) : (
+            <>
+              <Pause className="w-3.5 h-3.5 text-[#FF4FA3]" />
+              <span className="hidden xs:inline text-[10px] sm:text-xs tracking-wider text-slate-300 font-medium">
+                SLIDESHOW
+              </span>
+            </>
           )}
-
-          {/* Image Slot B */}
-          {slotBSrc && (
-            <img
-              src={slotBSrc}
-              alt=""
-              loading="lazy"
-              onError={() => {
-                const idx = SLIDESHOW_IMAGES.indexOf(slotBSrc);
-                if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
-              }}
-              style={{
-                opacity: slotBOpacity * 0.35, // 35% opacity blended with dark overlays
-                transform: slotBZoom ? 'scale(1.08)' : 'scale(1.00)',
-                transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
-              }}
-              className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-            />
-          )}
-        </>
+        </button>
       )}
-
-      {/* 3. Measured Dark Contrast Scrims for Text Readability across all sections */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/80 to-[#08090D]/55" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#08090D]/85 via-transparent to-[#08090D]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#FF4FA3]/10 via-transparent to-black/60" />
-    </div>
+    </>
   );
 };
