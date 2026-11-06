@@ -38,25 +38,24 @@ const FADE_IN_DURATION_MS = 1500; // 1.5s fade in from black
 const PRELOAD_LEAD_TIME_MS = 4000; // Preload next image 4s before transition
 const PAUSE_STORAGE_KEY = 'gtavi_slideshow_paused';
 
-// Smart per-image object positioning to ensure character faces, heads, and skies are never cropped
+// Tailored per-image object positioning to ensure character heads, faces, hats, and upper bodies are fully framed without clipping
 const getImageObjectPosition = (url: string): string => {
-  if (url.includes('Jason') || url.includes('Lucia') || url.includes('Caminos') || url.includes('Duval')) {
-    return 'center 18%'; // Frame character faces and heads cleanly
-  }
-  if (
-    url.includes('Brian') ||
-    url.includes('Raul') ||
-    url.includes('Dimez') ||
-    url.includes('Priest') ||
-    url.includes('Boobie') ||
-    url.includes('Hampton')
-  ) {
-    return 'center 20%';
-  }
-  if (url.includes('Vice_City') || url.includes('Leonida_Keys') || url.includes('Grassrivers')) {
-    return 'center 28%';
-  }
-  return 'center 22%';
+  if (url.includes('Boobie_Ike')) return 'center 5%'; // High character head placement
+  if (url.includes('Brian_Heder')) return 'center 8%';
+  if (url.includes('Raul_Bautista')) return 'center 10%';
+  if (url.includes('Real_Dimez')) return 'center 8%';
+  if (url.includes('DreQuan_Priest')) return 'center 10%';
+  if (url.includes('Cal_Hampton')) return 'center 10%';
+  if (url.includes('Lucia_Caminos')) return 'center 10%';
+  if (url.includes('Jason_Duval')) return 'center 12%';
+  if (url.includes('Motel')) return 'center 12%';
+  if (url.includes('Robbery')) return 'center 12%';
+  if (url.includes('Lock_And_Load')) return 'center 10%';
+  if (url.includes('Beach')) return 'center 15%';
+  if (url.includes('Jason_and_Lucia')) return 'center 14%';
+  if (url.includes('Vice_City')) return 'center 25%';
+  if (url.includes('Leonida_Keys') || url.includes('Grassrivers')) return 'center 30%';
+  return 'center 15%';
 };
 
 export const AtmosphericBackground: React.FC = () => {
@@ -325,7 +324,7 @@ export const AtmosphericBackground: React.FC = () => {
                   opacity: slotAOpacity * 0.80, // Vibrant 80% opacity
                   objectFit: 'cover',
                   objectPosition: getImageObjectPosition(slotASrc),
-                  transform: slotAZoom ? 'scale(1.04)' : 'scale(1.00)',
+                  transform: slotAZoom ? 'scale(1.015)' : 'scale(1.00)', // Subtle 1.5% zoom prevents aggressive cropping
                   transition: 'opacity 1500ms ease-in-out, transform 12000ms linear',
                 }}
                 className="absolute inset-0 w-full h-full pointer-events-none"
@@ -346,7 +345,7 @@ export const AtmosphericBackground: React.FC = () => {
                   opacity: slotBOpacity * 0.80, // Vibrant 80% opacity
                   objectFit: 'cover',
                   objectPosition: getImageObjectPosition(slotBSrc),
-                  transform: slotBZoom ? 'scale(1.04)' : 'scale(1.00)',
+                  transform: slotBZoom ? 'scale(1.015)' : 'scale(1.00)', // Subtle 1.5% zoom prevents aggressive cropping
                   transition: 'opacity 1500ms ease-in-out, transform 12000ms linear',
                 }}
                 className="absolute inset-0 w-full h-full pointer-events-none"
