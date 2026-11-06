@@ -13,7 +13,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="relative bg-[#050608] border-t border-white/10 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-12 overflow-hidden">
+    <footer className="relative bg-[#050608]/70 backdrop-blur-md border-t border-white/10 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-12 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 pb-12 sm:pb-16 border-b border-white/10">
           
