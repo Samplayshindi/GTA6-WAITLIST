@@ -166,7 +166,7 @@ function MainAppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative pb-20 sm:pb-24 md:pb-28 w-full max-w-full overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-[#08090D] text-slate-100 selection:bg-white selection:text-black relative w-full max-w-full overflow-x-hidden">
       {/* 1. Subtle Cinematic Atmospheric Video Background */}
       <AtmosphericBackground />
 
@@ -178,7 +178,7 @@ function MainAppContent() {
       />
 
       {/* 3. Main Content Flow */}
-      <main className="relative z-10 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 relative z-10 w-full max-w-full overflow-x-hidden">
         {isDesktop ? (
           /* DESKTOP ROUTED PAGES */
           <>
