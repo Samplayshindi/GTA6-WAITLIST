@@ -31,8 +31,10 @@ export const SLIDESHOW_IMAGES: string[] = [
 ];
 
 const DEFAULT_STATIC_POSTER = '/images/hero-4k.jpg';
-const DISPLAY_DURATION_MS = 12000; // 12 seconds per image
-const CROSSFADE_DURATION_MS = 2000; // 2.0 seconds smooth crossfade
+const DISPLAY_DURATION_MS = 12000; // 12 seconds per image display
+const FADE_OUT_DURATION_MS = 1500; // 1.5s fade out to black
+const BLACK_HOLD_DURATION_MS = 300; // 300ms hold on completely black screen
+const FADE_IN_DURATION_MS = 1500; // 1.5s fade in from black
 const PRELOAD_LEAD_TIME_MS = 4000; // Preload next image 4s before transition
 const PAUSE_STORAGE_KEY = 'gtavi_slideshow_paused';
 
@@ -164,7 +166,10 @@ export const AtmosphericBackground: React.FC = () => {
     []
   );
 
-  // Transition to next image slot with 2.0s overlapping crossfade
+  // Sequential Fade-to-Black Transition:
+  // 1. Fade out active image to black (1.5s)
+  // 2. Hold black screen (300ms)
+  // 3. Fade in next image from black (1.5s)
   const executeTransition = useCallback(async () => {
     if (isTransitioningRef.current || isPaused) return;
     isTransitioningRef.current = true;
@@ -173,7 +178,6 @@ export const AtmosphericBackground: React.FC = () => {
     let nextIdx = getNextRandomIndex(currentIndex, failedIndices);
     let isReady = await preloadNextImage(nextIdx);
 
-    // Retry once if first random choice failed
     if (!isReady) {
       nextIdx = getNextRandomIndex(currentIndex, failedIndices);
       isReady = await preloadNextImage(nextIdx);
@@ -187,32 +191,50 @@ export const AtmosphericBackground: React.FC = () => {
     const nextUrl = SLIDESHOW_IMAGES[nextIdx];
     const targetSlot = activeSlot === 'A' ? 'B' : 'A';
 
-    // Set incoming image slot while keeping outgoing image visible (overlapping crossfade)
-    if (targetSlot === 'B') {
-      setSlotBSrc(nextUrl);
-      setSlotBZoom(true);
-      setSlotBOpacity(1);
+    // STEP 1: Fade out current image to completely black over 1.5s
+    if (activeSlot === 'A') {
       setSlotAOpacity(0);
     } else {
-      setSlotASrc(nextUrl);
-      setSlotAZoom(true);
-      setSlotAOpacity(1);
       setSlotBOpacity(0);
     }
 
-    // After 2.0s crossfade finishes, release reference to outgoing slot from DOM/memory
+    // STEP 2: Hold black screen for 300ms after 1.5s fade out completes
     setTimeout(() => {
-      if (targetSlot === 'B') {
-        setSlotASrc(null); // Release old image from memory
-        setSlotAZoom(false);
-      } else {
-        setSlotBSrc(null); // Release old image from memory
-        setSlotBZoom(false);
+      if (isPaused) {
+        isTransitioningRef.current = false;
+        return;
       }
-      setActiveSlot(targetSlot);
-      setCurrentIndex(nextIdx);
-      isTransitioningRef.current = false;
-    }, CROSSFADE_DURATION_MS);
+
+      // STEP 3: Unmount previous image slot & mount next image in target slot (0 opacity)
+      if (activeSlot === 'A') {
+        setSlotASrc(null);
+        setSlotAZoom(false);
+
+        setSlotBSrc(nextUrl);
+        setSlotBZoom(true);
+        // Trigger fade in from black
+        requestAnimationFrame(() => {
+          setSlotBOpacity(1);
+        });
+      } else {
+        setSlotBSrc(null);
+        setSlotBZoom(false);
+
+        setSlotASrc(nextUrl);
+        setSlotAZoom(true);
+        // Trigger fade in from black
+        requestAnimationFrame(() => {
+          setSlotAOpacity(1);
+        });
+      }
+
+      // STEP 4: After 1.5s fade in finishes, complete transition
+      setTimeout(() => {
+        setActiveSlot(targetSlot);
+        setCurrentIndex(nextIdx);
+        isTransitioningRef.current = false;
+      }, FADE_IN_DURATION_MS);
+    }, FADE_OUT_DURATION_MS + BLACK_HOLD_DURATION_MS);
   }, [activeSlot, currentIndex, failedIndices, getNextRandomIndex, isPaused, preloadNextImage]);
 
   // Main timer loop for slideshow rotation
@@ -286,7 +308,7 @@ export const AtmosphericBackground: React.FC = () => {
           }`}
         />
 
-        {/* 2. Desktop Cinematic Ken Burns Slideshow Layers (Bright & Vibrant - 80% opacity, 2.0s crossfade, subtle 1.04 zoom) */}
+        {/* 2. Desktop Sequential Fade-to-Black Slideshow Layers */}
         {isDesktopSlideshow && (
           <>
             {/* Image Slot A */}
@@ -304,7 +326,7 @@ export const AtmosphericBackground: React.FC = () => {
                   objectFit: 'cover',
                   objectPosition: getImageObjectPosition(slotASrc),
                   transform: slotAZoom ? 'scale(1.04)' : 'scale(1.00)',
-                  transition: 'opacity 2000ms ease-in-out, transform 12000ms linear',
+                  transition: 'opacity 1500ms ease-in-out, transform 12000ms linear',
                 }}
                 className="absolute inset-0 w-full h-full pointer-events-none"
               />
@@ -325,7 +347,7 @@ export const AtmosphericBackground: React.FC = () => {
                   objectFit: 'cover',
                   objectPosition: getImageObjectPosition(slotBSrc),
                   transform: slotBZoom ? 'scale(1.04)' : 'scale(1.00)',
-                  transition: 'opacity 2000ms ease-in-out, transform 12000ms linear',
+                  transition: 'opacity 1500ms ease-in-out, transform 12000ms linear',
                 }}
                 className="absolute inset-0 w-full h-full pointer-events-none"
               />
