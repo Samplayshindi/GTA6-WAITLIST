@@ -4,7 +4,7 @@ import { TIMELINE_DATA } from '../data/timelineData';
 
 export const TimelineSection: React.FC = () => {
   return (
-    <section id="timeline" className="relative py-16 sm:py-20 md:py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
+    <section id="timeline" className="relative py-16 sm:py-20 md:py-28 bg-transparent border-t border-white/10 scroll-mt-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}

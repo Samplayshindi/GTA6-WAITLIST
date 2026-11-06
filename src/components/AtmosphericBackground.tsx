@@ -32,9 +32,30 @@ export const SLIDESHOW_IMAGES: string[] = [
 
 const DEFAULT_STATIC_POSTER = '/images/hero-4k.jpg';
 const DISPLAY_DURATION_MS = 12000; // 12 seconds per image
-const CROSSFADE_DURATION_MS = 1500; // 1.5 seconds crossfade
-const PRELOAD_LEAD_TIME_MS = 3500; // Preload next image 3.5s before transition
+const CROSSFADE_DURATION_MS = 2000; // 2.0 seconds smooth crossfade
+const PRELOAD_LEAD_TIME_MS = 4000; // Preload next image 4s before transition
 const PAUSE_STORAGE_KEY = 'gtavi_slideshow_paused';
+
+// Smart per-image object positioning to ensure character faces, heads, and skies are never cropped
+const getImageObjectPosition = (url: string): string => {
+  if (url.includes('Jason') || url.includes('Lucia') || url.includes('Caminos') || url.includes('Duval')) {
+    return 'center 18%'; // Frame character faces and heads cleanly
+  }
+  if (
+    url.includes('Brian') ||
+    url.includes('Raul') ||
+    url.includes('Dimez') ||
+    url.includes('Priest') ||
+    url.includes('Boobie') ||
+    url.includes('Hampton')
+  ) {
+    return 'center 20%';
+  }
+  if (url.includes('Vice_City') || url.includes('Leonida_Keys') || url.includes('Grassrivers')) {
+    return 'center 28%';
+  }
+  return 'center 22%';
+};
 
 export const AtmosphericBackground: React.FC = () => {
   const [isDesktopSlideshow, setIsDesktopSlideshow] = useState<boolean>(false);
@@ -119,7 +140,7 @@ export const AtmosphericBackground: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Preload next image into memory 3.5 seconds before transition
+  // Preload next image into memory 4 seconds before transition
   const preloadNextImage = useCallback(
     (nextIdx: number): Promise<boolean> => {
       return new Promise((resolve) => {
@@ -143,7 +164,7 @@ export const AtmosphericBackground: React.FC = () => {
     []
   );
 
-  // Transition to next image slot
+  // Transition to next image slot with 2.0s overlapping crossfade
   const executeTransition = useCallback(async () => {
     if (isTransitioningRef.current || isPaused) return;
     isTransitioningRef.current = true;
@@ -166,6 +187,7 @@ export const AtmosphericBackground: React.FC = () => {
     const nextUrl = SLIDESHOW_IMAGES[nextIdx];
     const targetSlot = activeSlot === 'A' ? 'B' : 'A';
 
+    // Set incoming image slot while keeping outgoing image visible (overlapping crossfade)
     if (targetSlot === 'B') {
       setSlotBSrc(nextUrl);
       setSlotBZoom(true);
@@ -178,7 +200,7 @@ export const AtmosphericBackground: React.FC = () => {
       setSlotBOpacity(0);
     }
 
-    // After crossfade finishes (1500ms), release reference to previous slot from DOM/memory
+    // After 2.0s crossfade finishes, release reference to outgoing slot from DOM/memory
     setTimeout(() => {
       if (targetSlot === 'B') {
         setSlotASrc(null); // Release old image from memory
@@ -202,7 +224,7 @@ export const AtmosphericBackground: React.FC = () => {
     const scheduleNextRotation = () => {
       if (isTabHidden || isPaused) return;
 
-      // 1. Preload lead timer (at t = 8.5 seconds)
+      // 1. Preload lead timer (at t = 8 seconds)
       preloadTimerRef.current = setTimeout(() => {
         const upcomingIndex = getNextRandomIndex(currentIndex, failedIndices);
         preloadNextImage(upcomingIndex);
@@ -264,7 +286,7 @@ export const AtmosphericBackground: React.FC = () => {
           }`}
         />
 
-        {/* 2. Desktop Cinematic Ken Burns Slideshow Layers (Bright & Vibrant - 72% opacity) */}
+        {/* 2. Desktop Cinematic Ken Burns Slideshow Layers (Bright & Vibrant - 80% opacity, 2.0s crossfade, subtle 1.04 zoom) */}
         {isDesktopSlideshow && (
           <>
             {/* Image Slot A */}
@@ -278,11 +300,13 @@ export const AtmosphericBackground: React.FC = () => {
                   if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
                 }}
                 style={{
-                  opacity: slotAOpacity * 0.72, // Significantly brighter artwork (72% opacity)
-                  transform: slotAZoom ? 'scale(1.08)' : 'scale(1.00)',
-                  transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
+                  opacity: slotAOpacity * 0.80, // Vibrant 80% opacity
+                  objectFit: 'cover',
+                  objectPosition: getImageObjectPosition(slotASrc),
+                  transform: slotAZoom ? 'scale(1.04)' : 'scale(1.00)',
+                  transition: 'opacity 2000ms ease-in-out, transform 12000ms linear',
                 }}
-                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+                className="absolute inset-0 w-full h-full pointer-events-none"
               />
             )}
 
@@ -297,20 +321,22 @@ export const AtmosphericBackground: React.FC = () => {
                   if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
                 }}
                 style={{
-                  opacity: slotBOpacity * 0.72, // Significantly brighter artwork (72% opacity)
-                  transform: slotBZoom ? 'scale(1.08)' : 'scale(1.00)',
-                  transition: 'opacity 1500ms ease-in-out, transform 12000ms ease-out',
+                  opacity: slotBOpacity * 0.80, // Vibrant 80% opacity
+                  objectFit: 'cover',
+                  objectPosition: getImageObjectPosition(slotBSrc),
+                  transform: slotBZoom ? 'scale(1.04)' : 'scale(1.00)',
+                  transition: 'opacity 2000ms ease-in-out, transform 12000ms linear',
                 }}
-                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+                className="absolute inset-0 w-full h-full pointer-events-none"
               />
             )}
           </>
         )}
 
         {/* 3. Subtle & Lightened Contrast Gradient Scrims for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#08090D] via-[#08090D]/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#08090D]/60 via-transparent to-[#08090D]/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#FF4FA3]/5 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090D]/80 via-[#08090D]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#08090D]/50 via-transparent to-[#08090D]/60" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#FF4FA3]/5 via-transparent to-black/25" />
       </div>
 
       {/* 4. Desktop Slideshow Play/Pause Control (Preserved and active across every tab) */}

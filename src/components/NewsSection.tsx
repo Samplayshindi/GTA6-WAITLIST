@@ -73,9 +73,9 @@ export const NewsSection: React.FC = () => {
   const gridArticles = articles.slice(1);
 
   return (
-    <section id="newswire" className="relative py-16 sm:py-20 md:py-28 bg-gradient-to-b from-[#08090D] via-[#0B2425]/40 to-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
+    <section id="newswire" className="relative py-16 sm:py-20 md:py-28 bg-gradient-to-b from-transparent via-[#0B2425]/20 to-transparent border-t border-white/10 scroll-mt-20 overflow-hidden">
       {/* Background Subtle Geometric Diagonal Glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#102D2A] via-[#08090D] to-transparent" />
+      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#102D2A] via-transparent to-transparent" />
       <div className="absolute top-1/4 -right-40 w-96 h-96 bg-[#F15A24]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

@@ -13,7 +13,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
   const standardVideos = OFFICIAL_VIDEOS.filter((v) => !v.isFeatured);
 
   return (
-    <section id="videos" className="relative py-16 sm:py-20 md:py-28 bg-[#08090D] border-t border-white/10 scroll-mt-20 overflow-hidden">
+    <section id="videos" className="relative py-16 sm:py-20 md:py-28 bg-transparent border-t border-white/10 scroll-mt-20 overflow-hidden">
       {/* Background ambient flare */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#0B2425]/30 rounded-full blur-3xl pointer-events-none" />
 

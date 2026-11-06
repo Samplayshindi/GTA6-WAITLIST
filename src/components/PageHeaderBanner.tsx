@@ -13,11 +13,10 @@ export const PageHeaderBanner: React.FC<PageHeaderBannerProps> = ({
   category,
   title,
   description,
-  accentColor = '#F15A24',
   onNavigateHome,
 }) => {
   return (
-    <div className="relative pt-24 pb-8 md:pt-28 md:pb-12 bg-gradient-to-b from-[#0B2425]/40 via-[#08090D] to-[#08090D] border-b border-white/10">
+    <div className="relative pt-24 pb-8 md:pt-28 md:pb-12 bg-gradient-to-b from-[#0B2425]/40 via-[#08090D]/50 to-transparent border-b border-white/10 backdrop-blur-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Breadcrumb */}
