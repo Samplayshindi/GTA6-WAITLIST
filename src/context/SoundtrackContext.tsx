@@ -46,13 +46,16 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   // Restore saved track index from localStorage if valid
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const savedIdx = localStorage.getItem('gta_soundtrack_track_idx');
-      if (savedIdx !== null) {
-        const parsed = parseInt(savedIdx, 10);
-        if (!isNaN(parsed) && parsed >= 0 && parsed < SOUNDTRACK_LIBRARY.length) {
-          // If the saved track is playable, use it
-          if (SOUNDTRACK_LIBRARY[parsed].isPlayable) return parsed;
+      try {
+        const savedIdx = localStorage.getItem('gta_soundtrack_track_idx');
+        if (savedIdx !== null) {
+          const parsed = parseInt(savedIdx, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed < SOUNDTRACK_LIBRARY.length) {
+            if (SOUNDTRACK_LIBRARY[parsed].isPlayable) return parsed;
+          }
         }
+      } catch {
+        // Storage restricted or unavailable
       }
     }
     return 0;
@@ -64,10 +67,14 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   // Restore saved volume
   const [volume, setVolume] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const savedVol = localStorage.getItem('gta_soundtrack_volume');
-      if (savedVol !== null) {
-        const parsed = parseInt(savedVol, 10);
-        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) return parsed;
+      try {
+        const savedVol = localStorage.getItem('gta_soundtrack_volume');
+        if (savedVol !== null) {
+          const parsed = parseInt(savedVol, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) return parsed;
+        }
+      } catch {
+        // Storage restricted
       }
     }
     return 30;
@@ -79,18 +86,24 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('gta_soundtrack_dismissed') === 'true';
+      try {
+        return sessionStorage.getItem('gta_soundtrack_dismissed') === 'true';
+      } catch {
+        return false;
+      }
     }
     return false;
   });
 
   const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gta_soundtrack_likes');
-      if (saved) {
-        try {
+      try {
+        const saved = localStorage.getItem('gta_soundtrack_likes');
+        if (saved) {
           return new Set(JSON.parse(saved));
-        } catch {}
+        }
+      } catch {
+        // Storage restricted
       }
     }
     return new Set(['flower-in-a-hurricane']);
@@ -139,19 +152,31 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   useEffect(() => {
     currentTrackIndexRef.current = currentTrackIndex;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('gta_soundtrack_track_idx', currentTrackIndex.toString());
+      try {
+        localStorage.setItem('gta_soundtrack_track_idx', currentTrackIndex.toString());
+      } catch {
+        // ignore
+      }
     }
   }, [currentTrackIndex]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('gta_soundtrack_volume', volume.toString());
+      try {
+        localStorage.setItem('gta_soundtrack_volume', volume.toString());
+      } catch {
+        // ignore
+      }
     }
   }, [volume]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('gta_soundtrack_likes', JSON.stringify(Array.from(likedTrackIds)));
+      try {
+        localStorage.setItem('gta_soundtrack_likes', JSON.stringify(Array.from(likedTrackIds)));
+      } catch {
+        // ignore
+      }
     }
   }, [likedTrackIds]);
 
@@ -485,14 +510,22 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     setIsPlaying(false);
     setIsDismissed(true);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('gta_soundtrack_dismissed', 'true');
+      try {
+        sessionStorage.setItem('gta_soundtrack_dismissed', 'true');
+      } catch {
+        // ignore
+      }
     }
   };
 
   const restorePlayer = () => {
     setIsDismissed(false);
     if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('gta_soundtrack_dismissed');
+      try {
+        sessionStorage.removeItem('gta_soundtrack_dismissed');
+      } catch {
+        // ignore
+      }
     }
   };
 
