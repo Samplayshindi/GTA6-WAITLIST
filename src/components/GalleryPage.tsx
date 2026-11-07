@@ -110,21 +110,25 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
               onClick={() => setLightboxIndex(idx)}
               className="group relative rounded-2xl bg-[#090C10] border border-white/10 hover:border-white/40 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer break-inside-avoid block transform hover:-translate-y-1"
             >
-              {/* Aspect Ratio Preserved Image with Optimized Thumbnail URL & Async Decoding */}
-              <div className="relative w-full overflow-hidden bg-black">
+              {/* Aspect Ratio Preserved Container with Instant Placeholder & Smooth Load Fade-in */}
+              <div className="relative w-full overflow-hidden bg-[#12141C] min-h-[160px] aspect-[16/9]">
                 <img
                   src={getThumbnailUrl(img.url)}
                   alt={img.title}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500"
+                  onLoad={(e) => {
+                    (e.currentTarget as HTMLImageElement).classList.remove('opacity-0');
+                    (e.currentTarget as HTMLImageElement).classList.add('opacity-100');
+                  }}
+                  className="w-full h-full object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500 opacity-0"
                 />
 
                 {/* Ambient Subtle Scrim Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
 
                 {/* Hover Zoom Icon Affordance */}
-                <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+                <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 pointer-events-none">
                   <div
                     className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
                     style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
@@ -134,7 +138,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
                 </div>
 
                 {/* Clean Unobtrusive Title Caption */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+                <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
                   <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
                     {img.title}
                   </h3>

@@ -1,3 +1,3 @@
 export const APP_NAME = 'GTA VI WAITLIST';
-export const APP_VERSION = 'v1.0.0';
+export const APP_VERSION = 'v1.6.0';
 export const FULL_VERSION_STRING = `${APP_NAME} · ${APP_VERSION}`;

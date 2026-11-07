@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { X, ChevronLeft, ChevronRight, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { GalleryImage } from '../data/galleryData';
 import { getResponsiveImageUrl } from '../utils/imageUtils';
+import { useSettings } from '../context/SettingsContext';
 
 interface ImageLightboxModalProps {
   images: GalleryImage[];
@@ -16,9 +17,14 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   onClose,
   onNavigateIndex,
 }) => {
+  const { motionMode } = useSettings();
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const [isClosing, setIsClosing] = useState<boolean>(false);
+  const [slideDirection, setSlideDirection] = useState<'next' | 'prev' | null>(null);
+
+  // Animation lock to prevent rapid clicks from breaking transitions
+  const isAnimatingRef = useRef<boolean>(false);
 
   // Touch gesture tracking
   const touchStartX = useRef<number | null>(null);
@@ -55,15 +61,25 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
     }, 200);
   }, [onClose]);
 
-  // Navigation handlers
+  // Navigation handlers with debounce & direction locking
   const handleNext = useCallback(() => {
-    if (currentIndex === null || images.length <= 1) return;
+    if (currentIndex === null || images.length <= 1 || isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setSlideDirection('next');
     onNavigateIndex((currentIndex + 1) % images.length);
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, 350);
   }, [currentIndex, images.length, onNavigateIndex]);
 
   const handlePrev = useCallback(() => {
-    if (currentIndex === null || images.length <= 1) return;
+    if (currentIndex === null || images.length <= 1 || isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setSlideDirection('prev');
     onNavigateIndex((currentIndex - 1 + images.length) % images.length);
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, 350);
   }, [currentIndex, images.length, onNavigateIndex]);
 
   // Keyboard navigation & Escape key listener
@@ -126,6 +142,19 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
 
   const fullResUrl = getResponsiveImageUrl(activeImage.url, 1920);
 
+  // Check if low motion preference or setting is active
+  const isLowMotion =
+    motionMode === 'low' ||
+    (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const slideAnimationClass = isLowMotion
+    ? ''
+    : slideDirection === 'next'
+    ? 'animate-slide-in-right'
+    : slideDirection === 'prev'
+    ? 'animate-slide-in-left'
+    : '';
+
   return (
     <div
       role="dialog"
@@ -138,22 +167,22 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
         isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100 animate-in fade-in zoom-in-95 duration-200'
       }`}
     >
-      {/* Prominent High Z-Index Close Button (X) - Always visible in viewport top-right */}
+      {/* Close Button (X) - Positioned BELOW fixed Navbar at top-20 sm:top-24 */}
       <button
         onClick={handleClose}
         aria-label="Close fullscreen view"
         title="Close (Esc)"
-        className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[110] p-3 rounded-full bg-white/10 hover:bg-[#FF4FA3] text-white backdrop-blur-xl shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95 pointer-events-auto border border-white/20"
+        className="fixed top-20 right-4 sm:top-24 sm:right-6 z-[120] p-3 rounded-full bg-black/80 hover:bg-[var(--theme-primary,#FF4FA3)] text-white backdrop-blur-xl shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95 pointer-events-auto border border-white/20"
       >
         <X className="w-6 h-6 stroke-[2.5]" />
       </button>
 
-      {/* Top Left Counter & High-Res Link */}
+      {/* Top Left Counter & High-Res Link - Positioned BELOW fixed Navbar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="fixed top-4 left-4 sm:top-6 sm:left-6 z-[105] flex items-center gap-3 pointer-events-auto"
+        className="fixed top-20 left-4 sm:top-24 sm:left-6 z-[115] flex items-center gap-3 pointer-events-auto"
       >
-        <span className="text-xs font-mono text-slate-200 bg-black/80 px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-md">
+        <span className="text-xs font-mono text-slate-200 bg-black/80 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-lg">
           {currentIndex + 1} / {images.length}
         </span>
         <a
@@ -161,7 +190,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
           target="_blank"
           rel="noopener noreferrer"
           title="Open high-resolution image in new tab"
-          className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center border border-white/10"
+          className="p-2.5 rounded-full bg-black/80 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center border border-white/20 backdrop-blur-md shadow-lg"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
@@ -170,14 +199,14 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
       {/* Main Interactive Viewer Stage */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-7xl max-h-[85vh] w-full flex flex-col items-center justify-center z-[102] pointer-events-auto"
+        className="relative max-w-7xl max-h-[80vh] w-full flex flex-col items-center justify-center z-[102] pointer-events-auto mt-12 sm:mt-16"
       >
         {/* Previous Image Button */}
         {images.length > 1 && (
           <button
             onClick={handlePrev}
             aria-label="Previous image"
-            className="absolute left-2 sm:left-4 z-[105] p-3 rounded-full bg-black/80 hover:bg-[#FF4FA3] text-white border border-white/20 shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95"
+            className="absolute left-2 sm:left-4 z-[105] p-3 rounded-full bg-black/80 hover:bg-[var(--theme-primary,#FF4FA3)] text-white border border-white/20 shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -188,14 +217,17 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
           <button
             onClick={handleNext}
             aria-label="Next image"
-            className="absolute right-2 sm:right-4 z-[105] p-3 rounded-full bg-black/80 hover:bg-[#FF4FA3] text-white border border-white/20 shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95"
+            className="absolute right-2 sm:right-4 z-[105] p-3 rounded-full bg-black/80 hover:bg-[var(--theme-primary,#FF4FA3)] text-white border border-white/20 shadow-2xl transition-all cursor-pointer min-w-[48px] min-h-[48px] flex items-center justify-center hover:scale-110 active:scale-95"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
         )}
 
-        {/* Fullscreen Artwork Container */}
-        <div className="relative max-w-full max-h-[75vh] flex items-center justify-center overflow-hidden rounded-2xl bg-[#090C10] border border-white/10 shadow-2xl">
+        {/* Fullscreen Artwork Container with Smooth Directional Slide Animation */}
+        <div
+          key={currentIndex}
+          className={`relative max-w-full max-h-[72vh] flex items-center justify-center overflow-hidden rounded-2xl bg-[#090C10] border border-white/10 shadow-2xl ${slideAnimationClass}`}
+        >
           {/* Skeleton Loader */}
           {!imageLoaded && !hasError && (
             <div className="w-[80vw] h-[55vh] max-w-4xl max-h-[600px] flex flex-col items-center justify-center bg-[#090C10] animate-pulse">
@@ -226,7 +258,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
                 setImageLoaded(true);
                 setHasError(true);
               }}
-              className={`max-w-full max-h-[75vh] w-auto h-auto object-contain transition-all duration-300 shadow-2xl ${
+              className={`max-w-full max-h-[72vh] w-auto h-auto object-contain transition-all duration-300 shadow-2xl ${
                 imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
               }`}
             />

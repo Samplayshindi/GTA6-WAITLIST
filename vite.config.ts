@@ -25,7 +25,7 @@ export default defineConfig(() => {
         manifest: false, // We maintain public/manifest.json directly
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,woff,woff2}'],
-          navigateFallback: '/offline.html',
+          navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {

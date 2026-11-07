@@ -35,7 +35,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Media & Intel Navigation */}
           <div className="space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#F15A24] block">
+            <span
+              className="text-xs font-mono font-bold tracking-[0.2em] uppercase block"
+              style={{ color: 'var(--theme-primary, #F15A24)' }}
+            >
               Media &amp; Intel
             </span>
             <ul className="space-y-2.5 text-xs font-medium text-slate-400">
@@ -44,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('overview')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Clock className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
+                  <Clock className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #F15A24)' }} />
                   <span>Overview &amp; Launch Timers</span>
                 </button>
               </li>
@@ -53,7 +56,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('gallery')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <ImageIcon className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
+                  <ImageIcon className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
                   <span>Official Media Gallery</span>
                 </button>
               </li>
@@ -62,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('videos')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Video className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
+                  <Video className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
                   <span>Official Videos Hub</span>
                 </button>
               </li>
@@ -71,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('newswire')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Newspaper className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
+                  <Newspaper className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-tertiary, #00F5D4)' }} />
                   <span>Live Newswire Feed</span>
                 </button>
               </li>
@@ -80,7 +83,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Archive & Specs Navigation */}
           <div className="space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#FF4FA3] block">
+            <span
+              className="text-xs font-mono font-bold tracking-[0.2em] uppercase block"
+              style={{ color: 'var(--theme-secondary, #FF4FA3)' }}
+            >
               Archive &amp; Specs
             </span>
             <ul className="space-y-2.5 text-xs font-medium text-slate-400">
@@ -89,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('timeline')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-tertiary, #00F5D4)' }} />
                   <span>Development Timeline</span>
                 </button>
               </li>
@@ -98,7 +104,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('faq')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <HelpCircle className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
+                  <HelpCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
                   <span>FAQ &amp; Knowledgebase</span>
                 </button>
               </li>
@@ -107,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('specifications')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Cpu className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
+                  <Cpu className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #F15A24)' }} />
                   <span>Production Details &amp; Storage</span>
                 </button>
               </li>
@@ -117,7 +123,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Official Portals & Back to Top */}
           <div className="space-y-4 flex flex-col justify-between">
             <div>
-              <span className="text-xs font-mono font-bold tracking-[0.2em] uppercase text-[#00F5D4] block mb-2.5">
+              <span
+                className="text-xs font-mono font-bold tracking-[0.2em] uppercase block mb-2.5"
+                style={{ color: 'var(--theme-tertiary, #00F5D4)' }}
+              >
                 Official Portals
               </span>
               <ul className="space-y-2 text-xs text-slate-400">
@@ -159,10 +168,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#F4F1ED] bg-[#0B2425] border border-[#F15A24]/30 hover:border-[#F15A24] transition-colors cursor-pointer w-full sm:w-auto min-h-[44px]"
+              className="inline-flex items-center justify-between px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#F4F1ED] bg-[#0B2425] border transition-colors cursor-pointer w-full sm:w-auto min-h-[44px]"
+              style={{ borderColor: 'var(--theme-primary, #F15A24)' }}
             >
               <span>Back to Top</span>
-              <ArrowUp className="w-3.5 h-3.5 text-[#F15A24]" />
+              <ArrowUp className="w-3.5 h-3.5" style={{ color: 'var(--theme-primary, #F15A24)' }} />
             </button>
           </div>
         </div>

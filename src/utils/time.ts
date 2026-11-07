@@ -110,7 +110,7 @@ if (typeof window !== 'undefined') {
     }
   }, 45 * 1000);
 
-  window.addEventListener('visibilitychange', () => {
+  document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       syncAuthoritativeServerTime();
     }

@@ -123,7 +123,7 @@ export const MusicPlayer: React.FC = () => {
         title="Open GTA VI Soundtrack Player"
         aria-label="Restore Soundtrack Player"
       >
-        <Radio className="w-3.5 h-3.5 text-[#FF4FA3] animate-pulse" />
+        <Radio className="w-3.5 h-3.5 animate-pulse" style={{ color: 'var(--theme-primary, #FF4FA3)' }} />
         <span className="truncate max-w-[140px] sm:max-w-none">{currentTrack.title}</span>
       </button>
     );
@@ -147,7 +147,10 @@ export const MusicPlayer: React.FC = () => {
             {/* Modal Header */}
             <div className="px-5 sm:px-6 py-4 border-b border-[#24262B] flex items-center justify-between bg-[#08090D]">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[#FF4FA3] shrink-0 border border-white/10">
+                <div
+                  className="w-8 h-8 rounded bg-white/5 flex items-center justify-center shrink-0 border border-white/10"
+                  style={{ color: 'var(--theme-primary, #FF4FA3)' }}
+                >
                   <Music2 className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -183,18 +186,30 @@ export const MusicPlayer: React.FC = () => {
                       onClick={() => selectTrack(idx)}
                       className={`group px-3 py-2.5 rounded-lg flex items-center justify-between gap-3 transition-colors ${
                         isSelected
-                          ? 'bg-[#18191E] border border-[#FF4FA3]/30 cursor-pointer'
+                          ? 'bg-[#18191E] border cursor-pointer'
                           : 'hover:bg-[#121318] border border-transparent cursor-pointer'
                       }`}
+                      style={{
+                        borderColor: isSelected ? 'var(--theme-primary, #FF4FA3)' : undefined,
+                      }}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Track Number / Equalizer Animation */}
                         <span className="text-xs font-mono text-[#A1A1AA] w-5 text-center shrink-0">
                           {isSelected && isPlaying ? (
                             <span className="inline-flex items-end justify-center gap-0.5 h-3.5">
-                              <span className="w-0.5 h-3 bg-[#FF4FA3] animate-pulse" />
-                              <span className="w-0.5 h-4 bg-[#FF4FA3] animate-pulse delay-75" />
-                              <span className="w-0.5 h-2 bg-[#FF4FA3] animate-pulse delay-150" />
+                              <span
+                                className="w-0.5 h-3 animate-pulse"
+                                style={{ backgroundColor: 'var(--theme-primary, #FF4FA3)' }}
+                              />
+                              <span
+                                className="w-0.5 h-4 animate-pulse delay-75"
+                                style={{ backgroundColor: 'var(--theme-primary, #FF4FA3)' }}
+                              />
+                              <span
+                                className="w-0.5 h-2 animate-pulse delay-150"
+                                style={{ backgroundColor: 'var(--theme-primary, #FF4FA3)' }}
+                              />
                             </span>
                           ) : (
                             idx + 1
@@ -228,9 +243,10 @@ export const MusicPlayer: React.FC = () => {
                         {/* Title & Artist */}
                         <div className="min-w-0 flex-1">
                           <h4
-                            className={`text-xs sm:text-sm font-semibold truncate ${
-                              isSelected ? 'text-[#FF4FA3]' : 'text-[#F5F5F5]'
-                            }`}
+                            className="text-xs sm:text-sm font-semibold truncate"
+                            style={{
+                              color: isSelected ? 'var(--theme-primary, #FF4FA3)' : '#F5F5F5',
+                            }}
                           >
                             {track.title}
                           </h4>
@@ -250,8 +266,11 @@ export const MusicPlayer: React.FC = () => {
                             toggleLike(track.id);
                           }}
                           className={`p-1.5 rounded hover:bg-white/5 transition-colors cursor-pointer ${
-                            isLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+                            isLiked ? '' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
                           }`}
+                          style={{
+                            color: isLiked ? 'var(--theme-primary, #FF4FA3)' : undefined,
+                          }}
                           aria-label="Save to favorite"
                         >
                           <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
@@ -271,7 +290,12 @@ export const MusicPlayer: React.FC = () => {
               <span className="truncate">
                 Now Selected: <strong className="text-[#F5F5F5]">{currentTrack.title}</strong>
               </span>
-              <span className="font-mono text-[#FF4FA3] shrink-0 ml-2">Official Audio Engine</span>
+              <span
+                className="font-mono shrink-0 ml-2"
+                style={{ color: 'var(--theme-primary, #FF4FA3)' }}
+              >
+                Official Audio Engine
+              </span>
             </div>
           </div>
         </div>
@@ -293,13 +317,19 @@ export const MusicPlayer: React.FC = () => {
           <div className="w-full h-2 bg-[#1C1D24] border border-white/10 rounded-full relative overflow-visible">
             {/* Filled Progress Line */}
             <div
-              className="h-full bg-gradient-to-r from-[#F15A24] to-[#FF4FA3] rounded-full relative"
-              style={{ width: `${progressPercent}%` }}
+              className="h-full rounded-full relative"
+              style={{
+                width: `${progressPercent}%`,
+                background: 'var(--theme-gradient, linear-gradient(to right, #F15A24, #FF4FA3))',
+              }}
             />
             {/* Always-Visible Circular Thumb Knob */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#FF4FA3] shadow-[0_0_10px_rgba(255,79,163,0.95)] cursor-grab active:cursor-grabbing pointer-events-none"
-              style={{ left: `calc(${progressPercent}% - 8px)` }}
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 shadow-lg cursor-grab active:cursor-grabbing pointer-events-none"
+              style={{
+                left: `calc(${progressPercent}% - 8px)`,
+                borderColor: 'var(--theme-primary, #FF4FA3)',
+              }}
             />
           </div>
         </div>
@@ -351,8 +381,11 @@ export const MusicPlayer: React.FC = () => {
             <button
               onClick={() => toggleLike(currentTrack.id)}
               className={`hidden md:block p-1.5 transition-colors cursor-pointer shrink-0 ${
-                isCurrentTrackLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
+                isCurrentTrackLiked ? '' : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
               }`}
+              style={{
+                color: isCurrentTrackLiked ? 'var(--theme-primary, #FF4FA3)' : undefined,
+              }}
               title={isCurrentTrackLiked ? 'Remove from favorites' : 'Save to favorites'}
               aria-label="Save track"
             >
@@ -414,12 +447,18 @@ export const MusicPlayer: React.FC = () => {
                 title="Seek"
               >
                 <div
-                  className="h-full bg-gradient-to-r from-[#F15A24] to-[#FF4FA3] rounded-full relative"
-                  style={{ width: `${progressPercent}%` }}
+                  className="h-full rounded-full relative"
+                  style={{
+                    width: `${progressPercent}%`,
+                    background: 'var(--theme-gradient, linear-gradient(to right, #F15A24, #FF4FA3))',
+                  }}
                 />
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 border-[#FF4FA3] shadow-[0_0_8px_rgba(255,79,163,0.9)] transition-transform group-hover:scale-110 active:scale-125 cursor-grab active:cursor-grabbing pointer-events-none"
-                  style={{ left: `calc(${progressPercent}% - 7px)` }}
+                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 transition-transform group-hover:scale-110 active:scale-125 cursor-grab active:cursor-grabbing pointer-events-none"
+                  style={{
+                    left: `calc(${progressPercent}% - 7px)`,
+                    borderColor: 'var(--theme-primary, #FF4FA3)',
+                  }}
                 />
               </div>
 
@@ -439,8 +478,11 @@ export const MusicPlayer: React.FC = () => {
                 toggleLike(currentTrack.id);
               }}
               className={`p-1.5 transition-colors cursor-pointer min-w-[34px] min-h-[34px] flex items-center justify-center ${
-                isCurrentTrackLiked ? 'text-[#FF4FA3]' : 'text-[#A1A1AA]'
+                isCurrentTrackLiked ? '' : 'text-[#A1A1AA]'
               }`}
+              style={{
+                color: isCurrentTrackLiked ? 'var(--theme-primary, #FF4FA3)' : undefined,
+              }}
               aria-label="Save track"
             >
               <Heart className={`w-4 h-4 ${isCurrentTrackLiked ? 'fill-current' : ''}`} />
@@ -481,8 +523,11 @@ export const MusicPlayer: React.FC = () => {
                 setIsQueueOpen(!isQueueOpen);
               }}
               className={`p-1.5 rounded-lg cursor-pointer min-w-[34px] min-h-[34px] flex items-center justify-center ${
-                isQueueOpen ? 'text-[#FF4FA3]' : 'text-[#A1A1AA]'
+                isQueueOpen ? '' : 'text-[#A1A1AA]'
               }`}
+              style={{
+                color: isQueueOpen ? 'var(--theme-primary, #FF4FA3)' : undefined,
+              }}
               aria-label="Open queue"
             >
               <ListMusic className="w-4 h-4" />
@@ -498,9 +543,12 @@ export const MusicPlayer: React.FC = () => {
               onClick={() => setIsQueueOpen(!isQueueOpen)}
               className={`p-2 rounded transition-colors cursor-pointer relative ${
                 isQueueOpen
-                  ? 'text-[#FF4FA3] bg-white/5'
+                  ? 'bg-white/5'
                   : 'text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-white/5'
               }`}
+              style={{
+                color: isQueueOpen ? 'var(--theme-primary, #FF4FA3)' : undefined,
+              }}
               title="Tracklist Queue"
               aria-label="Queue"
             >
