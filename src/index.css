@@ -9,8 +9,11 @@
 @layer base {
   :root {
     --bg-deep: #08090D;
-    --neon-pink: #FF4FA3;
-    --ocean-blue: #36B9E9;
+    --theme-primary: #FF4FA3;
+    --theme-secondary: #A855F7;
+    --theme-tertiary: #00F5D4;
+    --theme-gradient: linear-gradient(to right, var(--theme-primary), var(--theme-secondary));
+    --theme-gradient-3: linear-gradient(to right, var(--theme-primary), var(--theme-secondary), var(--theme-tertiary));
   }
 
   html, body {
@@ -29,6 +32,30 @@
   button, input, select, textarea {
     font-family: inherit;
   }
+}
+
+/* Global Theme Helper Utilities */
+.theme-gradient-text {
+  background-image: var(--theme-gradient-3, linear-gradient(to right, #FF4FA3, #A855F7, #00F5D4));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.theme-text-primary {
+  color: var(--theme-primary, #FF4FA3) !important;
+}
+
+.theme-text-secondary {
+  color: var(--theme-secondary, #A855F7) !important;
+}
+
+.theme-bg-primary {
+  background-color: var(--theme-primary, #FF4FA3) !important;
+}
+
+.theme-border-primary {
+  border-color: var(--theme-primary, #FF4FA3) !important;
 }
 
 /* Subtle Film Grain Texture Overlay */

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock } from 'lucide-react';
+import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Sliders } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
+import { SettingsDrawer } from './SettingsDrawer';
+import { useSettings } from '../context/SettingsContext';
 
 interface NavbarProps {
   activeSection: string;
@@ -16,6 +18,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { activePalette } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'overview', label: 'Overview', icon: Clock },
+    { id: 'gallery', label: 'Gallery', icon: ImageIcon },
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'newswire', label: 'Newswire', icon: Newspaper },
     { id: 'timeline', label: 'Timeline', icon: Calendar },
@@ -42,6 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isLinkActive = (id: string) => {
     if (currentPath !== undefined) {
       if (id === 'overview') return currentPath === '/';
+      if (id === 'gallery') return currentPath === '/gallery';
       if (id === 'videos') return currentPath === '/videos';
       if (id === 'newswire') return currentPath === '/newswire';
       if (id === 'timeline') return currentPath === '/timeline';
@@ -76,36 +82,59 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Zone 2: Desktop Editorial Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 xl:gap-9 text-xs font-bold tracking-[0.18em] uppercase">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-bold tracking-[0.18em] uppercase">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
                 className={`py-1.5 transition-colors cursor-pointer min-h-[36px] whitespace-nowrap shrink-0 ${
                   isLinkActive(link.id)
-                    ? 'text-[#F5F5F5] border-b-2 border-[#F15A24]'
+                    ? 'text-[#F5F5F5] border-b-2'
                     : 'text-[#A1A1AA] hover:text-[#F5F5F5]'
                 }`}
+                style={{
+                  borderColor: isLinkActive(link.id) ? activePalette.primaryHex : 'transparent',
+                }}
               >
                 {link.label}
               </button>
             ))}
           </nav>
 
-          {/* Zone 3: Primary Action & Install Button */}
+          {/* Zone 3: Primary Action & Hamburger Settings Menu Button */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
             <PWAInstallButton variant="nav" />
+
+            {/* Premium Hamburger Settings Button */}
+            <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Open website preferences and menu"
+              title="Website Settings & Menu"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-slate-200 hover:text-white transition-all duration-200 cursor-pointer text-xs font-bold tracking-wider uppercase min-h-[38px] hover:scale-105 active:scale-95"
+            >
+              <Sliders className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
+              <span>Menu</span>
+            </button>
           </div>
 
-          {/* Mobile Right Controls: Install Button + Menu Toggle */}
+          {/* Mobile Right Controls: Install Button + Settings + Menu Toggle */}
           <div className="lg:hidden flex items-center gap-2">
             <PWAInstallButton variant="nav" />
+
+            <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Open settings drawer"
+              className="p-2 sm:p-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white focus:outline-none cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
+            >
+              <Sliders className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
+            </button>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 sm:p-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white focus:outline-none cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
               aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#F15A24]" /> : <Menu className="w-5 h-5 text-[#F4F1ED]" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[var(--theme-primary,#F15A24)]" /> : <Menu className="w-5 h-5 text-[#F4F1ED]" />}
             </button>
           </div>
 
@@ -134,22 +163,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="space-y-1.5">
               {navLinks.map((link) => {
                 const Icon = link.icon;
-                const isActive = activeSection === link.id;
+                const isActive = isLinkActive(link.id);
                 return (
                   <button
                     key={link.id}
                     onClick={() => handleLinkClick(link.id)}
                     className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-left text-sm font-semibold tracking-wider uppercase transition-colors min-h-[48px] ${
                       isActive
-                        ? 'bg-[#F15A24] text-white shadow-lg shadow-[#F15A24]/20'
+                        ? 'text-white shadow-lg'
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
+                    style={{
+                      backgroundColor: isActive ? activePalette.primaryHex : undefined,
+                    }}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#F15A24]'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[var(--theme-primary,#F15A24)]'}`} />
                     <span>{link.label}</span>
                   </button>
                 );
               })}
+            </div>
+
+            <div className="pt-4 border-t border-white/10 mt-4">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSettingsOpen(true);
+                }}
+                className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-left text-sm font-semibold tracking-wider uppercase transition-colors min-h-[48px] bg-white/5 hover:bg-white/10 text-slate-200"
+              >
+                <Sliders className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
+                <span>Preferences &amp; Settings</span>
+              </button>
             </div>
           </div>
 
@@ -163,6 +208,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Hamburger Settings Drawer */}
+      <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   );
 };

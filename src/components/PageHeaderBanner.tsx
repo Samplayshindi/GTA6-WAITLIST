@@ -5,7 +5,7 @@ interface PageHeaderBannerProps {
   category: string;
   title: string;
   description: string;
-  accentColor?: string; // hex or tailwind class
+  accentColor?: string;
   onNavigateHome: () => void;
 }
 
@@ -25,7 +25,7 @@ export const PageHeaderBanner: React.FC<PageHeaderBannerProps> = ({
             onClick={onNavigateHome}
             className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
-            <Home className="w-3.5 h-3.5 text-[#F15A24]" />
+            <Home className="w-3.5 h-3.5 theme-text-primary" />
             <span>Home</span>
           </button>
           <span className="text-slate-600">/</span>

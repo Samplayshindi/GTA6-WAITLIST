@@ -17,13 +17,16 @@ import { DesktopHomePreviews } from './components/DesktopHomePreviews';
 import { PageHeaderBanner } from './components/PageHeaderBanner';
 import { AtmosphericBackground } from './components/AtmosphericBackground';
 import { BackToTopButton } from './components/BackToTopButton';
+import { GalleryPage } from './components/GalleryPage';
 import { LaunchStateProvider } from './context/LaunchStateContext';
 import { SoundtrackProvider } from './context/SoundtrackContext';
+import { SettingsProvider } from './context/SettingsContext';
 
 function normalizePath(rawPath: string): string {
   const clean = rawPath.toLowerCase().split('?')[0].split('#')[0];
   if (clean === '/specifications') return '/specs';
   if (
+    clean === '/gallery' ||
     clean === '/videos' ||
     clean === '/newswire' ||
     clean === '/timeline' ||
@@ -36,7 +39,7 @@ function normalizePath(rawPath: string): string {
 }
 
 function MainAppContent() {
-  // Desktop route tracking (e.g. '/', '/videos', '/newswire', '/timeline', '/faq', '/specs')
+  // Desktop route tracking (e.g. '/', '/gallery', '/videos', '/newswire', '/timeline', '/faq', '/specs')
   const [currentPath, setCurrentPath] = useState<string>(() =>
     typeof window !== 'undefined' ? normalizePath(window.location.pathname) : '/'
   );
@@ -62,7 +65,8 @@ function MainAppContent() {
     const handlePopState = () => {
       const normalized = normalizePath(window.location.pathname);
       setCurrentPath(normalized);
-      if (normalized === '/videos') setActiveSection('videos');
+      if (normalized === '/gallery') setActiveSection('gallery');
+      else if (normalized === '/videos') setActiveSection('videos');
       else if (normalized === '/newswire') setActiveSection('newswire');
       else if (normalized === '/timeline') setActiveSection('timeline');
       else if (normalized === '/faq') setActiveSection('faq');
@@ -80,6 +84,7 @@ function MainAppContent() {
 
     const sections = [
       'overview',
+      'gallery',
       'videos',
       'newswire',
       'timeline',
@@ -106,7 +111,7 @@ function MainAppContent() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isDesktop, currentPath]);
 
-  // Handle direct link landing on mobile (smooth scroll to section if mobile loads e.g. /videos)
+  // Handle direct link landing on mobile
   useEffect(() => {
     if (!isDesktop && currentPath !== '/') {
       const targetId = currentPath === '/specs' ? 'specifications' : currentPath.replace('/', '');
@@ -118,12 +123,13 @@ function MainAppContent() {
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [isDesktop]);
+  }, [isDesktop, currentPath]);
 
   // Unified navigation handler
   const handleNavigate = (sectionId: string) => {
     let targetPath = '/';
-    if (sectionId === 'videos' || sectionId === '/videos') targetPath = '/videos';
+    if (sectionId === 'gallery' || sectionId === '/gallery') targetPath = '/gallery';
+    else if (sectionId === 'videos' || sectionId === '/videos') targetPath = '/videos';
     else if (sectionId === 'newswire' || sectionId === '/newswire') targetPath = '/newswire';
     else if (sectionId === 'timeline' || sectionId === '/timeline') targetPath = '/timeline';
     else if (sectionId === 'faq' || sectionId === '/faq') targetPath = '/faq';
@@ -178,7 +184,7 @@ function MainAppContent() {
       />
 
       {/* 3. Main Content Flow */}
-      <main className="flex-1 relative z-10 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 relative z-10 w-full max-w-full overflow-x-hidden pt-16">
         {isDesktop ? (
           /* DESKTOP ROUTED PAGES */
           <>
@@ -186,8 +192,20 @@ function MainAppContent() {
               <>
                 {/* Hero & Dynamic Launch State Countdowns */}
                 <HeroSection onNavigate={handleNavigate} />
-                {/* Compact Previews */}
+                {/* Compact Previews including Gallery */}
                 <DesktopHomePreviews onNavigate={handleNavigate} />
+              </>
+            )}
+
+            {currentPath === '/gallery' && (
+              <>
+                <PageHeaderBanner
+                  category="Rockstar Media Archive"
+                  title="Official Artwork &amp; Screenshots"
+                  description="Comprehensive high-resolution key art, character portraits, and in-engine screenshots captured directly from PlayStation 5 and Xbox Series X|S."
+                  onNavigateHome={() => handleNavigate('overview')}
+                />
+                <GalleryPage onNavigateHome={() => handleNavigate('overview')} />
               </>
             )}
 
@@ -256,16 +274,30 @@ function MainAppContent() {
           <>
             {/* Hero & Countdowns */}
             <HeroSection onNavigate={handleNavigate} />
+            {/* Dedicated Gallery Section */}
+            <div id="gallery">
+              <GalleryPage onNavigateHome={() => handleNavigate('overview')} />
+            </div>
             {/* Official Videos */}
-            <TrailerGallery />
+            <div id="videos">
+              <TrailerGallery />
+            </div>
             {/* Live Newswire Intelligence */}
-            <NewsSection />
+            <div id="newswire">
+              <NewsSection />
+            </div>
             {/* Development Timeline */}
-            <TimelineSection />
+            <div id="timeline">
+              <TimelineSection />
+            </div>
             {/* FAQ */}
-            <FaqSection />
+            <div id="faq">
+              <FaqSection />
+            </div>
             {/* Specifications */}
-            <ReleaseInformation />
+            <div id="specifications">
+              <ReleaseInformation />
+            </div>
           </>
         )}
       </main>
@@ -284,10 +316,12 @@ function MainAppContent() {
 
 export default function App() {
   return (
-    <LaunchStateProvider>
-      <SoundtrackProvider>
-        <MainAppContent />
-      </SoundtrackProvider>
-    </LaunchStateProvider>
+    <SettingsProvider>
+      <LaunchStateProvider>
+        <SoundtrackProvider>
+          <MainAppContent />
+        </SoundtrackProvider>
+      </LaunchStateProvider>
+    </SettingsProvider>
   );
 }

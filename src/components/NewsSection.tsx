@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
+import { getResponsiveImageUrl } from '../utils/imageUtils';
 
 export const NewsSection: React.FC = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -74,23 +75,19 @@ export const NewsSection: React.FC = () => {
 
   return (
     <section id="newswire" className="relative py-16 sm:py-20 md:py-28 bg-gradient-to-b from-transparent via-[#0B2425]/20 to-transparent border-t border-white/10 scroll-mt-20 overflow-hidden">
-      {/* Background Subtle Geometric Diagonal Glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#102D2A] via-transparent to-transparent" />
-      <div className="absolute top-1/4 -right-40 w-96 h-96 bg-[#F15A24]/5 rounded-full blur-3xl pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Hero Header */}
         <div className="max-w-3xl mb-10 sm:mb-14">
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
-            <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
+            <span className="w-2 h-2 rounded-full theme-bg-primary" />
+            <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
               OFFICIAL DISPATCHES
             </span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#F4F1ED]">
-            GTA VI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] via-[#F15A24] to-[#F4F1ED]">NEWSWIRE</span>
+            GTA VI <span className="theme-gradient-text">NEWSWIRE</span>
           </h2>
 
           <p className="mt-2 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-300 font-normal leading-relaxed">
@@ -116,23 +113,22 @@ export const NewsSection: React.FC = () => {
             
             {/* 1. Large Featured Lead Story */}
             {featuredArticle && (
-              <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-[#F15A24]/40 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
-                {/* Image Side */}
+              <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
                 <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
                   <img
-                    src={featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
+                    src={getResponsiveImageUrl(featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description), 1080)}
                     alt={featuredArticle.title}
                     loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B2425] via-transparent to-transparent lg:hidden" />
                 </div>
 
-                {/* Content Side */}
                 <div className="lg:col-span-5 p-5 sm:p-8 md:p-10 flex flex-col justify-between">
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                      <span className="font-bold uppercase tracking-wider text-[#F15A24]">
+                      <span className="font-bold uppercase tracking-wider theme-text-primary">
                         {featuredArticle.source}
                       </span>
                       <span aria-hidden="true" className="text-slate-600">·</span>
@@ -155,7 +151,7 @@ export const NewsSection: React.FC = () => {
                       href={featuredArticle.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[#F15A24] hover:text-[#FF4FA3] transition-colors"
+                      className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase theme-text-primary transition-colors"
                     >
                       <span>READ FULL STORY</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -176,18 +172,20 @@ export const NewsSection: React.FC = () => {
                     year: 'numeric',
                   }).format(new Date(article.publishedAt));
 
-                  const imgSrc = article.thumbnailUrl || getDeterministicArticleImage(article.title, article.description);
+                  const rawSrc = article.thumbnailUrl || getDeterministicArticleImage(article.title, article.description);
+                  const imgSrc = getResponsiveImageUrl(rawSrc, 640);
 
                   return (
                     <article
                       key={article.id}
-                      className="group rounded-xl bg-[#0B2425]/40 border border-white/10 hover:border-[#F15A24]/40 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                      className="group rounded-xl bg-[#0B2425]/40 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between"
                     >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                         <img
                           src={imgSrc}
                           alt={article.title}
                           loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"
                         />
                       </div>
@@ -214,7 +212,7 @@ export const NewsSection: React.FC = () => {
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-[#F15A24] hover:text-[#FF4FA3] transition-colors"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase theme-text-primary transition-colors"
                           >
                             <span>READ ARTICLE</span>
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -227,17 +225,17 @@ export const NewsSection: React.FC = () => {
               </div>
             )}
 
-            {/* 3. Pagination Controls: Show More Button or Final Reached Message */}
+            {/* 3. Pagination Controls */}
             <div className="pt-8 flex flex-col items-center justify-center text-center">
               {hasMore ? (
                 <button
                   onClick={handleShowMore}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full text-xs font-bold tracking-[0.2em] uppercase text-[#F4F1ED] bg-[#0B2425] border border-[#F15A24]/40 hover:border-[#F15A24] hover:bg-[#102D2A] transition-all duration-300 shadow-xl cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full text-xs font-bold tracking-[0.2em] uppercase text-[#F4F1ED] bg-[#0B2425] border border-white/20 hover:bg-[#102D2A] transition-all duration-300 shadow-xl cursor-pointer disabled:opacity-50"
                 >
                   {loadingMore ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin text-[#F15A24]" />
+                      <Loader2 className="w-4 h-4 animate-spin theme-text-primary" />
                       <span>LOADING ARTICLES...</span>
                     </>
                   ) : (
@@ -246,7 +244,7 @@ export const NewsSection: React.FC = () => {
                 </button>
               ) : (
                 <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-mono text-slate-400 bg-white/5 border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F15A24]" />
+                  <span className="w-1.5 h-1.5 rounded-full theme-bg-primary" />
                   <span>You've reached the latest available coverage.</span>
                 </div>
               )}

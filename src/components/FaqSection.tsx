@@ -41,13 +41,13 @@ export const FaqSection: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
-              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
                 Authoritative Knowledgebase
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-              FAQ &amp; Game <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] to-[#F15A24]">Information</span>
+              FAQ &amp; Game <span className="theme-gradient-text">Information</span>
             </h2>
             <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
               Verified answers to the most critical questions regarding GTA VI launch, gameplay, platforms, and technology, authenticated through Rockstar Games disclosures.
@@ -62,26 +62,29 @@ export const FaqSection: React.FC = () => {
               placeholder="Search questions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0B2425]/70 border border-white/10 rounded-full pl-10 pr-4 py-2.5 text-xs font-mono text-white placeholder-slate-400 focus:outline-none focus:border-[#F15A24] transition-colors min-h-[44px]"
+              className="w-full bg-[#0B2425]/70 border border-white/10 rounded-full pl-10 pr-4 py-2.5 text-xs font-mono text-white placeholder-slate-400 focus:outline-none focus:border-white/40 transition-colors min-h-[44px]"
             />
           </div>
         </div>
 
         {/* Category Filter Controls */}
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 no-scrollbar w-full max-w-full">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase transition-all shrink-0 cursor-pointer min-h-[38px] ${
-                selectedCategory === cat
-                  ? 'bg-[#F15A24] text-white shadow-lg shadow-[#F15A24]/20'
-                  : 'bg-[#0B2425]/60 text-slate-300 hover:text-white hover:bg-[#0B2425] border border-white/10'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase transition-all shrink-0 cursor-pointer min-h-[38px] ${
+                  isSelected
+                    ? 'text-white shadow-lg theme-bg-primary'
+                    : 'bg-[#0B2425]/60 text-slate-300 hover:text-white hover:bg-[#0B2425] border border-white/10'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* FAQ Accordion List */}
@@ -98,7 +101,7 @@ export const FaqSection: React.FC = () => {
                   key={faq.id}
                   className={`rounded-2xl border transition-all duration-300 overflow-hidden w-full ${
                     isExpanded
-                      ? 'bg-[#0B2425]/70 border-[#F15A24]/50 shadow-xl'
+                      ? 'bg-[#0B2425]/70 border-white/30 shadow-xl'
                       : 'bg-[#0B2425]/30 border-white/10 hover:border-white/20'
                   }`}
                 >
@@ -108,7 +111,7 @@ export const FaqSection: React.FC = () => {
                     aria-expanded={isExpanded}
                   >
                     <div className="space-y-1 min-w-0 flex-1">
-                      <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-[#FF4FA3] block">
+                      <span className="text-[10px] font-mono font-bold tracking-widest uppercase theme-text-primary block">
                         {faq.category}
                       </span>
                       <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#F4F1ED] leading-snug">
@@ -118,7 +121,7 @@ export const FaqSection: React.FC = () => {
 
                     <div className="p-2 rounded-full bg-white/5 text-slate-300 shrink-0 ml-2">
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[#F15A24]" />
+                        <ChevronUp className="w-4 h-4 theme-text-primary" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
                       )}
@@ -140,7 +143,7 @@ export const FaqSection: React.FC = () => {
                             href={faq.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[#F15A24] hover:text-[#FF4FA3] transition-colors"
+                            className="inline-flex items-center gap-1 theme-text-primary hover:text-white transition-colors"
                           >
                             <span>Official Reference</span>
                             <ExternalLink className="w-3 h-3" />

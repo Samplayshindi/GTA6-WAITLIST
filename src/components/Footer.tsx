@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clock } from 'lucide-react';
+import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon } from 'lucide-react';
 import { RELEASE_SPECS } from '../config/countdown';
+import { FULL_VERSION_STRING } from '../config/version';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface FooterProps {
@@ -49,11 +50,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('countdown')}
+                  onClick={() => onNavigate('gallery')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
-                  <Clock className="w-3.5 h-3.5 text-[#F15A24] shrink-0" />
-                  <span>Pre-load &amp; Release Countdowns</span>
+                  <ImageIcon className="w-3.5 h-3.5 text-[#FF4FA3] shrink-0" />
+                  <span>Official Media Gallery</span>
                 </button>
               </li>
               <li>
@@ -166,7 +167,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Creator Attribution Section (Mandatory SAMAR attribution) */}
+        {/* Creator Attribution Section (Mandatory SAMAR attribution preserved) */}
         <div className="py-8 sm:py-12 text-center space-y-1.5 border-b border-white/10">
           <span className="text-[10px] sm:text-[11px] font-mono tracking-[0.3em] uppercase text-slate-400 block">
             Designed &amp; Developed By
@@ -180,13 +181,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         {/* Legal Disclaimer & Copyright */}
-        <div className="pt-6 sm:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-xs text-slate-500">
+        <div className="pt-6 sm:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-xs text-slate-500 pb-6">
           <p className="max-w-2xl leading-relaxed text-[11px]">
             This is an independent fan-made GTA VI media and information platform. It is not affiliated with, endorsed by, or sponsored by Rockstar Games or Take-Two Interactive. Grand Theft Auto and related marks are trademarks of Take-Two Interactive Software, Inc.
           </p>
           <p className="font-mono text-[10px] sm:text-[11px] text-slate-400 text-center md:text-right whitespace-normal break-words max-w-full leading-relaxed">
             &copy; 2026 Samar. Independent platform. All rights to original media belong to Rockstar Games.
           </p>
+        </div>
+
+        {/* Central Website Version Display (Subtle IBM Plex Mono Typography) */}
+        <div className="pt-4 border-t border-white/5 text-center">
+          <span className="font-mono text-xs text-slate-500 tracking-wider">
+            {FULL_VERSION_STRING}
+          </span>
         </div>
       </div>
     </footer>

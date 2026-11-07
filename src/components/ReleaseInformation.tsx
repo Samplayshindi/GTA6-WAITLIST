@@ -67,13 +67,13 @@ export const ReleaseInformation: React.FC = () => {
         {/* Section Header */}
         <div className="max-w-3xl mb-10 sm:mb-14">
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
-            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase text-[#F15A24]">
+            <span className="w-2 h-2 rounded-full theme-bg-primary" />
+            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
               Official Production Information
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            Production <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4FA3] to-[#F15A24]">Specifications</span>
+            Production <span className="theme-gradient-text">Specifications</span>
           </h2>
           <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
             Authoritative release milestones, digital pre-loading schedules, storage footprints, and technology specifications authenticated through official studio announcements.
@@ -87,11 +87,11 @@ export const ReleaseInformation: React.FC = () => {
             return (
               <div
                 key={index}
-                className="rounded-2xl bg-[#0B2425]/40 border border-white/10 p-5 sm:p-6 md:p-8 flex flex-col justify-between hover:border-[#F15A24]/40 transition-all duration-300 shadow-xl"
+                className="rounded-2xl bg-[#0B2425]/40 border border-white/10 p-5 sm:p-6 md:p-8 flex flex-col justify-between hover:border-white/30 transition-all duration-300 shadow-xl"
               >
                 <div>
                   <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#F15A24] shrink-0" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 theme-text-primary shrink-0" />
                     <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-slate-400">
                       {item.label}
                     </span>
