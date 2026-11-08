@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon } from 'lucide-react';
+import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Users } from 'lucide-react';
 import { RELEASE_SPECS } from '../config/countdown';
 import { FULL_VERSION_STRING } from '../config/version';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -49,6 +49,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 >
                   <Clock className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #F15A24)' }} />
                   <span>Overview &amp; Launch Timers</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('characters')}
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
+                >
+                  <Users className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #FF4FA3)' }} />
+                  <span>Official Character Dossiers</span>
                 </button>
               </li>
               <li>

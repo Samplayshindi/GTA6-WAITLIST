@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Sliders } from 'lucide-react';
+import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Sliders, Users } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { SettingsDrawer } from './SettingsDrawer';
 import { useSettings } from '../context/SettingsContext';
@@ -36,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'overview', label: 'Overview', icon: Clock },
+    { id: 'characters', label: 'Characters', icon: Users },
     { id: 'gallery', label: 'Gallery', icon: ImageIcon },
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'newswire', label: 'Newswire', icon: Newspaper },
@@ -47,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isLinkActive = (id: string) => {
     if (currentPath !== undefined) {
       if (id === 'overview') return currentPath === '/';
+      if (id === 'characters') return currentPath === '/characters';
       if (id === 'gallery') return currentPath === '/gallery';
       if (id === 'videos') return currentPath === '/videos';
       if (id === 'newswire') return currentPath === '/newswire';

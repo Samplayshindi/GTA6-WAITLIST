@@ -18,6 +18,7 @@ import { PageHeaderBanner } from './components/PageHeaderBanner';
 import { AtmosphericBackground } from './components/AtmosphericBackground';
 import { BackToTopButton } from './components/BackToTopButton';
 import { GalleryPage } from './components/GalleryPage';
+import { CharactersPage } from './components/CharactersPage';
 import { LaunchStateProvider } from './context/LaunchStateContext';
 import { SoundtrackProvider } from './context/SoundtrackContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -26,6 +27,7 @@ function normalizePath(rawPath: string): string {
   const clean = rawPath.toLowerCase().split('?')[0].split('#')[0];
   if (clean === '/specifications') return '/specs';
   if (
+    clean === '/characters' ||
     clean === '/gallery' ||
     clean === '/videos' ||
     clean === '/newswire' ||
@@ -65,7 +67,8 @@ function MainAppContent() {
     const handlePopState = () => {
       const normalized = normalizePath(window.location.pathname);
       setCurrentPath(normalized);
-      if (normalized === '/gallery') setActiveSection('gallery');
+      if (normalized === '/characters') setActiveSection('characters');
+      else if (normalized === '/gallery') setActiveSection('gallery');
       else if (normalized === '/videos') setActiveSection('videos');
       else if (normalized === '/newswire') setActiveSection('newswire');
       else if (normalized === '/timeline') setActiveSection('timeline');
@@ -84,6 +87,7 @@ function MainAppContent() {
 
     const sections = [
       'overview',
+      'characters',
       'gallery',
       'videos',
       'newswire',
@@ -128,7 +132,8 @@ function MainAppContent() {
   // Unified navigation handler
   const handleNavigate = (sectionId: string) => {
     let targetPath = '/';
-    if (sectionId === 'gallery' || sectionId === '/gallery') targetPath = '/gallery';
+    if (sectionId === 'characters' || sectionId === '/characters') targetPath = '/characters';
+    else if (sectionId === 'gallery' || sectionId === '/gallery') targetPath = '/gallery';
     else if (sectionId === 'videos' || sectionId === '/videos') targetPath = '/videos';
     else if (sectionId === 'newswire' || sectionId === '/newswire') targetPath = '/newswire';
     else if (sectionId === 'timeline' || sectionId === '/timeline') targetPath = '/timeline';
@@ -194,6 +199,18 @@ function MainAppContent() {
                 <HeroSection onNavigate={handleNavigate} />
                 {/* Compact Previews including Gallery */}
                 <DesktopHomePreviews onNavigate={handleNavigate} />
+              </>
+            )}
+
+            {currentPath === '/characters' && (
+              <>
+                <PageHeaderBanner
+                  category="State of Leonida Dossier"
+                  title="Official Character Profiles"
+                  description="Detailed criminal dossiers, verified backstories, and rotating key art collections for the key figures shaping Vice City and the Keys."
+                  onNavigateHome={() => handleNavigate('overview')}
+                />
+                <CharactersPage onNavigateHome={() => handleNavigate('overview')} />
               </>
             )}
 
@@ -274,6 +291,10 @@ function MainAppContent() {
           <>
             {/* Hero & Countdowns */}
             <HeroSection onNavigate={handleNavigate} />
+            {/* Dedicated Characters Section */}
+            <div id="characters">
+              <CharactersPage onNavigateHome={() => handleNavigate('overview')} />
+            </div>
             {/* Dedicated Gallery Section */}
             <div id="gallery">
               <GalleryPage onNavigateHome={() => handleNavigate('overview')} />
