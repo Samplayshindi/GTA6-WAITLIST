@@ -6,10 +6,12 @@ import {
   HardDrive,
   X,
   RefreshCw,
-  ShieldAlert,
   Image as ImageIcon,
   AlertTriangle,
   StopCircle,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { CORE_ESSENTIAL_RESOURCES, getFullImageInventory } from '../utils/resourceInventory';
 
@@ -18,7 +20,79 @@ interface ResourceInstallerModalProps {
   onClose: () => void;
 }
 
+interface FailedItem {
+  url: string;
+  reason: string;
+}
+
 const CACHE_NAME = 'gtavi-resources-v1.7';
+const BATCH_SIZE = 5;
+
+async function fetchAndCacheResource(
+  url: string,
+  cache: Cache,
+  signal: AbortSignal,
+  maxRetries = 2
+): Promise<{ url: string; success: boolean; errorReason?: string }> {
+  let attempt = 0;
+  let lastError = '';
+
+  while (attempt <= maxRetries) {
+    if (signal.aborted) {
+      return { url, success: false, errorReason: 'Aborted by user' };
+    }
+
+    try {
+      const isExternal = url.startsWith('http://') || url.startsWith('https://');
+      const requestUrl = isExternal
+        ? `/api/proxy-image?url=${encodeURIComponent(url)}`
+        : url;
+
+      const res = await fetch(requestUrl, {
+        signal,
+        cache: 'reload',
+      });
+
+      if (res.ok) {
+        const blob = await res.blob();
+        const responseToCache = new Response(blob, {
+          status: 200,
+          statusText: 'OK',
+          headers: {
+            'Content-Type': res.headers.get('content-type') || 'image/jpeg',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+          },
+        });
+        await cache.put(url, responseToCache);
+        return { url, success: true };
+      } else {
+        lastError = `HTTP ${res.status}`;
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        return { url, success: false, errorReason: 'Aborted by user' };
+      }
+
+      // Fallback: Direct fetch with no-cors if proxy route is unavailable
+      try {
+        const directRes = await fetch(url, { mode: 'no-cors', signal });
+        if (directRes.type === 'opaque' || directRes.ok) {
+          await cache.put(url, directRes);
+          return { url, success: true };
+        }
+      } catch {
+        lastError = err.message || 'CORS / Network Error';
+      }
+    }
+
+    attempt++;
+    if (attempt <= maxRetries) {
+      await new Promise((r) => setTimeout(r, 200 * attempt));
+    }
+  }
+
+  return { url, success: false, errorReason: lastError || 'Download Failed' };
+}
 
 export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ isOpen, onClose }) => {
   const [cacheMode, setCacheMode] = useState<'essential' | 'full'>('full');
@@ -27,20 +101,34 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [failedCount, setFailedCount] = useState<number>(0);
   const [totalResources, setTotalResources] = useState<number>(0);
-  const [currentResourceUrl, setCurrentResourceUrl] = useState<string>('');
   const [statusText, setStatusText] = useState<string>('Ready to cache website resources');
   const [isFullyInstalled, setIsFullyInstalled] = useState<boolean>(false);
+  const [failedItems, setFailedItems] = useState<FailedItem[]>([]);
+  const [showFailedList, setShowFailedList] = useState<boolean>(false);
   const [storageUsage, setStorageUsage] = useState<{ usedMb: string; quotaMb: string } | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-
   const fullInventory = useRef<string[]>([]);
+
+  const refreshStorageEstimate = async () => {
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const { usage, quota } = await navigator.storage.estimate();
+        const usedMb = ((usage || 0) / (1024 * 1024)).toFixed(1);
+        const quotaMb = ((quota || 0) / (1024 * 1024 * 1024)).toFixed(1);
+        setStorageUsage({ usedMb, quotaMb: `${quotaMb} GB` });
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   // Check initial cache status and storage quota
   useEffect(() => {
     if (!isOpen) return;
 
     fullInventory.current = getFullImageInventory();
+    setTotalResources(fullInventory.current.length);
 
     const checkCacheAndStorage = async () => {
       try {
@@ -51,20 +139,13 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
             const keys = await cache.keys();
             setCompletedCount(keys.length);
             const targetTotal = fullInventory.current.length;
-            setTotalResources(targetTotal);
-            if (keys.length >= targetTotal * 0.85) {
+            if (keys.length >= targetTotal * 0.9) {
               setIsFullyInstalled(true);
-              setStatusText(`Complete media library cached (${keys.length} resources saved)`);
+              setStatusText(`Complete media library cached (${keys.length} of ${targetTotal} saved)`);
             }
           }
         }
-
-        if (navigator.storage && navigator.storage.estimate) {
-          const { usage, quota } = await navigator.storage.estimate();
-          const usedMb = ((usage || 0) / (1024 * 1024)).toFixed(1);
-          const quotaMb = ((quota || 0) / (1024 * 1024 * 1024)).toFixed(1);
-          setStorageUsage({ usedMb, quotaMb: `${quotaMb} GB` });
-        }
+        await refreshStorageEstimate();
       } catch (e) {
         console.warn('Storage estimate error:', e);
       }
@@ -73,71 +154,77 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
     checkCacheAndStorage();
   }, [isOpen]);
 
-  const handleInstall = async (targetMode: 'essential' | 'full' = cacheMode) => {
+  const handleInstall = async (
+    targetMode: 'essential' | 'full' = cacheMode,
+    retryList?: string[]
+  ) => {
     if (!('caches' in window)) {
       setStatusText('Cache API not supported in this browser');
       return;
     }
 
     const resourcesToFetch =
-      targetMode === 'essential' ? CORE_ESSENTIAL_RESOURCES : fullInventory.current;
+      retryList || (targetMode === 'essential' ? CORE_ESSENTIAL_RESOURCES : fullInventory.current);
 
     setIsInstalling(true);
-    setCompletedCount(0);
-    setFailedCount(0);
+    if (!retryList) {
+      setCompletedCount(0);
+      setFailedCount(0);
+      setFailedItems([]);
+      setIsFullyInstalled(false);
+    }
     setTotalResources(resourcesToFetch.length);
-    setStatusText(`Initializing installation of ${resourcesToFetch.length} resources...`);
+    setStatusText(`Downloading ${resourcesToFetch.length} resources in controlled batches...`);
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
       const cache = await caches.open(CACHE_NAME);
-      let successCounter = 0;
+      let successCounter = retryList ? completedCount : 0;
       let failCounter = 0;
+      const currentFailedList: FailedItem[] = retryList ? [] : [];
 
-      for (let i = 0; i < resourcesToFetch.length; i++) {
+      for (let i = 0; i < resourcesToFetch.length; i += BATCH_SIZE) {
         if (abortController.signal.aborted) {
           setStatusText('Installation cancelled by user');
           setIsInstalling(false);
+          await refreshStorageEstimate();
           return;
         }
 
-        const url = resourcesToFetch[i];
-        setCurrentResourceUrl(url);
+        const batch = resourcesToFetch.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map((url) => fetchAndCacheResource(url, cache, abortController.signal))
+        );
 
-        try {
-          const res = await fetch(url, {
-            mode: 'cors',
-            cache: 'reload',
-            signal: abortController.signal,
-          });
-
-          if (res.ok || res.type === 'opaque') {
-            await cache.put(url, res);
+        for (const res of batchResults) {
+          if (res.success) {
             successCounter++;
           } else {
             failCounter++;
+            currentFailedList.push({
+              url: res.url,
+              reason: res.errorReason || 'Network Download Error',
+            });
           }
-        } catch (err: any) {
-          if (err.name === 'AbortError') {
-            setStatusText('Installation cancelled by user');
-            setIsInstalling(false);
-            return;
-          }
-          failCounter++;
         }
 
         setCompletedCount(successCounter);
         setFailedCount(failCounter);
-        await new Promise((r) => setTimeout(r, 15)); // smooth yield
+        setFailedItems([...currentFailedList]);
+        const processed = Math.min(i + BATCH_SIZE, resourcesToFetch.length);
+        setStatusText(`Caching resource ${processed} of ${resourcesToFetch.length}...`);
       }
+
+      await refreshStorageEstimate();
 
       if (failCounter === 0) {
         setIsFullyInstalled(true);
-        setStatusText(`Successfully cached all ${successCounter} resources!`);
+        setStatusText(`All ${successCounter} resources successfully cached!`);
       } else {
-        setStatusText(`Cached ${successCounter} resources with ${failCounter} failed items.`);
+        setIsFullyInstalled(false);
+        setStatusText(`Cached ${successCounter} resources (${failCounter} failed items)`);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
@@ -147,6 +234,12 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
       setIsInstalling(false);
       abortControllerRef.current = null;
     }
+  };
+
+  const handleRetryFailed = () => {
+    if (failedItems.length === 0) return;
+    const retryUrls = failedItems.map((f) => f.url);
+    handleInstall(cacheMode, retryUrls);
   };
 
   const handleCancel = () => {
@@ -166,7 +259,9 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
       setIsFullyInstalled(false);
       setCompletedCount(0);
       setFailedCount(0);
-      setStatusText('All cached resources purged.');
+      setFailedItems([]);
+      setStatusText('All cached resources purged successfully.');
+      await refreshStorageEstimate();
     } catch (err) {
       console.error('Cache purge failed:', err);
       setStatusText('Failed to purge cache.');
@@ -211,7 +306,7 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
                 </span>
               </div>
               <p className="text-[11px] font-mono text-slate-400">
-                Offline Pre-Caching &amp; Instant Load Engine
+                Offline Pre-Caching &amp; Proxy Acceleration Engine
               </p>
             </div>
           </div>
@@ -227,7 +322,7 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
         {/* Modal Body */}
         <div className="space-y-4 mb-6">
           <p className="text-xs text-slate-300 leading-relaxed">
-            Pre-cache application assets and high-resolution media directly into your browser's Cache Storage for instant offline loading without network latency.
+            Pre-cache application assets and high-resolution media directly into your browser's Cache Storage via server-assisted image proxy for instant offline loading.
           </p>
 
           {/* Mode Selector */}
@@ -305,12 +400,43 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
             {totalResources > 0 && (
               <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1">
                 <span>
-                  Downloaded: {completedCount} / {totalResources}
+                  Cached: <strong className="text-emerald-400">{completedCount}</strong> / {totalResources}
                 </span>
-                {failedCount > 0 && <span className="text-amber-400 font-bold">{failedCount} failed</span>}
+                {failedCount > 0 && (
+                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{failedCount} failed</span>
+                  </span>
+                )}
               </div>
             )}
           </div>
+
+          {/* Failed Items Details List (Requirement 3) */}
+          {failedItems.length > 0 && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 space-y-2">
+              <button
+                onClick={() => setShowFailedList(!showFailedList)}
+                className="w-full flex items-center justify-between text-xs font-mono font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer"
+              >
+                <span>View {failedItems.length} Failed Resources</span>
+                {showFailedList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {showFailedList && (
+                <div className="max-h-36 overflow-y-auto space-y-1.5 pt-2 border-t border-amber-500/20 text-[10px] font-mono">
+                  {failedItems.map((item, idx) => (
+                    <div key={idx} className="p-1.5 rounded bg-black/40 flex items-center justify-between gap-2 text-slate-300">
+                      <span className="truncate max-w-[240px]" title={item.url}>
+                        {item.url.split('/').pop() || item.url}
+                      </span>
+                      <span className="text-amber-400 shrink-0">{item.reason}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Actions */}
@@ -354,13 +480,23 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
                 </button>
               )}
 
-              <button
-                onClick={() => handleInstall(cacheMode)}
-                className="flex-1 py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
-              >
-                <Download className="w-4 h-4" />
-                <span>{failedCount > 0 ? 'Retry Downloads' : 'Start Download'}</span>
-              </button>
+              {failedItems.length > 0 ? (
+                <button
+                  onClick={handleRetryFailed}
+                  className="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Retry {failedItems.length} Failed Items</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleInstall(cacheMode)}
+                  className="flex-1 py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Start Download</span>
+                </button>
+              )}
             </>
           )}
         </div>

@@ -5,6 +5,7 @@ import newsHandler from './api/news.ts';
 import cronHandler from './api/cron/refresh-news.ts';
 import diagHandler from './api/admin/news-status.ts';
 import soundtrackHandler from './api/soundtrack.ts';
+import proxyImageHandler from './api/proxy-image.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,16 @@ const PORT = 3000;
 
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, 'public')));
+
+// Forward /api/proxy-image to the image proxy handler
+app.all('/api/proxy-image', async (req: Request, res: Response) => {
+  try {
+    await proxyImageHandler(req, res);
+  } catch (err) {
+    console.error('Error in proxy image handler:', err);
+    res.status(500).json({ error: 'Proxy Server Error' });
+  }
+});
 
 // Forward /api/news to the serverless handler
 app.all('/api/news', async (req: Request, res: Response) => {
