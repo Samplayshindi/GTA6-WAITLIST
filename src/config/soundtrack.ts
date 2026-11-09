@@ -43,8 +43,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     coverUrl:
       'https://www.rockstargames.com/VI/_next/static/media/Score_CoverArt_1014_1600x1600.0.5dr9slukqhb.jpg?akim=1&imdensity=1&imwidth=420',
     youtubeId: '-fW1M17EVdE',
-    durationSec: 266,
-    durationText: '4:26',
+    durationSec: 224,
+    durationText: '3:44',
     isPlayable: true,
     status: 'playable',
   },
