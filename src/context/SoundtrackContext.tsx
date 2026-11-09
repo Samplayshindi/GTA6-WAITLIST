@@ -38,10 +38,113 @@ interface SoundtrackContextValue {
   restorePlayer: () => void;
 }
 
+export function formatDurationText(seconds: number): string {
+  if (seconds === undefined || seconds === null || isNaN(seconds) || seconds <= 0 || !isFinite(seconds)) {
+    return '--:--';
+  }
+  const rounded = Math.round(seconds);
+  const m = Math.floor(rounded / 60);
+  const s = rounded % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+const getInitialTracks = (): SoundtrackTrack[] => {
+  let cached: Record<string, number> = {};
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('gtavi_track_durations');
+      if (saved) {
+        cached = JSON.parse(saved);
+      }
+    } catch {
+      // localStorage unavailable
+    }
+  }
+  return SOUNDTRACK_LIBRARY.map((track) => {
+    const cachedSec = cached[track.id];
+    if (typeof cachedSec === 'number' && cachedSec > 0 && isFinite(cachedSec)) {
+      return {
+        ...track,
+        durationSec: cachedSec,
+        durationText: formatDurationText(cachedSec),
+      };
+    }
+    return track;
+  });
+};
+
 const SoundtrackContext = createContext<SoundtrackContextValue | undefined>(undefined);
 
 export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [tracks, setTracks] = useState<SoundtrackTrack[]>(SOUNDTRACK_LIBRARY);
+  const [tracks, setTracks] = useState<SoundtrackTrack[]>(getInitialTracks);
+
+  // Helper to update track duration in state & localStorage cache
+  const updateTrackDuration = (trackId: string, durationSec: number) => {
+    if (!durationSec || isNaN(durationSec) || durationSec <= 0 || !isFinite(durationSec)) return;
+    const roundedSec = Math.round(durationSec);
+    const formattedText = formatDurationText(roundedSec);
+
+    setTracks((prevTracks) =>
+      prevTracks.map((t) => {
+        if (t.id === trackId) {
+          if (t.durationSec === roundedSec && t.durationText === formattedText) {
+            return t;
+          }
+          return {
+            ...t,
+            durationSec: roundedSec,
+            durationText: formattedText,
+          };
+        }
+        return t;
+      })
+    );
+
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('gtavi_track_durations');
+        const cached = saved ? JSON.parse(saved) : {};
+        if (cached[trackId] !== roundedSec) {
+          cached[trackId] = roundedSec;
+          localStorage.setItem('gtavi_track_durations', JSON.stringify(cached));
+        }
+      } catch {
+        // Storage restricted
+      }
+    }
+  };
+
+  // Pre-fetch exact audio metadata for MP3 / audioUrl tracks on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    tracks.forEach((track) => {
+      if (track.audioUrl) {
+        const audio = new Audio();
+        audio.preload = 'metadata';
+
+        const onLoaded = () => {
+          if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0) {
+            updateTrackDuration(track.id, audio.duration);
+          }
+          cleanup();
+        };
+
+        const onError = () => {
+          cleanup();
+        };
+
+        const cleanup = () => {
+          audio.removeEventListener('loadedmetadata', onLoaded);
+          audio.removeEventListener('error', onError);
+        };
+
+        audio.addEventListener('loadedmetadata', onLoaded);
+        audio.addEventListener('error', onError);
+        audio.src = track.audioUrl;
+      }
+    });
+  }, []);
 
   // Restore saved track index from localStorage if valid
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(() => {
@@ -82,7 +185,10 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(SOUNDTRACK_LIBRARY[0].durationSec);
+  const [duration, setDuration] = useState<number>(() => {
+    const initial = getInitialTracks();
+    return initial[currentTrackIndex]?.durationSec || 116;
+  });
   const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -110,8 +216,48 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   });
 
   const playerRef = useRef<any>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
   const manualPauseRef = useRef<boolean>(false);
   const currentTrackIndexRef = useRef<number>(currentTrackIndex);
+
+  // Initialize HTML5 Audio element instance
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const audio = new Audio();
+    audioElRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audioElRef.current && audioElRef.current.currentTime) {
+        setCurrentTime(audioElRef.current.currentTime);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      if (audioElRef.current && audioElRef.current.duration) {
+        const dur = audioElRef.current.duration;
+        setDuration(dur);
+        const activeTrack = tracks[currentTrackIndexRef.current];
+        if (activeTrack) {
+          updateTrackDuration(activeTrack.id, dur);
+        }
+      }
+    };
+
+    const handleEnded = () => {
+      handleTrackEnded();
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+    };
+  }, []);
 
   // Fetch dynamically discovered tracks from /api/soundtrack on mount
   useEffect(() => {
@@ -130,7 +276,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
               if (
                 !existingIds.has(incomingTrack.id) &&
                 incomingTrack.isPlayable &&
-                (incomingTrack.youtubeId || incomingTrack.status === 'playable')
+                (incomingTrack.youtubeId || incomingTrack.audioUrl || incomingTrack.status === 'playable')
               ) {
                 merged.push(incomingTrack);
                 existingIds.add(incomingTrack.id);
@@ -231,7 +377,10 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
             setIsReady(true);
             try {
               event.target.setVolume(volume);
-              event.target.playVideo();
+              const track = tracks[currentTrackIndexRef.current];
+              if (track && track.youtubeId) {
+                event.target.playVideo();
+              }
             } catch {
               // Browser policy may defer until user gesture
             }
@@ -269,7 +418,8 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     checkInterval = setInterval(() => {
-      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+      const activeTrack = tracks[currentTrackIndexRef.current];
+      if (activeTrack && activeTrack.youtubeId && playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
         try {
           const curr = playerRef.current.getCurrentTime();
           const dur = playerRef.current.getDuration();
@@ -295,7 +445,12 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     if (isDismissed) return;
     const handleFirstInteraction = () => {
       if (manualPauseRef.current) return;
-      if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+      const activeTrack = tracks[currentTrackIndexRef.current];
+      if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
+        audioElRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      } else if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
         try {
           playerRef.current.setVolume(isMuted ? 0 : volume);
           playerRef.current.playVideo();
@@ -338,8 +493,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     const nextTrack = tracks[index];
     if (!nextTrack) return;
 
-    // If track is not playable (e.g. announced), do not attempt audio load
-    if (!nextTrack.isPlayable || !nextTrack.youtubeId) {
+    if (!nextTrack.isPlayable || (!nextTrack.youtubeId && !nextTrack.audioUrl)) {
       return;
     }
 
@@ -353,23 +507,47 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     setDuration(nextTrack.durationSec);
     manualPauseRef.current = false;
 
-    if (playerRef.current) {
-      try {
-        if (typeof playerRef.current.loadVideoById === 'function') {
-          playerRef.current.loadVideoById({
-            videoId: nextTrack.youtubeId,
-            startSeconds: 0,
-          });
-          playerRef.current.setVolume(isMuted ? 0 : volume);
-          playerRef.current.playVideo();
-          setIsPlaying(true);
-        } else if (typeof playerRef.current.cueVideoById === 'function') {
-          playerRef.current.cueVideoById(nextTrack.youtubeId);
-          playerRef.current.playVideo();
-          setIsPlaying(true);
+    // Direct MP3 Audio URL Track
+    if (nextTrack.audioUrl && audioElRef.current) {
+      if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+        try {
+          playerRef.current.pauseVideo();
+        } catch {}
+      }
+      audioElRef.current.src = nextTrack.audioUrl;
+      audioElRef.current.volume = isMuted ? 0 : volume / 100;
+      audioElRef.current.currentTime = 0;
+      audioElRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.warn('Audio playback deferred:', err);
+      });
+      return;
+    }
+
+    // YouTube Stream Track
+    if (nextTrack.youtubeId) {
+      if (audioElRef.current) {
+        audioElRef.current.pause();
+      }
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.loadVideoById === 'function') {
+            playerRef.current.loadVideoById({
+              videoId: nextTrack.youtubeId,
+              startSeconds: 0,
+            });
+            playerRef.current.setVolume(isMuted ? 0 : volume);
+            playerRef.current.playVideo();
+            setIsPlaying(true);
+          } else if (typeof playerRef.current.cueVideoById === 'function') {
+            playerRef.current.cueVideoById(nextTrack.youtubeId);
+            playerRef.current.playVideo();
+            setIsPlaying(true);
+          }
+        } catch (err) {
+          console.error('Error switching track:', err);
         }
-      } catch (err) {
-        console.error('Error switching track:', err);
       }
     }
   };
@@ -404,6 +582,20 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const togglePlay = () => {
+    const activeTrack = tracks[currentTrackIndexRef.current];
+    if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+      if (isPlaying) {
+        manualPauseRef.current = true;
+        audioElRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        manualPauseRef.current = false;
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
+        audioElRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+      return;
+    }
+
     if (!playerRef.current || !isReady) return;
 
     if (isPlaying) {
@@ -427,9 +619,16 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const seekTo = (seconds: number) => {
-    if (!playerRef.current || duration <= 0) return;
-    const clamped = Math.max(0, Math.min(duration, seconds));
+    const activeTrack = tracks[currentTrackIndexRef.current];
+    const clamped = Math.max(0, Math.min(duration || 180, seconds));
     setCurrentTime(clamped);
+
+    if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+      audioElRef.current.currentTime = clamped;
+      return;
+    }
+
+    if (!playerRef.current) return;
     try {
       if (typeof playerRef.current.seekTo === 'function') {
         playerRef.current.seekTo(clamped, true);
@@ -448,6 +647,10 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsMuted(false);
     }
 
+    if (audioElRef.current) {
+      audioElRef.current.volume = clamped / 100;
+    }
+
     if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
       try {
         playerRef.current.setVolume(clamped);
@@ -461,28 +664,37 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const toggleMute = () => {
-    if (!playerRef.current) return;
-
     if (isMuted) {
       setIsMuted(false);
       const targetVol = volume > 0 ? volume : 30;
       if (volume === 0) setVolume(30);
-      try {
-        playerRef.current.setVolume(targetVol);
-        if (typeof playerRef.current.unMute === 'function') {
-          playerRef.current.unMute();
-        }
-      } catch {
-        // ignore
+
+      if (audioElRef.current) {
+        audioElRef.current.volume = targetVol / 100;
+        audioElRef.current.muted = false;
+      }
+
+      if (playerRef.current) {
+        try {
+          playerRef.current.setVolume(targetVol);
+          if (typeof playerRef.current.unMute === 'function') {
+            playerRef.current.unMute();
+          }
+        } catch {}
       }
     } else {
       setIsMuted(true);
-      try {
-        if (typeof playerRef.current.mute === 'function') {
-          playerRef.current.mute();
-        }
-      } catch {
-        // ignore
+
+      if (audioElRef.current) {
+        audioElRef.current.muted = true;
+      }
+
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.mute === 'function') {
+            playerRef.current.mute();
+          }
+        } catch {}
       }
     }
   };

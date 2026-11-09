@@ -4,6 +4,7 @@ export interface SoundtrackTrack {
   artist: string;
   sourceLabel: string;
   coverUrl: string;
+  audioUrl?: string;
   youtubeId?: string;
   durationSec: number;
   durationText: string;
@@ -16,10 +17,24 @@ export const OFFICIAL_ALBUM_ARTWORK_URL =
   'https://www.rockstargames.com/VI/_next/static/media/GTAVI_MusicPage_AlbumArt.05qucexa8vzgb.jpg?akim=1&imdensity=1&imwidth=420';
 
 /**
- * 8 Verified Official Playable Tracks
+ * Verified Official Playable Tracks
  * Preserved with exact audio sources, metadata, and duration.
  */
 export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
+  {
+    id: 'gtavi-bg-music-ost',
+    title: 'GTA VI Background Music OST',
+    artist: 'Rockstar Games Official OST',
+    sourceLabel: 'Grand Theft Auto VI: Home Screen OST',
+    coverUrl:
+      'https://www.rockstargames.com/VI/_next/static/media/Official_Cover_Art_square.10.vgeiw52wkr.jpg',
+    audioUrl:
+      'https://raw.githubusercontent.com/Samplayshindi/GTA6-WAITLIST/e77e56718e9f8519fd27d0e8126566e5083a7366/GTAVI%20PS5%20Home%20Screen%20Background%20Music.mp3',
+    durationSec: 116,
+    durationText: '1:56',
+    isPlayable: true,
+    status: 'playable',
+  },
   {
     id: 'flower-in-a-hurricane',
     title: 'Flower in a Hurricane',
@@ -28,8 +43,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     coverUrl:
       'https://www.rockstargames.com/VI/_next/static/media/Score_CoverArt_1014_1600x1600.0.5dr9slukqhb.jpg?akim=1&imdensity=1&imwidth=420',
     youtubeId: '-fW1M17EVdE',
-    durationSec: 230,
-    durationText: '3:50',
+    durationSec: 266,
+    durationText: '4:26',
     isPlayable: true,
     status: 'playable',
   },
@@ -53,8 +68,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: 'K4JLI9zaRSY',
-    durationSec: 198,
-    durationText: '3:18',
+    durationSec: 162,
+    durationText: '2:42',
     isPlayable: true,
     status: 'playable',
   },
@@ -65,8 +80,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: '7yJEkQmXVNM',
-    durationSec: 185,
-    durationText: '3:05',
+    durationSec: 180,
+    durationText: '3:00',
     isPlayable: true,
     status: 'playable',
   },
@@ -77,8 +92,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: 'VBKnzlBP95A',
-    durationSec: 222,
-    durationText: '3:42',
+    durationSec: 195,
+    durationText: '3:15',
     isPlayable: true,
     status: 'playable',
   },
@@ -89,8 +104,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: 'v7yYmRGQaRk',
-    durationSec: 208,
-    durationText: '3:28',
+    durationSec: 196,
+    durationText: '3:16',
     isPlayable: true,
     status: 'playable',
   },
@@ -101,8 +116,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: '76R2Q9vObqI',
-    durationSec: 195,
-    durationText: '3:15',
+    durationSec: 173,
+    durationText: '2:53',
     isPlayable: true,
     status: 'playable',
   },
@@ -113,8 +128,8 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     sourceLabel: 'Grand Theft Auto VI: The Album',
     coverUrl: OFFICIAL_ALBUM_ARTWORK_URL,
     youtubeId: 'ULhiufAtduE',
-    durationSec: 242,
-    durationText: '4:02',
+    durationSec: 211,
+    durationText: '3:31',
     isPlayable: true,
     status: 'playable',
   },

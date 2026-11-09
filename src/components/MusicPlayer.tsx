@@ -158,7 +158,13 @@ export const MusicPlayer: React.FC = () => {
                     Play Queue &middot; Grand Theft Auto VI
                   </h3>
                   <p className="text-xs text-[#A1A1AA] truncate">
-                    Official Soundtrack &middot; {tracks.length} Tracks
+                    Official Soundtrack &middot; {tracks.filter((t) => t.isPlayable).length} Tracks &middot;{' '}
+                    {formatTime(
+                      tracks
+                        .filter((t) => t.isPlayable)
+                        .reduce((acc, t) => acc + (t.durationSec || 0), 0)
+                    )}{' '}
+                    Total
                   </p>
                 </div>
               </div>
