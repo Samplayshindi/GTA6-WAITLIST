@@ -19,6 +19,24 @@ export interface PaletteDefinition {
   tertiaryHex: string;
 }
 
+export interface TimeZoneOption {
+  value: string;
+  label: string;
+}
+
+export const TIME_ZONES: TimeZoneOption[] = [
+  { value: 'auto', label: 'Auto System Detected' },
+  { value: 'America/New_York', label: 'Eastern Time (ET - Miami/NYC)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'Europe/London', label: 'Greenwich Mean Time / BST (London)' },
+  { value: 'Europe/Paris', label: 'Central European Time (CET)' },
+  { value: 'Asia/Tokyo', label: 'Japan Standard Time (JST)' },
+  { value: 'Australia/Sydney', label: 'Australian Eastern Time (AEST)' },
+  { value: 'UTC', label: 'Coordinated Universal Time (UTC)' },
+];
+
 export const PALETTES: PaletteDefinition[] = [
   {
     id: 'vice-city',
@@ -65,23 +83,31 @@ export const PALETTES: PaletteDefinition[] = [
   {
     id: 'monochrome',
     name: 'Monochrome',
-    primaryHex: '#FFFFFF', // White
+    primaryHex: '#CBD5E1', // High-contrast silver accent (prevents white-on-white text bug)
     secondaryHex: '#94A3B8', // Silver
-    tertiaryHex: '#64748B', // Grey
+    tertiaryHex: '#64748B', // Slate grey
   },
 ];
 
 interface SettingsContextValue {
   isSlideshowPaused: boolean;
+  mobileSlideshowEnabled: boolean;
   colorPalette: ColorPalette;
   motionMode: MotionMode;
   performanceMode: boolean;
+  selectedTimeZone: string;
+  effectiveTimeZone: string;
+  isResourceInstallerOpen: boolean;
   activePalette: PaletteDefinition;
   setSlideshowPaused: (paused: boolean) => void;
+  setMobileSlideshowEnabled: (enabled: boolean) => void;
   toggleSlideshowPaused: () => void;
   setColorPalette: (palette: ColorPalette) => void;
   setMotionMode: (mode: MotionMode) => void;
   setPerformanceMode: (perf: boolean) => void;
+  setSelectedTimeZone: (tz: string) => void;
+  openResourceInstaller: () => void;
+  closeResourceInstaller: () => void;
   resetPreferences: () => void;
 }
 
@@ -89,9 +115,11 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(undefine
 
 const STORAGE_KEYS = {
   slideshowPaused: 'gtavi_slideshow_paused',
+  mobileSlideshowEnabled: 'gtavi_mobile_slideshow_enabled',
   colorPalette: 'gtavi_color_palette_v2',
   motionMode: 'gtavi_motion_mode',
   performanceMode: 'gtavi_performance_mode',
+  selectedTimeZone: 'gtavi_selected_timezone',
 };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -107,7 +135,19 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     return false;
   });
 
-  // 2. Color Palette preference (default: Vice City Neon)
+  // 2. Mobile Background Slideshow Enabled preference (OFF by default)
+  const [mobileSlideshowEnabled, setMobileSlideshowEnabledState] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem(STORAGE_KEYS.mobileSlideshowEnabled) === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  // 3. Color Palette preference (default: Vice City Neon)
   const [colorPalette, setColorPaletteState] = useState<ColorPalette>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -120,7 +160,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     return 'vice-city';
   });
 
-  // 3. Motion Mode preference
+  // 4. Motion Mode preference
   const [motionMode, setMotionModeState] = useState<MotionMode>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -136,7 +176,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     return 'high';
   });
 
-  // 4. Performance Mode preference
+  // 5. Performance Mode preference
   const [performanceMode, setPerformanceModeState] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -148,10 +188,34 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     return false;
   });
 
+  // 6. Time Zone preference (default: 'auto')
+  const [selectedTimeZone, setSelectedTimeZoneState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem(STORAGE_KEYS.selectedTimeZone) || 'auto';
+      } catch {
+        return 'auto';
+      }
+    }
+    return 'auto';
+  });
+
+  // 7. Resource Installer Modal state
+  const [isResourceInstallerOpen, setIsResourceInstallerOpen] = useState<boolean>(false);
+
   const setSlideshowPaused = (paused: boolean) => {
     setIsSlideshowPausedState(paused);
     try {
       localStorage.setItem(STORAGE_KEYS.slideshowPaused, String(paused));
+    } catch {
+      // ignore
+    }
+  };
+
+  const setMobileSlideshowEnabled = (enabled: boolean) => {
+    setMobileSlideshowEnabledState(enabled);
+    try {
+      localStorage.setItem(STORAGE_KEYS.mobileSlideshowEnabled, String(enabled));
     } catch {
       // ignore
     }
@@ -188,24 +252,52 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  const setSelectedTimeZone = (tz: string) => {
+    setSelectedTimeZoneState(tz);
+    try {
+      localStorage.setItem(STORAGE_KEYS.selectedTimeZone, tz);
+    } catch {
+      // ignore
+    }
+  };
+
+  const openResourceInstaller = () => setIsResourceInstallerOpen(true);
+  const closeResourceInstaller = () => setIsResourceInstallerOpen(false);
+
   const resetPreferences = () => {
     setIsSlideshowPausedState(false);
+    setMobileSlideshowEnabledState(false);
     setColorPaletteState('vice-city');
     const defaultMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high';
     setMotionModeState(defaultMotion);
     setPerformanceModeState(false);
+    setSelectedTimeZoneState('auto');
 
     try {
       localStorage.removeItem(STORAGE_KEYS.slideshowPaused);
+      localStorage.removeItem(STORAGE_KEYS.mobileSlideshowEnabled);
       localStorage.removeItem(STORAGE_KEYS.colorPalette);
       localStorage.removeItem(STORAGE_KEYS.motionMode);
       localStorage.removeItem(STORAGE_KEYS.performanceMode);
+      localStorage.removeItem(STORAGE_KEYS.selectedTimeZone);
     } catch {
       // ignore
     }
   };
 
   const activePalette = PALETTES.find((p) => p.id === colorPalette) || PALETTES[0];
+
+  const effectiveTimeZone = React.useMemo(() => {
+    if (selectedTimeZone !== 'auto') return selectedTimeZone;
+    if (typeof window !== 'undefined') {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
+      } catch {
+        return 'America/New_York';
+      }
+    }
+    return 'America/New_York';
+  }, [selectedTimeZone]);
 
   // Apply CSS root variables on colorPalette change
   useEffect(() => {
@@ -215,6 +307,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     root.style.setProperty('--theme-primary', activePalette.primaryHex);
     root.style.setProperty('--theme-secondary', activePalette.secondaryHex);
     root.style.setProperty('--theme-tertiary', activePalette.tertiaryHex);
+    root.style.setProperty('--theme-accent', activePalette.primaryHex);
     root.style.setProperty(
       '--theme-gradient',
       `linear-gradient(to right, ${activePalette.primaryHex}, ${activePalette.secondaryHex})`
@@ -229,15 +322,23 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     <SettingsContext.Provider
       value={{
         isSlideshowPaused,
+        mobileSlideshowEnabled,
         colorPalette,
         motionMode,
         performanceMode,
+        selectedTimeZone,
+        effectiveTimeZone,
+        isResourceInstallerOpen,
         activePalette,
         setSlideshowPaused,
+        setMobileSlideshowEnabled,
         toggleSlideshowPaused,
         setColorPalette,
         setMotionMode,
         setPerformanceMode,
+        setSelectedTimeZone,
+        openResourceInstaller,
+        closeResourceInstaller,
         resetPreferences,
       }}
     >
@@ -253,3 +354,4 @@ export function useSettings(): SettingsContextValue {
   }
   return context;
 }
+

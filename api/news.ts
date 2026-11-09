@@ -33,7 +33,7 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    const allArticles = articles || [];
+    const allArticles = (articles || []).slice(0, 50);
     const totalCount = allArticles.length;
     const latestPublishedAt = totalCount > 0 ? allArticles[0].publishedAt : (metadata.latestPublishedAt || new Date().toISOString());
 

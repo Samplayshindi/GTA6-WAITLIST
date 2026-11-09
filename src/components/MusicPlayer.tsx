@@ -137,11 +137,11 @@ export const MusicPlayer: React.FC = () => {
           role="dialog"
           aria-modal="true"
           aria-label="Soundtrack Queue"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 pb-20 sm:pb-4"
           onClick={() => setIsQueueOpen(false)}
         >
           <div
-            className="bg-[#08090D] border border-[#24262B] w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[82vh] sm:max-h-[74vh] flex flex-col shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden"
+            className="bg-[#08090D] border border-[#24262B] w-full max-w-2xl mx-auto rounded-2xl max-h-[75vh] sm:max-h-[74vh] flex flex-col shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}

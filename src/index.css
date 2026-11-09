@@ -34,7 +34,7 @@
   }
 }
 
-/* Global Theme Helper Utilities */
+/* Global Theme Helper Utilities & High-Contrast Audit */
 .theme-gradient-text {
   background-image: var(--theme-gradient-3, linear-gradient(to right, #FF4FA3, #A855F7, #00F5D4));
   -webkit-background-clip: text;
@@ -52,6 +52,13 @@
 
 .theme-bg-primary {
   background-color: var(--theme-primary, #FF4FA3) !important;
+  color: #08090D !important;
+}
+
+.theme-bg-primary-badge {
+  background-color: var(--theme-primary, #FF4FA3) !important;
+  color: #08090D !important;
+  font-weight: 800 !important;
 }
 
 .theme-border-primary {
@@ -138,4 +145,41 @@
   .animate-slide-in-left {
     animation: none !important;
   }
+}
+
+/* Mobile Finger Swipe Animations */
+@keyframes fingerSwipeHorizontal {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
+  30% {
+    transform: translateX(-12px);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(12px);
+    opacity: 1;
+  }
+}
+
+@keyframes fingerSwipeDown {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(14px);
+    opacity: 1;
+  }
+}
+
+.animate-finger-swipe-x {
+  animation: fingerSwipeHorizontal 2.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-finger-swipe-down {
+  animation: fingerSwipeDown 1.8s ease-in-out infinite;
+  will-change: transform, opacity;
 }

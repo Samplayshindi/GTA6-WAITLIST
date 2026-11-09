@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'newswire', label: 'Newswire', icon: Newspaper },
     { id: 'timeline', label: 'Timeline', icon: Calendar },
     { id: 'faq', label: 'FAQ', icon: HelpCircle },
-    { id: 'specifications', label: 'Specs', icon: Cpu },
+    { id: 'specifications', label: 'Details', icon: Cpu },
   ];
 
   const isLinkActive = (id: string) => {

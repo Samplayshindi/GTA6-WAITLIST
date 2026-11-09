@@ -58,7 +58,7 @@ const getImageObjectPosition = (url: string): string => {
 };
 
 export const AtmosphericBackground: React.FC = () => {
-  const { isSlideshowPaused, motionMode, performanceMode } = useSettings();
+  const { isSlideshowPaused, mobileSlideshowEnabled, motionMode, performanceMode } = useSettings();
   const [isDesktopSlideshow, setIsDesktopSlideshow] = useState<boolean>(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
 
@@ -96,25 +96,28 @@ export const AtmosphericBackground: React.FC = () => {
     []
   );
 
-  // Viewport detection (Desktop >= 1024px, no reduced motion, no saveData, performanceMode false)
+  // Viewport & Settings eligibility check (Desktop >= 1024px OR Mobile with mobileSlideshowEnabled)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const checkDesktopEligibility = () => {
-      const isDesktop = window.innerWidth >= 1024;
+    const checkEligibility = () => {
+      const isMobile = window.innerWidth < 1024;
+      const isDesktop = !isMobile;
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const connection = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
       const isSaveData = connection?.saveData === true;
 
-      setIsDesktopSlideshow(isDesktop && !prefersReducedMotion && !isSaveData && !performanceMode);
+      const isAllowed = (isDesktop || (isMobile && mobileSlideshowEnabled)) && !prefersReducedMotion && !isSaveData && !performanceMode;
+
+      setIsDesktopSlideshow(isAllowed);
     };
 
-    checkDesktopEligibility();
+    checkEligibility();
 
-    const handleResize = () => checkDesktopEligibility();
+    const handleResize = () => checkEligibility();
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
-  }, [performanceMode]);
+  }, [performanceMode, mobileSlideshowEnabled]);
 
   // Preload next image into memory 4 seconds before transition
   const preloadNextImage = useCallback(
@@ -263,7 +266,7 @@ export const AtmosphericBackground: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none bg-[#08090D]"
+      className="fixed inset-0 w-screen h-screen h-[100dvh] pointer-events-none overflow-hidden z-0 select-none bg-[#08090D] transform-gpu translate-z-0"
       aria-hidden="true"
     >
       {/* 1. Static Baseline Fallback Layer (Used when Paused, on Mobile, or Reduced Motion) */}

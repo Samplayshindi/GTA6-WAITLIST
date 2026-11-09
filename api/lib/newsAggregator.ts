@@ -74,6 +74,18 @@ export async function fetchLiveGtaArticles(): Promise<{
 
   const feeds = [
     {
+      name: 'Rockstar Newswire',
+      url: 'https://www.rockstargames.com/newswire/rss'
+    },
+    {
+      name: 'Rockstar Games Official Feed',
+      url: 'https://www.rockstargames.com/newswire.xml'
+    },
+    {
+      name: 'Rockstar Games Intel',
+      url: 'https://news.google.com/rss/search?q=site:rockstargames.com/newswire+OR+%22Grand+Theft+Auto+VI%22+OR+%22GTA+VI%22&hl=en-US&gl=US&ceid=US:en'
+    },
+    {
       name: 'Google News (GTA VI)',
       url: 'https://news.google.com/rss/search?q=%22GTA+6%22+OR+%22Grand+Theft+Auto+VI%22+OR+%22GTA+VI%22+OR+%22Grand+Theft+Auto+6%22&hl=en-US&gl=US&ceid=US:en'
     },

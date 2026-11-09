@@ -96,7 +96,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               className="text-xs font-mono font-bold tracking-[0.2em] uppercase block"
               style={{ color: 'var(--theme-secondary, #FF4FA3)' }}
             >
-              Archive &amp; Specs
+              Archive &amp; Details
             </span>
             <ul className="space-y-2.5 text-xs font-medium text-slate-400">
               <li>

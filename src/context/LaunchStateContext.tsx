@@ -8,6 +8,7 @@ import {
   subscribeToTimeSync,
   TimeRemaining,
 } from '../utils/time';
+import { useSettings } from './SettingsContext';
 
 export type LaunchState = 'BEFORE_PRELOAD' | 'PRELOAD_LIVE' | 'RELEASE_LIVE';
 
@@ -24,9 +25,11 @@ interface LaunchStateContextValue {
 const LaunchStateContext = createContext<LaunchStateContextValue | undefined>(undefined);
 
 export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const globalReleaseDate = useMemo(() => getGlobalReleaseLocalDate(), []);
-  const ps5PreloadDate = useMemo(() => getPreloadLocalDate(), []);
-  const xboxPreloadDate = useMemo(() => getPreloadXboxGmtDate(), []);
+  const { effectiveTimeZone } = useSettings();
+
+  const globalReleaseDate = useMemo(() => getGlobalReleaseLocalDate(effectiveTimeZone), [effectiveTimeZone]);
+  const ps5PreloadDate = useMemo(() => getPreloadLocalDate(effectiveTimeZone), [effectiveTimeZone]);
+  const xboxPreloadDate = useMemo(() => getPreloadXboxGmtDate(), []); // Xbox is fixed 00:00 GMT globally
 
   const [selectedConsole, setSelectedConsole] = useState<'ps5' | 'xbox'>('ps5');
   const activePreloadDate = selectedConsole === 'ps5' ? ps5PreloadDate : xboxPreloadDate;

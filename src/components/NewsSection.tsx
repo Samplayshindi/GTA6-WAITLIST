@@ -33,13 +33,13 @@ export const NewsSection: React.FC = () => {
       setArticles((prev) => {
         const seen = new Set(prev.map((a) => a.id));
         const newArticles = res.articles.filter((a) => !seen.has(a.id));
-        const merged = [...prev, ...newArticles];
-        return merged.sort(
-          (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        );
+        const merged = [...prev, ...newArticles]
+          .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+          .slice(0, 50);
+        return merged;
       });
-      setHasMore(res.hasMore);
-      setTotalCount(res.totalCount);
+      setHasMore(res.hasMore && articles.length + res.articles.length < 50);
+      setTotalCount(Math.min(res.totalCount, 50));
     } finally {
       setLoadingMore(false);
     }
@@ -57,12 +57,12 @@ export const NewsSection: React.FC = () => {
             const seen = new Set(prev.map((a) => a.id));
             const fresh = res.articles.filter((a) => !seen.has(a.id));
             if (fresh.length === 0) return prev;
-            const merged = [...fresh, ...prev];
-            return merged.sort(
-              (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-            );
+            const merged = [...fresh, ...prev]
+              .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+              .slice(0, 50);
+            return merged;
           });
-          setTotalCount(res.totalCount);
+          setTotalCount(Math.min(res.totalCount, 50));
         }
       }
     }, 5 * 60 * 1000);

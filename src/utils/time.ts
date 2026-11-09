@@ -122,22 +122,66 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Constructs a local midnight Date (00:00:00.000) for a given calendar date
- * in the visitor's exact local timezone.
+/**
+ * Constructs a midnight Date (00:00:00.000) for a given calendar date
+ * in the specified target timezone, or visitor's local timezone if 'auto'.
  */
+export function getTargetMidnightDateInTimezone(
+  year: number,
+  monthIndex: number,
+  day: number,
+  targetTz?: string
+): Date {
+  if (!targetTz || targetTz === 'auto') {
+    return new Date(year, monthIndex, day, 0, 0, 0, 0);
+  }
+
+  try {
+    const testUtcDate = new Date(Date.UTC(year, monthIndex, day, 0, 0, 0));
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: targetTz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(testUtcDate);
+    const getPart = (type: string) => parseInt(parts.find((p) => p.type === type)?.value || '0', 10);
+
+    const tzYear = getPart('year');
+    const tzMonth = getPart('month') - 1;
+    const tzDay = getPart('day');
+    let tzHour = getPart('hour');
+    if (tzHour === 24) tzHour = 0;
+    const tzMin = getPart('minute');
+
+    const tzLocalMs = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMin, 0);
+    const offsetMs = tzLocalMs - testUtcDate.getTime();
+
+    const targetMs = Date.UTC(year, monthIndex, day, 0, 0, 0) - offsetMs;
+    return new Date(targetMs);
+  } catch {
+    return new Date(year, monthIndex, day, 0, 0, 0, 0);
+  }
+}
+
 export function getLocalMidnightDate(year: number, monthIndex: number, day: number): Date {
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
 }
 
-// Global Release: November 19, 2026 at 12:00 AM local time (month 10 = November)
-export function getGlobalReleaseLocalDate(): Date {
-  return getLocalMidnightDate(2026, 10, 19);
+// Global Release: November 19, 2026 at 12:00 AM in selected target timezone
+export function getGlobalReleaseLocalDate(targetTz?: string): Date {
+  return getTargetMidnightDateInTimezone(2026, 10, 19, targetTz);
 }
 
 // Confirmed Digital Preload on PlayStation 5:
-// Tuesday, November 10, 2026 at midnight (00:00:00) local time in visitor's respective time zone
-export function getPreloadLocalDate(): Date {
-  return getLocalMidnightDate(2026, 10, 10);
+// Tuesday, November 10, 2026 at midnight (00:00:00) in selected target timezone
+export function getPreloadLocalDate(targetTz?: string): Date {
+  return getTargetMidnightDateInTimezone(2026, 10, 10, targetTz);
 }
 
 // Confirmed Digital Preload on Xbox Series X|S:
@@ -147,8 +191,8 @@ export function getPreloadXboxGmtDate(): Date {
 }
 
 // Code-in-box versions available from retailers beginning November 12, 2026
-export function getRetailCodeInBoxDate(): Date {
-  return getLocalMidnightDate(2026, 10, 12);
+export function getRetailCodeInBoxDate(targetTz?: string): Date {
+  return getTargetMidnightDateInTimezone(2026, 10, 12, targetTz);
 }
 
 // Backward-compatible alias
@@ -189,11 +233,11 @@ export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining 
   };
 }
 
-export function getUserLocalTimezoneName(): string {
+export function getUserLocalTimezoneName(overrideTz?: string): string {
   try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tz = overrideTz && overrideTz !== 'auto' ? overrideTz : Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz) {
-      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(new Date());
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(new Date());
       const shortCode = parts.find((p) => p.type === 'timeZoneName')?.value;
       const cleanTz = tz.replace(/_/g, ' ');
       return shortCode && !cleanTz.includes(shortCode) ? `${cleanTz} (${shortCode})` : cleanTz;
@@ -201,18 +245,20 @@ export function getUserLocalTimezoneName(): string {
   } catch {
     // Graceful fallback
   }
-  return 'Local Time';
+  return overrideTz || 'Local Time';
 }
 
-export function formatLocalDateString(d: Date): string {
+export function formatLocalDateString(d: Date, overrideTz?: string): string {
   try {
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: 'long',
+    const tz = overrideTz && overrideTz !== 'auto' ? overrideTz : undefined;
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
+      timeZone: tz,
       timeZoneName: 'short',
     }).format(d);
   } catch {
