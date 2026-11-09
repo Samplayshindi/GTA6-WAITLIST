@@ -146,14 +146,17 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     });
   }, []);
 
-  // Restore saved track index from localStorage if valid
+  // Restore saved track index from localStorage if valid; default to Flower in a Hurricane on initial visit
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(() => {
+    const flowerIdx = SOUNDTRACK_LIBRARY.findIndex((t) => t.id === 'flower-in-a-hurricane');
+    const defaultIdx = flowerIdx !== -1 ? flowerIdx : 1;
+
     if (typeof window !== 'undefined') {
       try {
         const savedIdx = localStorage.getItem('gta_soundtrack_track_idx');
         if (savedIdx !== null) {
           const parsed = parseInt(savedIdx, 10);
-          if (!isNaN(parsed) && parsed >= 0 && parsed < SOUNDTRACK_LIBRARY.length) {
+          if (!isNaN(parsed) && parsed > 0 && parsed < SOUNDTRACK_LIBRARY.length) {
             if (SOUNDTRACK_LIBRARY[parsed].isPlayable) return parsed;
           }
         }
@@ -161,7 +164,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
         // Storage restricted or unavailable
       }
     }
-    return 0;
+    return defaultIdx;
   });
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -187,7 +190,9 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(() => {
     const initial = getInitialTracks();
-    return initial[currentTrackIndex]?.durationSec || 116;
+    const flowerIdx = initial.findIndex((t) => t.id === 'flower-in-a-hurricane');
+    const defaultTrack = initial[flowerIdx !== -1 ? flowerIdx : 1] || initial[1] || initial[0];
+    return defaultTrack?.durationSec || 224;
   });
   const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {

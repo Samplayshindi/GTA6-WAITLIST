@@ -241,8 +241,8 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                     </button>
                   </div>
 
-                  {/* Mobile Background Toggle */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  {/* Mobile Background Toggle - Mobile Only */}
+                  <div className="flex lg:hidden items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
                     <div>
                       <div className="flex items-center gap-2">
                         <Smartphone className="w-3.5 h-3.5 text-amber-400" />
