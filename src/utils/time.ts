@@ -1,3 +1,5 @@
+import { apiUrl } from '../services/api';
+
 export interface TimeRemaining {
   totalMs: number;
   days: number;
@@ -38,7 +40,7 @@ export async function syncAuthoritativeServerTime(): Promise<number> {
   isSyncing = true;
   try {
     const t0 = performance.now();
-    const res = await fetch('/api/time', {
+    const res = await fetch(apiUrl('/api/time'), {
       method: 'GET',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',

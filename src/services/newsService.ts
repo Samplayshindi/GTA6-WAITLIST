@@ -1,3 +1,4 @@
+import { apiUrl } from './api';
 import { INITIAL_NEWS_ARTICLES } from '../data/newsData';
 
 export interface NewsArticle {
@@ -30,7 +31,7 @@ export async function getNewsArticles(limit?: number, offset?: number): Promise<
     if (offset !== undefined) params.append('offset', String(offset));
 
     const queryString = params.toString();
-    const endpoint = queryString ? `/api/news?${queryString}` : '/api/news';
+    const endpoint = queryString ? apiUrl(`/api/news?${queryString}`) : apiUrl('/api/news');
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);

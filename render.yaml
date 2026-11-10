@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: gtaviwaitlist-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install --include=dev --no-audit --no-fund
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CRON_SECRET
+        generateValue: true
+      - key: POSTGRES_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
