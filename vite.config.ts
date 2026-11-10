@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 export default defineConfig(() => {
   return {
+    base: process.env.VITE_BASE_PATH || '/',
     plugins: [
       react(),
       tailwindcss(),
@@ -22,10 +23,10 @@ export default defineConfig(() => {
           'manifest.json',
           'offline.html',
         ],
-        manifest: false, // We maintain public/manifest.json directly
+        manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,svg}'],
-          navigateFallback: '/index.html',
+          navigateFallback: '/GTA6-WAITLIST/index.html',
           navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {
@@ -71,12 +72,10 @@ export default defineConfig(() => {
               },
             },
             {
-              // Do NOT serve stale time or countdown state
               urlPattern: /^\/api\/time.*/i,
               handler: 'NetworkOnly',
             },
             {
-              // Fresh newswire with short fallback
               urlPattern: /^\/api\/newswire.*/i,
               handler: 'NetworkFirst',
               options: {
