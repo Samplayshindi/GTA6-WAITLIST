@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
 
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, 'public')));
@@ -83,6 +83,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // Authoritative server time endpoint to defeat time machine extensions
 app.get('/api/time', (_req: Request, res: Response) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
