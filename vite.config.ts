@@ -26,7 +26,7 @@ export default defineConfig(() => {
         manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,svg}'],
-          navigateFallback: '/GTA6-WAITLIST/index.html',
+          navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {
