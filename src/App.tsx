@@ -24,7 +24,11 @@ import { SoundtrackProvider } from './context/SoundtrackContext';
 import { SettingsProvider } from './context/SettingsContext';
 
 function normalizePath(rawPath: string): string {
-  const clean = rawPath.toLowerCase().split('?')[0].split('#')[0];
+  const basePath = import.meta.env.BASE_URL || '/';
+  const withoutBase = basePath !== '/' && rawPath.startsWith(basePath)
+    ? `/${rawPath.slice(basePath.length)}`
+    : rawPath;
+  const clean = withoutBase.toLowerCase().split('?')[0].split('#')[0];
   if (clean === '/specifications') return '/specs';
   if (
     clean === '/characters' ||
@@ -158,8 +162,10 @@ function MainAppContent() {
     const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (isDesktop) {
-      if (window.location.pathname !== targetPath) {
-        window.history.pushState({}, '', targetPath);
+      const basePath = import.meta.env.BASE_URL || '/';
+      const destination = `${basePath}${targetPath.replace(/^\/+/, '')}`;
+      if (normalizePath(window.location.pathname) !== targetPath) {
+        window.history.pushState({}, '', destination);
       }
       setCurrentPath(targetPath);
       setActiveSection(sectionId);
