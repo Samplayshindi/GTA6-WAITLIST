@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /api/*
 
-Sitemap: https://gtaviwaitlist.vercel.app/sitemap.xml
+Sitemap: https://gtaviwaitlist.run.place/sitemap.xml

@@ -52,7 +52,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
         </RevealOnScroll>
 
         {/* Featured Video Tier */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {featuredVideos.map((video, idx) => (
             <RevealOnScroll key={video.id} delayMs={idx * 100}>
               <a

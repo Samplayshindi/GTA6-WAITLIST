@@ -60,7 +60,7 @@ export const FAQ_DATA: FaqEntry[] = [
     id: 'faq-music-soundtrack',
     category: 'Music & Audio',
     question: 'What music is confirmed for the GTA VI soundtrack?',
-    answer: 'Trailer 1 was soundtracked by Tom Petty\'s 1989 classic "Love Is a Long Road", and Trailer 2 featured The Pointer Sisters\' 1986 hit "Hot Together". Furthermore, Rockstar partnered with Atlantic Records to produce "Grand Theft Auto VI: The Album", releasing advance singles featuring artists such as Yung Lean, Future, Metro Boomin, Travis Scott, CA7RIEL, Paco Amoroso, PinkPantheress, Morgan Wallen, Rauw Alejandro, and Keith Richards.',
+    answer: 'Trailer 1 was soundtracked by Tom Petty\'s 1989 classic "Love Is a Long Road", and Trailer 2 featured The Pointer Sisters\' 1986 hit "Hot Together". Furthermore, Rockstar partnered with Atlantic Records to produce "Grand Theft Auto VI: The Album", releasing advance singles featuring artists such as Tove Lo, Yung Lean, Future, Metro Boomin, Travis Scott, CA7RIEL, Paco Amoroso, PinkPantheress, Morgan Wallen, Rauw Alejandro, and Keith Richards.',
     verifiedSource: 'Rockstar Games / Atlantic Records Announcement',
     sourceUrl: 'https://www.rockstargames.com/VI/music',
   },

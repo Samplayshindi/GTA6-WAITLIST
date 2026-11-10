@@ -18,21 +18,21 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
   const [loadingNews, setLoadingNews] = useState<boolean>(true);
   const [previewLightboxIndex, setPreviewLightboxIndex] = useState<number | null>(null);
 
-  // Take the 2 featured official videos for compact presentation
-  const previewVideos = OFFICIAL_VIDEOS.slice(0, 2);
+  // Featured official videos for compact presentation
+  const previewVideos = OFFICIAL_VIDEOS.filter((v) => v.isFeatured);
 
-  // Take top 4 iconic soundtrack tracks
+  // Top 4 iconic soundtrack tracks
   const previewTracks = SOUNDTRACK_LIBRARY.slice(0, 4);
 
-  // Curated 6 iconic preview images representing all categories
-  const curatedPreviewImages: GalleryImage[] = [
-    GALLERY_IMAGES.find((img) => img.id === 'jl-15') || GALLERY_IMAGES[0],
-    GALLERY_IMAGES.find((img) => img.id === 'vc-18') || GALLERY_IMAGES[1],
-    GALLERY_IMAGES.find((img) => img.id === 'char-boobie-ls') || GALLERY_IMAGES[2],
-    GALLERY_IMAGES.find((img) => img.id === 'grass-07') || GALLERY_IMAGES[3],
-    GALLERY_IMAGES.find((img) => img.id === 'lucia-11') || GALLERY_IMAGES[4],
-    GALLERY_IMAGES.find((img) => img.id === 'vc-22') || GALLERY_IMAGES[5],
-  ];
+  // Dynamic random 6-image preview selection from GALLERY_IMAGES (Desktop Overview only)
+  const [curatedPreviewImages] = useState<GalleryImage[]>(() => {
+    const pool = [...GALLERY_IMAGES];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, 6);
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -87,7 +87,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                 onClick={() => onNavigate('gallery')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-all duration-200 shadow-lg cursor-pointer min-h-[40px] hover:scale-105 active:scale-95 theme-bg-primary"
               >
-                <span>View Full Gallery (117)</span>
+                <span>View Full Gallery ({GALLERY_IMAGES.length})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -154,13 +154,22 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                 onClick={() => onNavigate('videos')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-colors shadow-lg cursor-pointer min-h-[40px] theme-bg-primary"
               >
-                <span>View All Videos (4)</span>
+                <span>View All Videos ({OFFICIAL_VIDEOS.length})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Adaptive Video Grid */}
+          <div
+            className={`grid gap-6 ${
+              previewVideos.length === 2
+                ? 'grid-cols-1 md:grid-cols-2'
+                : previewVideos.length === 3
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+            }`}
+          >
             {previewVideos.map((video, idx) => (
               <RevealOnScroll key={video.id} delayMs={idx * 100}>
                 <a

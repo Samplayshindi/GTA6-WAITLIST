@@ -15,10 +15,24 @@ export interface GtaVideo {
 
 export const OFFICIAL_VIDEOS: GtaVideo[] = [
   {
+    id: 'preload-now',
+    title: 'Grand Theft Auto VI: Pre-Load Now',
+    releaseDate: 'November 10, 2026',
+    runtime: '0:30',
+    youtubeId: '_yl5ELcmugI',
+    canEmbed: false,
+    officialUrl: 'https://www.youtube.com/watch?v=_yl5ELcmugI',
+    description: 'Official pre-load notification broadcast for PlayStation 5 and Xbox Series X|S. Download the game data now to jump in immediately at launch.',
+    isFeatured: true,
+    thumbnailUrl: 'https://img.youtube.com/vi/_yl5ELcmugI/maxresdefault.jpg',
+    badge: 'PRE-LOAD PROMO · 4K UHD',
+    buttonText: 'WATCH VIDEO',
+  },
+  {
     id: 'launch-trailer',
     title: 'Grand Theft Auto VI Launch Trailer',
     releaseDate: 'October 15, 2026',
-    runtime: '2:45',
+    runtime: '1:30',
     youtubeId: 'rz1B4B2yBZY',
     canEmbed: false,
     officialUrl: 'https://youtu.be/rz1B4B2yBZY',

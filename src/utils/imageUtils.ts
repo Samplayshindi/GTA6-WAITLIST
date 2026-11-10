@@ -5,6 +5,11 @@
 export function getResponsiveImageUrl(url: string, targetWidth: number): string {
   if (!url) return '';
 
+  // Preserve YouTube thumbnails and external non-Rockstar CDN assets
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    return url;
+  }
+
   // Handle Rockstar Games CDN imwidth parameter
   if (url.includes('imwidth=')) {
     return url.replace(/imwidth=\d+/, `imwidth=${targetWidth}`);

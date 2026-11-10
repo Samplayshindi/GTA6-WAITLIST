@@ -25,7 +25,7 @@ interface FailedItem {
   reason: string;
 }
 
-const CACHE_NAME = 'gtavi-resources-v1.7';
+const CACHE_NAME = 'gtavi-resources-v1.8';
 const BATCH_SIZE = 5;
 
 async function fetchAndCacheResource(
@@ -44,50 +44,74 @@ async function fetchAndCacheResource(
 
     try {
       const isExternal = url.startsWith('http://') || url.startsWith('https://');
-      const requestUrl = isExternal
-        ? `/api/proxy-image?url=${encodeURIComponent(url)}`
-        : url;
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      const isSameOrigin = !isExternal || (currentOrigin && url.startsWith(currentOrigin));
 
-      const res = await fetch(requestUrl, {
-        signal,
-        cache: 'reload',
-      });
-
-      if (res.ok) {
-        const blob = await res.blob();
-        const responseToCache = new Response(blob, {
-          status: 200,
-          statusText: 'OK',
-          headers: {
-            'Content-Type': res.headers.get('content-type') || 'image/jpeg',
-            'Cache-Control': 'public, max-age=31536000, immutable',
-          },
-        });
-        await cache.put(url, responseToCache);
-        return { url, success: true };
+      if (isSameOrigin) {
+        const res = await fetch(url, { signal, cache: 'reload' });
+        if (res.ok) {
+          await cache.put(url, res);
+          return { url, success: true };
+        } else {
+          lastError = `HTTP ${res.status}`;
+        }
       } else {
-        lastError = `HTTP ${res.status}`;
+        // External Assets (Rockstar CDN, YouTube thumbnails, etc.)
+        // Stage 1: Try CORS fetch
+        try {
+          const corsRes = await fetch(url, { signal, mode: 'cors' });
+          if (corsRes.ok) {
+            await cache.put(url, corsRes);
+            return { url, success: true };
+          }
+        } catch {
+          // CORS fetch restricted, move to no-cors mode
+        }
+
+        // Stage 2: Try no-cors fetch (creates valid opaque response for Cache Storage)
+        try {
+          const noCorsRes = await fetch(url, { signal, mode: 'no-cors' });
+          if (noCorsRes.type === 'opaque' || noCorsRes.ok || noCorsRes.status === 0) {
+            await cache.put(url, noCorsRes);
+            return { url, success: true };
+          }
+        } catch {
+          // Direct fetch failed
+        }
+
+        // Stage 3: Try proxy endpoint if available
+        try {
+          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+          const proxyRes = await fetch(proxyUrl, { signal });
+          if (proxyRes.ok) {
+            const blob = await proxyRes.blob();
+            const responseToCache = new Response(blob, {
+              status: 200,
+              statusText: 'OK',
+              headers: {
+                'Content-Type': proxyRes.headers.get('content-type') || 'image/jpeg',
+                'Cache-Control': 'public, max-age=31536000, immutable',
+              },
+            });
+            await cache.put(url, responseToCache);
+            return { url, success: true };
+          }
+        } catch {
+          // Proxy endpoint unavailable
+        }
+
+        lastError = 'Cross-Origin Fetch Failed';
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {
         return { url, success: false, errorReason: 'Aborted by user' };
       }
-
-      // Fallback: Direct fetch with no-cors if proxy route is unavailable
-      try {
-        const directRes = await fetch(url, { mode: 'no-cors', signal });
-        if (directRes.type === 'opaque' || directRes.ok) {
-          await cache.put(url, directRes);
-          return { url, success: true };
-        }
-      } catch {
-        lastError = err.message || 'CORS / Network Error';
-      }
+      lastError = err.message || 'Download Error';
     }
 
     attempt++;
     if (attempt <= maxRetries) {
-      await new Promise((r) => setTimeout(r, 200 * attempt));
+      await new Promise((r) => setTimeout(r, 150 * attempt));
     }
   }
 

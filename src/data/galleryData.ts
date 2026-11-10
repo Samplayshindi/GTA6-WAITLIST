@@ -17,6 +17,13 @@ export const GALLERY_CATEGORIES = [
 export const GALLERY_IMAGES: GalleryImage[] = [
   // --- JASON & LUCIA ---
   {
+    id: 'jl-rooftop',
+    url: 'https://www.rockstargames.com/VI/_next/static/media/Jason_Lucia_Rooftop_landscape.0c6p5do~-8~7..jpg',
+    title: 'Jason & Lucia - Rooftop Overlook',
+    category: 'jason-lucia',
+    tag: 'Official Artwork',
+  },
+  {
     id: 'jl-14',
     url: 'https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_14.10e7v.06pcm_t.jpg',
     title: 'Jason & Lucia - Vice City Night',
