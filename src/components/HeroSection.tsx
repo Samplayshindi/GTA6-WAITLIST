@@ -77,7 +77,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         <RevealOnScroll delayMs={0}>
           <div className="flex justify-center mb-4 sm:mb-6">
             <img
-              src="/gta-vi-logo.svg"
+              src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
               alt="Grand Theft Auto VI Logo"
               className="h-20 sm:h-28 md:h-40 max-w-[80vw] sm:max-w-xs md:max-w-md w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)]"
             />
