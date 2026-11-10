@@ -1,3 +1,4 @@
+import { apiUrl } from '../services/api';
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import {
   SOUNDTRACK_LIBRARY,
@@ -267,7 +268,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   // Fetch dynamically discovered tracks from /api/soundtrack on mount
   useEffect(() => {
     let isMounted = true;
-    fetch('/api/soundtrack')
+    fetch(apiUrl('/api/soundtrack'))
       .then((res) => {
         if (res.ok) return res.json();
         throw new Error('Failed to fetch soundtrack API');
