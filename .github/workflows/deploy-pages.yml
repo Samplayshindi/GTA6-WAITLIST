@@ -46,12 +46,12 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_BASE_PATH: /GTA6-WAITLIST/
 
       - name: Prepare GitHub Pages output
         run: |
           test -f dist/index.html
           cp dist/index.html dist/404.html
-          printf '%s\n' 'gtaviwaitlist.run.place' > dist/CNAME
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
