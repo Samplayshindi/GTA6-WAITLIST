@@ -30,7 +30,7 @@ export const SLIDESHOW_IMAGES: string[] = [
   'https://www.rockstargames.com/VI/_next/static/media/Jason_Lucia_Lock_And_Load_landscape.0l9s5w7ih9p~3.jpg',
 ];
 
-const DEFAULT_STATIC_POSTER = '/images/hero-4k.jpg';
+const DEFAULT_STATIC_POSTER = `${import.meta.env.BASE_URL}images/hero-4k.jpg`;
 const DISPLAY_DURATION_MS = 12000; // 12 seconds per image display
 const FADE_OUT_DURATION_MS = 1500; // 1.5s fade out to black
 const BLACK_HOLD_DURATION_MS = 300; // 300ms hold on completely black screen
