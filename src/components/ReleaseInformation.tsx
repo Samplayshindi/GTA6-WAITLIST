@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink, Calendar, Gamepad2, Building2, Globe, Cpu, ShieldCheck, DownloadCloud, HardDrive, PackageCheck } from 'lucide-react';
 import { RELEASE_SPECS } from '../config/countdown';
+import { RevealOnScroll } from './RevealOnScroll';
 
 export const ReleaseInformation: React.FC = () => {
   const specs = [
@@ -65,47 +66,50 @@ export const ReleaseInformation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-10 sm:mb-14">
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full theme-bg-primary" />
-            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
-              Official Production Information
-            </span>
+        <RevealOnScroll>
+          <div className="max-w-3xl mb-10 sm:mb-14">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
+                Official Production Information
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              Production <span className="theme-gradient-text">Specifications</span>
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
+              Authoritative release milestones, digital pre-loading schedules, storage footprints, and technology specifications authenticated through official studio announcements.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            Production <span className="theme-gradient-text">Specifications</span>
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
-            Authoritative release milestones, digital pre-loading schedules, storage footprints, and technology specifications authenticated through official studio announcements.
-          </p>
-        </div>
+        </RevealOnScroll>
 
         {/* Specifications Editorial Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
           {specs.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div
-                key={index}
-                className="rounded-2xl bg-[#0B2425]/40 border border-white/10 p-5 sm:p-6 md:p-8 flex flex-col justify-between hover:border-white/30 transition-all duration-300 shadow-xl"
-              >
-                <div>
-                  <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 theme-text-primary shrink-0" />
-                    <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-slate-400">
-                      {item.label}
-                    </span>
+              <RevealOnScroll key={index} delayMs={(index % 3) * 80}>
+                <div
+                  className="rounded-2xl bg-[#0B2425]/40 border border-white/10 p-5 sm:p-6 md:p-8 flex flex-col justify-between hover:border-white/30 transition-all duration-300 shadow-xl h-full"
+                >
+                  <div>
+                    <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 theme-text-primary shrink-0" />
+                      <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-slate-400">
+                        {item.label}
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg sm:text-xl font-bold text-[#F4F1ED] tracking-tight leading-snug">
+                      {item.value}
+                    </h3>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold text-[#F4F1ED] tracking-tight leading-snug">
-                    {item.value}
-                  </h3>
+                  <p className="mt-4 pt-3 sm:pt-4 border-t border-white/10 text-xs text-slate-400 leading-relaxed font-normal">
+                    {item.subtext}
+                  </p>
                 </div>
-
-                <p className="mt-4 pt-3 sm:pt-4 border-t border-white/10 text-xs text-slate-400 leading-relaxed font-normal">
-                  {item.subtext}
-                </p>
-              </div>
+              </RevealOnScroll>
             );
           })}
         </div>

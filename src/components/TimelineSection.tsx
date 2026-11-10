@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, ExternalLink } from 'lucide-react';
 import { TIMELINE_DATA } from '../data/timelineData';
+import { RevealOnScroll } from './RevealOnScroll';
 
 export const TimelineSection: React.FC = () => {
   return (
@@ -8,20 +9,22 @@ export const TimelineSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-10 sm:mb-16">
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full theme-bg-primary" />
-            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
-              Public Archive &amp; Road to Release
-            </span>
+        <RevealOnScroll>
+          <div className="max-w-3xl mb-10 sm:mb-16">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
+                Public Archive &amp; Road to Release
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              History &amp; <span className="theme-gradient-text">Timeline</span>
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
+              A chronological public record documenting official Rockstar Games announcements, debut broadcasts, earnings reports, and upcoming launch milestones.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            History &amp; <span className="theme-gradient-text">Timeline</span>
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
-            A chronological public record documenting official Rockstar Games announcements, debut broadcasts, earnings reports, and upcoming launch milestones.
-          </p>
-        </div>
+        </RevealOnScroll>
 
         {/* Vertical Timeline Tree */}
         <div className="relative max-w-5xl mx-auto w-full">
@@ -31,12 +34,12 @@ export const TimelineSection: React.FC = () => {
             {TIMELINE_DATA.map((event, idx) => {
               const isEven = idx % 2 === 0;
               return (
-                <div
-                  key={event.id}
-                  className={`relative flex flex-col md:flex-row items-start w-full ${
-                    isEven ? 'md:flex-row-reverse' : ''
-                  }`}
-                >
+                <RevealOnScroll key={event.id} delayMs={(idx % 4) * 80}>
+                  <div
+                    className={`relative flex flex-col md:flex-row items-start w-full ${
+                      isEven ? 'md:flex-row-reverse' : ''
+                    }`}
+                  >
                   
                   {/* Central Node Badge */}
                   <div className="absolute left-3 sm:left-4 md:left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#08090D] border-2 border-white/40 flex items-center justify-center z-10 shadow-lg mt-5">
@@ -102,8 +105,9 @@ export const TimelineSection: React.FC = () => {
 
                   <div className="hidden md:block md:w-1/2" />
                 </div>
-              );
-            })}
+              </RevealOnScroll>
+            );
+          })}
           </div>
         </div>
 

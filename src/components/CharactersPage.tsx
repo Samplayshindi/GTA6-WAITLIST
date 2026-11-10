@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Users, ChevronLeft, ChevronRight, BookOpen, Award, Sparkles } from 'lucide-react';
 import { CHARACTERS_DATA } from '../data/charactersData';
 import { getResponsiveImageUrl } from '../utils/imageUtils';
+import { RevealOnScroll } from './RevealOnScroll';
 
 interface CharactersPageProps {
   onNavigateHome?: () => void;
@@ -117,17 +118,19 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
       {/* 1. Page Header */}
-      <div className="mb-6 pb-6 border-b border-white/10">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight font-display">
-          Grand Theft Auto VI{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-primary,#FF4FA3)] to-[var(--theme-tertiary,#00F5D4)]">
-            Characters
-          </span>
-        </h1>
-        <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-sans">
-          In-depth criminal profiles, verified backstories, personality traits, and key art collections for the key players shaping Vice City and the Keys.
-        </p>
-      </div>
+      <RevealOnScroll>
+        <div className="mb-6 pb-6 border-b border-white/10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight font-display">
+            Grand Theft Auto VI{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-primary,#FF4FA3)] to-[var(--theme-tertiary,#00F5D4)]">
+              Characters
+            </span>
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-sans">
+            In-depth criminal profiles, verified backstories, personality traits, and key art collections for the key players shaping Vice City and the Keys.
+          </p>
+        </div>
+      </RevealOnScroll>
 
       {/* 2. Character Selector Pills (Static wrapping flex layout) */}
       <div className="mb-8">

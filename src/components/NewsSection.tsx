@@ -3,6 +3,7 @@ import { ExternalLink, Loader2 } from 'lucide-react';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 import { getResponsiveImageUrl } from '../utils/imageUtils';
+import { RevealOnScroll } from './RevealOnScroll';
 
 export const NewsSection: React.FC = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -78,22 +79,24 @@ export const NewsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Hero Header */}
-        <div className="max-w-3xl mb-10 sm:mb-14">
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full theme-bg-primary" />
-            <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
-              OFFICIAL DISPATCHES
-            </span>
+        <RevealOnScroll>
+          <div className="max-w-3xl mb-10 sm:mb-14">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
+                OFFICIAL DISPATCHES
+              </span>
+            </div>
+
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#F4F1ED]">
+              GTA VI <span className="theme-gradient-text">NEWSWIRE</span>
+            </h2>
+
+            <p className="mt-2 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-300 font-normal leading-relaxed">
+              The latest developments, announcements and coverage surrounding Grand Theft Auto VI.
+            </p>
           </div>
-
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#F4F1ED]">
-            GTA VI <span className="theme-gradient-text">NEWSWIRE</span>
-          </h2>
-
-          <p className="mt-2 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-300 font-normal leading-relaxed">
-            The latest developments, announcements and coverage surrounding Grand Theft Auto VI.
-          </p>
-        </div>
+        </RevealOnScroll>
 
         {/* Initial Loading Skeleton */}
         {loading && articles.length === 0 && (
@@ -113,59 +116,61 @@ export const NewsSection: React.FC = () => {
             
             {/* 1. Large Featured Lead Story */}
             {featuredArticle && (
-              <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
-                <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
-                  <img
-                    src={getResponsiveImageUrl(featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description), 1080)}
-                    alt={featuredArticle.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B2425] via-transparent to-transparent lg:hidden" />
-                </div>
+              <RevealOnScroll>
+                <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
+                  <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
+                    <img
+                      src={getResponsiveImageUrl(featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description), 1080)}
+                      alt={featuredArticle.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B2425] via-transparent to-transparent lg:hidden" />
+                  </div>
 
-                <div className="lg:col-span-5 p-5 sm:p-8 md:p-10 flex flex-col justify-between">
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                      <span className="font-bold uppercase tracking-wider theme-text-primary">
-                        {featuredArticle.source}
-                      </span>
-                      <span aria-hidden="true" className="text-slate-600">·</span>
-                      <span>
-                        {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(featuredArticle.publishedAt))}
-                      </span>
+                  <div className="lg:col-span-5 p-5 sm:p-8 md:p-10 flex flex-col justify-between">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+                        <span className="font-bold uppercase tracking-wider theme-text-primary">
+                          {featuredArticle.source}
+                        </span>
+                        <span aria-hidden="true" className="text-slate-600">·</span>
+                        <span>
+                          {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(featuredArticle.publishedAt))}
+                        </span>
+                      </div>
+
+                      <h3 className="text-2xl sm:text-3xl font-black text-[#F4F1ED] leading-tight group-hover:text-white transition-colors">
+                        {featuredArticle.title}
+                      </h3>
+
+                      <p className="text-sm text-slate-300 leading-relaxed font-normal line-clamp-3">
+                        {featuredArticle.description}
+                      </p>
                     </div>
 
-                    <h3 className="text-2xl sm:text-3xl font-black text-[#F4F1ED] leading-tight group-hover:text-white transition-colors">
-                      {featuredArticle.title}
-                    </h3>
-
-                    <p className="text-sm text-slate-300 leading-relaxed font-normal line-clamp-3">
-                      {featuredArticle.description}
-                    </p>
+                    <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                      <a
+                        href={featuredArticle.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase theme-text-primary transition-colors"
+                      >
+                        <span>READ FULL STORY</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                      <span className="text-xs font-mono text-slate-500">FEATURED LEAD</span>
+                    </div>
                   </div>
-
-                  <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
-                    <a
-                      href={featuredArticle.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase theme-text-primary transition-colors"
-                    >
-                      <span>READ FULL STORY</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    <span className="text-xs font-mono text-slate-500">FEATURED LEAD</span>
-                  </div>
-                </div>
-              </article>
+                </article>
+              </RevealOnScroll>
             )}
 
             {/* 2. Secondary Editorial Grid */}
             {gridArticles.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {gridArticles.map((article) => {
+                {gridArticles.map((article, idx) => {
                   const dateStr = new Intl.DateTimeFormat(undefined, {
                     month: 'short',
                     day: 'numeric',
@@ -176,50 +181,49 @@ export const NewsSection: React.FC = () => {
                   const imgSrc = getResponsiveImageUrl(rawSrc, 640);
 
                   return (
-                    <article
-                      key={article.id}
-                      className="group rounded-xl bg-[#0B2425]/40 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between"
-                    >
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
-                        <img
-                          src={imgSrc}
-                          alt={article.title}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"
-                        />
-                      </div>
+                    <RevealOnScroll key={article.id} delayMs={(idx % 3) * 80}>
+                      <article className="group rounded-xl bg-[#0B2425]/40 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between h-full">
+                        <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
+                          <img
+                            src={imgSrc}
+                            alt={article.title}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"
+                          />
+                        </div>
 
-                      <div className="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-2">
-                            <span className="font-semibold text-slate-300">{article.source}</span>
-                            <span aria-hidden="true" className="text-slate-600">·</span>
-                            <span>{dateStr}</span>
+                        <div className="p-6 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-2">
+                              <span className="font-semibold text-slate-300">{article.source}</span>
+                              <span aria-hidden="true" className="text-slate-600">·</span>
+                              <span>{dateStr}</span>
+                            </div>
+
+                            <h4 className="text-base font-bold text-[#F4F1ED] leading-snug line-clamp-2 group-hover:text-white transition-colors">
+                              {article.title}
+                            </h4>
+
+                            <p className="mt-2 text-xs text-slate-300 line-clamp-3 leading-relaxed">
+                              {article.description}
+                            </p>
                           </div>
 
-                          <h4 className="text-base font-bold text-[#F4F1ED] leading-snug line-clamp-2 group-hover:text-white transition-colors">
-                            {article.title}
-                          </h4>
-
-                          <p className="mt-2 text-xs text-slate-300 line-clamp-3 leading-relaxed">
-                            {article.description}
-                          </p>
+                          <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+                            <a
+                              href={article.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase theme-text-primary transition-colors"
+                            >
+                              <span>READ ARTICLE</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
-
-                        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                          <a
-                            href={article.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase theme-text-primary transition-colors"
-                          >
-                            <span>READ ARTICLE</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
-                    </article>
+                      </article>
+                    </RevealOnScroll>
                   );
                 })}
               </div>

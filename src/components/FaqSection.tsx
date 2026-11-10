@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { FAQ_DATA } from '../data/faqData';
+import { RevealOnScroll } from './RevealOnScroll';
 
 export const FaqSection: React.FC = () => {
   const [expandedId, setExpandedId] = useState<string | null>(FAQ_DATA[0]?.id || null);
@@ -14,34 +15,36 @@ export const FaqSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-8 sm:mb-12">
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <span className="w-2 h-2 rounded-full theme-bg-primary" />
-            <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
-              Authoritative Knowledgebase
-            </span>
+        <RevealOnScroll>
+          <div className="max-w-3xl mb-8 sm:mb-12">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
+                Authoritative Knowledgebase
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              FAQ &amp; Game <span className="theme-gradient-text">Information</span>
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
+              Verified answers to the most critical questions regarding GTA VI launch, gameplay, platforms, and technology, authenticated through Rockstar Games disclosures.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            FAQ &amp; Game <span className="theme-gradient-text">Information</span>
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
-            Verified answers to the most critical questions regarding GTA VI launch, gameplay, platforms, and technology, authenticated through Rockstar Games disclosures.
-          </p>
-        </div>
+        </RevealOnScroll>
 
         {/* FAQ Accordion List (All Questions Displayed Together) */}
         <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 w-full">
-          {FAQ_DATA.map((faq) => {
+          {FAQ_DATA.map((faq, idx) => {
             const isExpanded = expandedId === faq.id;
             return (
-              <div
-                key={faq.id}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden w-full ${
-                  isExpanded
-                    ? 'bg-[#0B2425]/70 border-white/30 shadow-xl'
-                    : 'bg-[#0B2425]/30 border-white/10 hover:border-white/20'
-                }`}
-              >
+              <RevealOnScroll key={faq.id} delayMs={(idx % 5) * 60}>
+                <div
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden w-full ${
+                    isExpanded
+                      ? 'bg-[#0B2425]/70 border-white/30 shadow-xl'
+                      : 'bg-[#0B2425]/30 border-white/10 hover:border-white/20'
+                  }`}
+                >
                 <button
                   onClick={() => toggleExpand(faq.id)}
                   className="w-full text-left p-4 sm:p-6 flex items-center justify-between gap-4 cursor-pointer focus:outline-none min-h-[56px]"
@@ -90,8 +93,9 @@ export const FaqSection: React.FC = () => {
                   </div>
                 )}
               </div>
-            );
-          })}
+            </RevealOnScroll>
+          );
+        })}
         </div>
 
       </div>

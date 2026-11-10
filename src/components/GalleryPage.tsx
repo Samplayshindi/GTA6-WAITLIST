@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Image as ImageIcon, ZoomIn, ChevronDown } from 'lucide-react';
 import { GALLERY_IMAGES, GALLERY_CATEGORIES, GalleryImage } from '../data/galleryData';
 import { ImageLightboxModal } from './ImageLightboxModal';
+import { RevealOnScroll } from './RevealOnScroll';
 
 interface GalleryPageProps {
   onNavigateHome?: () => void;
@@ -41,33 +42,35 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
   return (
     <div className="min-h-screen py-10 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 1. Header & Filter Control Bar */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-white/10">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: 'var(--theme-accent, #FF4FA3)' }}
-            />
-            <span
-              className="text-xs font-mono font-bold tracking-[0.25em] uppercase"
-              style={{ color: 'var(--theme-accent, #FF4FA3)' }}
-            >
-              Official Rockstar Media Archive
-            </span>
+      <RevealOnScroll>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: 'var(--theme-accent, #FF4FA3)' }}
+              />
+              <span
+                className="text-xs font-mono font-bold tracking-[0.25em] uppercase"
+                style={{ color: 'var(--theme-accent, #FF4FA3)' }}
+              >
+                Official Rockstar Media Archive
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              Grand Theft Auto VI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-accent,#FF4FA3)] to-[var(--theme-primary,#F15A24)]">Gallery</span>
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              High-resolution in-engine screenshots, official character key art, and environment showcases captured directly from PlayStation 5 and Xbox Series X|S.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
-            Grand Theft Auto VI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-accent,#FF4FA3)] to-[var(--theme-primary,#F15A24)]">Gallery</span>
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            High-resolution in-engine screenshots, official character key art, and environment showcases captured directly from PlayStation 5 and Xbox Series X|S.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#090C10]/80 px-4 py-2 rounded-full border border-white/10 shrink-0 self-start md:self-auto">
-          <ImageIcon className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
-          <span>{filteredImages.length} Official Assets</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#090C10]/80 px-4 py-2 rounded-full border border-white/10 shrink-0 self-start md:self-auto">
+            <ImageIcon className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
+            <span>{filteredImages.length} Official Assets</span>
+          </div>
         </div>
-      </div>
+      </RevealOnScroll>
 
       {/* 2. Responsive Segmented Category Filter Tabs */}
       <div className="mb-10 overflow-x-auto pb-2 scrollbar-none">
@@ -118,48 +121,49 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
             {filteredImages.map((img, idx) => {
               const isHiddenOnMobile = idx >= mobileVisibleCount;
               return (
-                <div
-                  key={img.id}
-                  onClick={() => setLightboxIndex(idx)}
-                  className={`group relative rounded-2xl bg-[#090C10] border border-white/10 hover:border-white/40 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer break-inside-avoid transform hover:-translate-y-1 ${
-                    isHiddenOnMobile ? 'hidden sm:block' : 'block'
-                  }`}
-                >
-                  {/* Aspect Ratio Preserved Container with Instant Placeholder & Smooth Load Fade-in */}
-                  <div className="relative w-full overflow-hidden bg-[#12141C] min-h-[160px] aspect-[16/9]">
-                    <img
-                      src={getThumbnailUrl(img.url)}
-                      alt={img.title}
-                      loading="lazy"
-                      decoding="async"
-                      onLoad={(e) => {
-                        (e.currentTarget as HTMLImageElement).classList.remove('opacity-0');
-                        (e.currentTarget as HTMLImageElement).classList.add('opacity-100');
-                      }}
-                      className="w-full h-full object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500 opacity-0"
-                    />
+                <RevealOnScroll key={img.id} delayMs={(idx % 6) * 60}>
+                  <div
+                    onClick={() => setLightboxIndex(idx)}
+                    className={`group relative rounded-2xl bg-[#090C10] border border-white/10 hover:border-white/40 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer break-inside-avoid transform hover:-translate-y-1 ${
+                      isHiddenOnMobile ? 'hidden sm:block' : 'block'
+                    }`}
+                  >
+                    {/* Aspect Ratio Preserved Container with Instant Placeholder & Smooth Load Fade-in */}
+                    <div className="relative w-full overflow-hidden bg-[#12141C] min-h-[160px] aspect-[16/9]">
+                      <img
+                        src={getThumbnailUrl(img.url)}
+                        alt={img.title}
+                        loading="lazy"
+                        decoding="async"
+                        onLoad={(e) => {
+                          (e.currentTarget as HTMLImageElement).classList.remove('opacity-0');
+                          (e.currentTarget as HTMLImageElement).classList.add('opacity-100');
+                        }}
+                        className="w-full h-full object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500 opacity-0"
+                      />
 
-                    {/* Ambient Subtle Scrim Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
+                      {/* Ambient Subtle Scrim Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
 
-                    {/* Hover Zoom Icon Affordance */}
-                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 pointer-events-none">
-                      <div
-                        className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
-                        style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
-                      >
-                        <ZoomIn className="w-5 h-5" />
+                      {/* Hover Zoom Icon Affordance */}
+                      <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 pointer-events-none">
+                        <div
+                          className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
+                          style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
+                        >
+                          <ZoomIn className="w-5 h-5" />
+                        </div>
+                      </div>
+
+                      {/* Clean Unobtrusive Title Caption */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
+                        <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
+                          {img.title}
+                        </h3>
                       </div>
                     </div>
-
-                    {/* Clean Unobtrusive Title Caption */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
-                      <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
-                        {img.title}
-                      </h3>
-                    </div>
                   </div>
-                </div>
+                </RevealOnScroll>
               );
             })}
           </div>

@@ -18,6 +18,7 @@ import { useSettings, PALETTES, TIME_ZONES } from '../context/SettingsContext';
 import { useSoundtrack } from '../context/SoundtrackContext';
 import { MobileSlideshowWarningModal } from './MobileSlideshowWarningModal';
 import { ResourceInstallerModal } from './ResourceInstallerModal';
+import { APP_VERSION } from '../config/version';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -102,7 +103,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                     Preferences
                   </h2>
                   <p className="text-[11px] font-mono text-slate-400">
-                    GTA VI Waitlist Experience v1.7.5
+                    GTA VI Waitlist Experience {APP_VERSION}
                   </p>
                 </div>
               </div>

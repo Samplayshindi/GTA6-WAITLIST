@@ -122,7 +122,14 @@ function MainAppContent() {
       const timer = setTimeout(() => {
         const el = document.getElementById(targetId);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
+          const headerOffset = 80;
+          const elementPosition = el.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: prefersReduced ? 'auto' : 'smooth',
+          });
         }
       }, 350);
       return () => clearTimeout(timer);
@@ -148,6 +155,8 @@ function MainAppContent() {
     else if (sectionId === 'overview' || sectionId === '/') targetPath = '/';
     else if (sectionId === 'countdown') targetPath = '/';
 
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     if (isDesktop) {
       if (window.location.pathname !== targetPath) {
         window.history.pushState({}, '', targetPath);
@@ -158,10 +167,18 @@ function MainAppContent() {
       if (sectionId === 'countdown' && targetPath === '/') {
         setTimeout(() => {
           const el = document.getElementById('countdown');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
+          if (el) {
+            const headerOffset = 80;
+            const elementPosition = el.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({
+              top: Math.max(0, offsetPosition),
+              behavior: prefersReduced ? 'auto' : 'smooth',
+            });
+          }
         }, 50);
       } else {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
       }
     } else {
       // Mobile Layout: Continuous single-page scroll
@@ -169,9 +186,15 @@ function MainAppContent() {
       const targetElementId = sectionId === 'specs' ? 'specifications' : sectionId;
       const el = document.getElementById(targetElementId);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+        const headerOffset = 80;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({
+          top: Math.max(0, offsetPosition),
+          behavior: prefersReduced ? 'auto' : 'smooth',
+        });
       } else if (sectionId === 'overview') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
       }
     }
   };
