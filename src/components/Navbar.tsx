@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="Grand Theft Auto VI Home"
           >
             <img
-              src="/gta-vi-logo.svg"
+              src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
               alt="Grand Theft Auto VI"
               className="h-7 sm:h-8 md:h-9 w-auto object-contain hover:opacity-90 transition-opacity"
             />
@@ -148,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="lg:hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200 flex flex-col w-full max-w-full overflow-hidden">
           <div className="flex items-center justify-between px-4 py-4 border-b border-[#24262B] bg-[#08090D]">
             <img
-              src="/gta-vi-logo.svg"
+              src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
               alt="Grand Theft Auto VI"
               className="h-8 w-auto object-contain"
             />
