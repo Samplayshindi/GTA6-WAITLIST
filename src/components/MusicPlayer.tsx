@@ -185,7 +185,7 @@ export const MusicPlayer: React.FC = () => {
             </div>
 
             {/* Track Rows */}
-            <div className="p-3 overflow-y-auto space-y-1.5" data-lenis-prevent>
+            <div className="p-3 overflow-y-auto space-y-1.5">
               {tracks
                 .filter((t) => t.isPlayable)
                 .map((track, idx) => {

@@ -23,14 +23,12 @@ import { APP_VERSION } from '../config/version';
 import { getTimezoneShortAbbr } from '../utils/time';
 
 interface SettingsDrawerProps {
-  isOpen?: boolean;
-  onClose?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose }) => {
   const {
-    isSettingsOpen,
-    closeSettings,
     isSlideshowPaused,
     mobileSlideshowEnabled,
     colorPalette,
@@ -53,26 +51,23 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
     resetPreferences,
   } = useSettings();
 
-  const drawerIsOpen = isOpen ?? isSettingsOpen;
-  const handleClose = onClose ?? closeSettings;
-
   const { isMuted, toggleMute } = useSoundtrack();
   const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
 
   // Escape key listener to close drawer
   useEffect(() => {
-    if (!drawerIsOpen) return;
+    if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        handleClose();
+        onClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [drawerIsOpen, handleClose]);
+  }, [isOpen, onClose]);
 
   const handleMobileSlideshowToggle = () => {
     if (mobileSlideshowEnabled) {
@@ -82,7 +77,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
     }
   };
 
-  if (!drawerIsOpen) return null;
+  if (!isOpen) return null;
 
   return (
     <>
@@ -90,13 +85,12 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
         role="dialog"
         aria-modal="true"
         aria-label="Website Preferences & Settings"
-        onClick={handleClose}
+        onClick={onClose}
         className="fixed inset-0 z-[120] flex justify-end bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       >
         <div
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-lg h-full bg-[#08090D] border-l border-[#24262B] text-slate-100 p-5 sm:p-6 overflow-y-auto flex flex-col justify-between shadow-2xl animate-in slide-in-from-right-8 duration-300"
-          data-lenis-prevent
         >
           {/* Header */}
           <div>
@@ -119,7 +113,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
               </div>
 
               <button
-                onClick={handleClose}
+                onClick={onClose}
                 aria-label="Close preferences panel"
                 className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
               >

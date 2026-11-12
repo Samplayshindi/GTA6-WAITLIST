@@ -1,11 +1,24 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useSyncExternalStore, useCallback, useRef } from 'react';
-import { OFFICIAL_SOUNDTRACK_TRACKS, SoundtrackTrack } from '../config/soundtrack';
+import { apiUrl } from '../services/api';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import {
+  SOUNDTRACK_LIBRARY,
+  SoundtrackTrack,
+  VERIFIED_PLAYABLE_TRACKS,
+} from '../config/soundtrack';
 
-interface SoundtrackContextType {
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady?: () => void;
+    YT?: any;
+  }
+}
+
+interface SoundtrackContextValue {
   tracks: SoundtrackTrack[];
   currentTrackIndex: number;
   currentTrack: SoundtrackTrack;
   isPlaying: boolean;
+  isReady: boolean;
   volume: number;
   isMuted: boolean;
   currentTime: number;
@@ -13,328 +26,773 @@ interface SoundtrackContextType {
   isQueueOpen: boolean;
   isDismissed: boolean;
   likedTrackIds: Set<string>;
-  selectTrack: (idx: number) => void;
+  selectTrack: (index: number) => void;
   togglePlay: () => void;
   playNextTrack: () => void;
   playPrevTrack: () => void;
   seekTo: (seconds: number) => void;
-  setVolumeLevel: (vol: number) => void;
+  setVolumeLevel: (volume: number) => void;
   toggleMute: () => void;
-  toggleLike: (id: string) => void;
+  toggleLike: (trackId: string) => void;
   setIsQueueOpen: (open: boolean) => void;
   dismissPlayer: () => void;
   restorePlayer: () => void;
 }
 
-// Audio Progress Store (isolated 1-second ticks from SoundtrackProvider state)
-class AudioProgressStore {
-  private currentTime: number = 0;
-  private listeners: Set<() => void> = new Set();
-  private timerId: ReturnType<typeof setInterval> | null = null;
-
-  subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  };
-
-  getSnapshot = () => {
-    return this.currentTime;
-  };
-
-  setCurrentTime = (time: number) => {
-    if (this.currentTime !== time) {
-      this.currentTime = time;
-      this.listeners.forEach((l) => l());
-    }
-  };
-
-  startTimer = (getDuration: () => number, onEnd: () => void) => {
-    this.stopTimer();
-    this.timerId = setInterval(() => {
-      const dur = getDuration();
-      if (this.currentTime >= dur) {
-        onEnd();
-      } else {
-        this.setCurrentTime(this.currentTime + 1);
-      }
-    }, 1000);
-  };
-
-  stopTimer = () => {
-    if (this.timerId) {
-      clearInterval(this.timerId);
-      this.timerId = null;
-    }
-  };
+export function formatDurationText(seconds: number): string {
+  if (seconds === undefined || seconds === null || isNaN(seconds) || seconds <= 0 || !isFinite(seconds)) {
+    return '--:--';
+  }
+  const rounded = Math.round(seconds);
+  const m = Math.floor(rounded / 60);
+  const s = rounded % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-class ViceCityAudioEngine {
-  private ctx: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private isRunning: boolean = false;
-  private intervalId: ReturnType<typeof setInterval> | null = null;
-  private currentTrackIdx: number = 0;
-  private currentVol: number = 0.8;
-  private muted: boolean = false;
-
-  private trackMelodies = [
-    [220, 277.18, 329.63, 440],
-    [196, 246.94, 293.66, 392],
-    [174.61, 220, 261.63, 349.23],
-    [164.81, 207.65, 246.94, 329.63],
-    [146.83, 185, 220, 293.66],
-    [130.81, 164.81, 196, 261.63],
-    [246.94, 311.13, 369.99, 493.88],
-    [207.65, 259.57, 311.13, 415.3],
-    [185, 233.08, 277.18, 369.99],
-    [261.63, 329.63, 392, 523.25],
-  ];
-
-  public init() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioContextClass =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) {
-        this.ctx = new AudioContextClass();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.connect(this.ctx.destination);
-        this.updateGain();
+const getInitialTracks = (): SoundtrackTrack[] => {
+  let cached: Record<string, number> = {};
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('gtavi_track_durations');
+      if (saved) {
+        cached = JSON.parse(saved);
       }
+    } catch {
+      // localStorage unavailable
     }
   }
-
-  public setVolume(vol: number, muted: boolean) {
-    this.currentVol = Math.max(0, Math.min(1, vol / 100));
-    this.muted = muted;
-    this.updateGain();
-  }
-
-  private updateGain() {
-    if (this.masterGain && this.ctx) {
-      const targetGain = this.muted ? 0 : this.currentVol * 0.12;
-      this.masterGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.05);
+  return SOUNDTRACK_LIBRARY.map((track) => {
+    const cachedSec = cached[track.id];
+    if (typeof cachedSec === 'number' && cachedSec > 0 && isFinite(cachedSec)) {
+      return {
+        ...track,
+        durationSec: cachedSec,
+        durationText: formatDurationText(cachedSec),
+      };
     }
-  }
+    return track;
+  });
+};
 
-  public play(trackIdx: number) {
-    this.init();
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-    this.currentTrackIdx = trackIdx;
-    if (!this.isRunning) {
-      this.isRunning = true;
-      this.startMelody();
-    }
-  }
+const SoundtrackContext = createContext<SoundtrackContextValue | undefined>(undefined);
 
-  public pause() {
-    this.isRunning = false;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    this.updateGain();
-  }
+export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [tracks, setTracks] = useState<SoundtrackTrack[]>(getInitialTracks);
 
-  private startMelody() {
-    if (this.intervalId) clearInterval(this.intervalId);
-    let step = 0;
-    this.intervalId = setInterval(() => {
-      if (!this.isRunning || !this.ctx || !this.masterGain) return;
-      try {
-        const melody = this.trackMelodies[this.currentTrackIdx % this.trackMelodies.length];
-        const freq = melody[step % melody.length];
-        step++;
+  // Helper to update track duration in state & localStorage cache
+  const updateTrackDuration = (trackId: string, durationSec: number) => {
+    if (!durationSec || isNaN(durationSec) || durationSec <= 0 || !isFinite(durationSec)) return;
+    const roundedSec = Math.round(durationSec);
+    const formattedText = formatDurationText(roundedSec);
 
-        const osc = this.ctx.createOscillator();
-        const noteGain = this.ctx.createGain();
-
-        osc.type = step % 2 === 0 ? 'sawtooth' : 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-        const now = this.ctx.currentTime;
-        noteGain.gain.setValueAtTime(0, now);
-        noteGain.gain.linearRampToValueAtTime(0.06, now + 0.04);
-        noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-
-        osc.connect(noteGain);
-        noteGain.connect(this.masterGain);
-
-        osc.start(now);
-        osc.stop(now + 0.5);
-      } catch {
-        // Ignore AudioContext state warnings
-      }
-    }, 450);
-  }
-}
-
-const audioEngine = new ViceCityAudioEngine();
-
-const audioProgressStore = new AudioProgressStore();
-
-const SoundtrackContext = createContext<Omit<SoundtrackContextType, 'currentTime'> | undefined>(undefined);
-
-export const SoundtrackProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tracks] = useState<SoundtrackTrack[]>(OFFICIAL_SOUNDTRACK_TRACKS);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(80);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [duration, setDuration] = useState<number>(247);
-  const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
-  const [isDismissed, setIsDismissed] = useState<boolean>(false);
-  const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set());
-
-  const currentTrack = tracks[currentTrackIndex] || tracks[0];
-
-  const durationRef = useRef(duration);
-  durationRef.current = duration;
-
-  const tracksLengthRef = useRef(tracks.length);
-  tracksLengthRef.current = tracks.length;
-
-  const selectTrack = useCallback((idx: number) => {
-    setCurrentTrackIndex(idx);
-    setIsPlaying(true);
-    audioProgressStore.setCurrentTime(0);
-  }, []);
-
-  const playNextTrack = useCallback(() => {
-    setCurrentTrackIndex((prev) => (prev + 1) % tracksLengthRef.current);
-    setIsPlaying(true);
-    audioProgressStore.setCurrentTime(0);
-  }, []);
-
-  const playPrevTrack = useCallback(() => {
-    setCurrentTrackIndex((prev) => (prev - 1 + tracksLengthRef.current) % tracksLengthRef.current);
-    setIsPlaying(true);
-    audioProgressStore.setCurrentTime(0);
-  }, []);
-
-  useEffect(() => {
-    const dur = currentTrack.durationSec || 200;
-    setDuration(dur);
-  }, [currentTrackIndex, currentTrack.durationSec]);
-
-  useEffect(() => {
-    if (isPlaying) {
-      audioEngine.play(currentTrackIndex);
-      audioProgressStore.startTimer(
-        () => durationRef.current,
-        () => {
-          playNextTrack();
+    setTracks((prevTracks) =>
+      prevTracks.map((t) => {
+        if (t.id === trackId) {
+          if (t.durationSec === roundedSec && t.durationText === formattedText) {
+            return t;
+          }
+          return {
+            ...t,
+            durationSec: roundedSec,
+            durationText: formattedText,
+          };
         }
-      );
-    } else {
-      audioEngine.pause();
-      audioProgressStore.stopTimer();
+        return t;
+      })
+    );
+
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('gtavi_track_durations');
+        const cached = saved ? JSON.parse(saved) : {};
+        if (cached[trackId] !== roundedSec) {
+          cached[trackId] = roundedSec;
+          localStorage.setItem('gtavi_track_durations', JSON.stringify(cached));
+        }
+      } catch {
+        // Storage restricted
+      }
     }
-    return () => {
-      audioProgressStore.stopTimer();
-    };
-  }, [isPlaying, currentTrackIndex, playNextTrack]);
+  };
 
+  // Pre-fetch exact audio metadata for MP3 / audioUrl tracks on mount
   useEffect(() => {
-    audioEngine.setVolume(volume, isMuted);
-  }, [volume, isMuted]);
+    if (typeof window === 'undefined') return;
 
-  const togglePlay = useCallback(() => setIsPlaying((p) => !p), []);
+    tracks.forEach((track) => {
+      if (track.audioUrl) {
+        const audio = new Audio();
+        audio.preload = 'metadata';
 
-  const seekTo = useCallback((seconds: number) => {
-    audioProgressStore.setCurrentTime(Math.max(0, Math.min(durationRef.current, seconds)));
-  }, []);
+        const onLoaded = () => {
+          if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0) {
+            updateTrackDuration(track.id, audio.duration);
+          }
+          cleanup();
+        };
 
-  const setVolumeLevel = useCallback((vol: number) => {
-    setVolume(vol);
-    if (vol > 0) setIsMuted(false);
-  }, []);
+        const onError = () => {
+          cleanup();
+        };
 
-  const toggleMute = useCallback(() => setIsMuted((m) => !m), []);
+        const cleanup = () => {
+          audio.removeEventListener('loadedmetadata', onLoaded);
+          audio.removeEventListener('error', onError);
+        };
 
-  const toggleLike = useCallback((id: string) => {
-    setLikedTrackIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+        audio.addEventListener('loadedmetadata', onLoaded);
+        audio.addEventListener('error', onError);
+        audio.src = track.audioUrl;
+      }
     });
   }, []);
 
-  const dismissPlayer = useCallback(() => setIsDismissed(true), []);
-  const restorePlayer = useCallback(() => setIsDismissed(false), []);
+  // Restore saved track index from localStorage if valid; default to Flower in a Hurricane on initial visit
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(() => {
+    const flowerIdx = SOUNDTRACK_LIBRARY.findIndex((t) => t.id === 'flower-in-a-hurricane');
+    const defaultIdx = flowerIdx !== -1 ? flowerIdx : 1;
 
-  const contextValue = useMemo(
-    () => ({
-      tracks,
-      currentTrackIndex,
-      currentTrack,
-      isPlaying,
-      volume,
-      isMuted,
-      duration,
-      isQueueOpen,
-      isDismissed,
-      likedTrackIds,
-      selectTrack,
-      togglePlay,
-      playNextTrack,
-      playPrevTrack,
-      seekTo,
-      setVolumeLevel,
-      toggleMute,
-      toggleLike,
-      setIsQueueOpen,
-      dismissPlayer,
-      restorePlayer,
-    }),
-    [
-      tracks,
-      currentTrackIndex,
-      currentTrack,
-      isPlaying,
-      volume,
-      isMuted,
-      duration,
-      isQueueOpen,
-      isDismissed,
-      likedTrackIds,
-      selectTrack,
-      togglePlay,
-      playNextTrack,
-      playPrevTrack,
-      seekTo,
-      setVolumeLevel,
-      toggleMute,
-      toggleLike,
-      dismissPlayer,
-      restorePlayer,
-    ]
-  );
+    if (typeof window !== 'undefined') {
+      try {
+        const savedIdx = localStorage.getItem('gta_soundtrack_track_idx');
+        if (savedIdx !== null) {
+          const parsed = parseInt(savedIdx, 10);
+          if (!isNaN(parsed) && parsed > 0 && parsed < SOUNDTRACK_LIBRARY.length) {
+            if (SOUNDTRACK_LIBRARY[parsed].isPlayable) return parsed;
+          }
+        }
+      } catch {
+        // Storage restricted or unavailable
+      }
+    }
+    return defaultIdx;
+  });
+
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
+
+  // Restore saved volume
+  const [volume, setVolume] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedVol = localStorage.getItem('gta_soundtrack_volume');
+        if (savedVol !== null) {
+          const parsed = parseInt(savedVol, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) return parsed;
+        }
+      } catch {
+        // Storage restricted
+      }
+    }
+    return 30;
+  });
+
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(() => {
+    const initial = getInitialTracks();
+    const flowerIdx = initial.findIndex((t) => t.id === 'flower-in-a-hurricane');
+    const defaultTrack = initial[flowerIdx !== -1 ? flowerIdx : 1] || initial[1] || initial[0];
+    return defaultTrack?.durationSec || 224;
+  });
+  const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
+  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return sessionStorage.getItem('gta_soundtrack_dismissed') === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('gta_soundtrack_likes');
+        if (saved) {
+          return new Set(JSON.parse(saved));
+        }
+      } catch {
+        // Storage restricted
+      }
+    }
+    return new Set(['flower-in-a-hurricane']);
+  });
+
+  const playerRef = useRef<any>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const manualPauseRef = useRef<boolean>(false);
+  const currentTrackIndexRef = useRef<number>(currentTrackIndex);
+
+  // Initialize HTML5 Audio element instance
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const audio = new Audio();
+    audioElRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audioElRef.current && audioElRef.current.currentTime) {
+        setCurrentTime(audioElRef.current.currentTime);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      if (audioElRef.current && audioElRef.current.duration) {
+        const dur = audioElRef.current.duration;
+        setDuration(dur);
+        const activeTrack = tracks[currentTrackIndexRef.current];
+        if (activeTrack) {
+          updateTrackDuration(activeTrack.id, dur);
+        }
+      }
+    };
+
+    const handleEnded = () => {
+      handleTrackEnded();
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+    };
+  }, []);
+
+  // Fetch dynamically discovered tracks from /api/soundtrack on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetch(apiUrl('/api/soundtrack'))
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch soundtrack API');
+      })
+      .then((data) => {
+        if (isMounted && Array.isArray(data.tracks) && data.tracks.length > 0) {
+          setTracks((prevTracks) => {
+            const merged = [...prevTracks];
+            const existingIds = new Set(prevTracks.map((t) => t.id));
+            for (const incomingTrack of data.tracks) {
+              if (
+                !existingIds.has(incomingTrack.id) &&
+                incomingTrack.isPlayable &&
+                (incomingTrack.youtubeId || incomingTrack.audioUrl || incomingTrack.status === 'playable')
+              ) {
+                merged.push(incomingTrack);
+                existingIds.add(incomingTrack.id);
+              }
+            }
+            return merged.filter((t) => t.isPlayable);
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback gracefully to base static library
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    currentTrackIndexRef.current = currentTrackIndex;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('gta_soundtrack_track_idx', currentTrackIndex.toString());
+      } catch {
+        // ignore
+      }
+    }
+  }, [currentTrackIndex]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('gta_soundtrack_volume', volume.toString());
+      } catch {
+        // ignore
+      }
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('gta_soundtrack_likes', JSON.stringify(Array.from(likedTrackIds)));
+      } catch {
+        // ignore
+      }
+    }
+  }, [likedTrackIds]);
+
+  const currentTrack: SoundtrackTrack = tracks[currentTrackIndex] || tracks[0];
+
+  // Automatic progression when track finishes
+  const handleTrackEnded = () => {
+    const curIdx = currentTrackIndexRef.current;
+    // Find next playable track in order
+    let nextIdx = (curIdx + 1) % tracks.length;
+    let attempts = 0;
+    while (!tracks[nextIdx].isPlayable && attempts < tracks.length) {
+      nextIdx = (nextIdx + 1) % tracks.length;
+      attempts++;
+    }
+
+    if (tracks[nextIdx].isPlayable) {
+      selectTrack(nextIdx);
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  // Initialize Persistent YouTube Audio Engine once
+  useEffect(() => {
+    if (isDismissed) return;
+    let checkInterval: any = null;
+
+    const setupPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+      if (playerRef.current) return;
+
+      const initialTrack = tracks[currentTrackIndex] || tracks[0];
+      const videoId = initialTrack.youtubeId || '-fW1M17EVdE';
+
+      playerRef.current = new window.YT.Player('persistent-yt-audio-element', {
+        height: '0',
+        width: '0',
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          rel: 0,
+          loop: 0,
+          playsinline: 1,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (event: any) => {
+            setIsReady(true);
+            try {
+              event.target.setVolume(volume);
+              const track = tracks[currentTrackIndexRef.current];
+              if (track && track.youtubeId) {
+                event.target.playVideo();
+              }
+            } catch {
+              // Browser policy may defer until user gesture
+            }
+          },
+          onStateChange: (event: any) => {
+            if (event.data === 1) {
+              // PLAYING
+              setIsPlaying(true);
+            } else if (event.data === 2) {
+              // PAUSED
+              setIsPlaying(false);
+            } else if (event.data === 0) {
+              // ENDED
+              handleTrackEnded();
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT && window.YT.Player) {
+      setupPlayer();
+    } else {
+      const existingScript = document.getElementById('youtube-iframe-api');
+      if (!existingScript) {
+        const tag = document.createElement('script');
+        tag.id = 'youtube-iframe-api';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
+      }
+
+      window.onYouTubeIframeAPIReady = () => {
+        setupPlayer();
+      };
+    }
+
+    checkInterval = setInterval(() => {
+      const activeTrack = tracks[currentTrackIndexRef.current];
+      if (activeTrack && activeTrack.youtubeId && playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        try {
+          const curr = playerRef.current.getCurrentTime();
+          const dur = playerRef.current.getDuration();
+          if (typeof curr === 'number' && !isNaN(curr) && curr >= 0) {
+            setCurrentTime(curr);
+          }
+          if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) {
+            setDuration(dur);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }, 400);
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+    };
+  }, [isDismissed]);
+
+  // Unlock audio on first global user interaction if autoplay was blocked
+  useEffect(() => {
+    if (isDismissed) return;
+    const handleFirstInteraction = () => {
+      if (manualPauseRef.current) return;
+      const activeTrack = tracks[currentTrackIndexRef.current];
+      if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
+        audioElRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      } else if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+        try {
+          playerRef.current.setVolume(isMuted ? 0 : volume);
+          playerRef.current.playVideo();
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    window.addEventListener('keydown', handleFirstInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [volume, isMuted, isDismissed]);
+
+  // Support external triggers (e.g. from Desktop Previews)
+  useEffect(() => {
+    const handleExternalPlay = (e: any) => {
+      if (typeof e.detail?.index === 'number') {
+        selectTrack(e.detail.index);
+      }
+    };
+    const handleExternalQueue = () => {
+      setIsQueueOpen(true);
+    };
+
+    window.addEventListener('gta-play-track', handleExternalPlay as EventListener);
+    window.addEventListener('gta-open-queue', handleExternalQueue as EventListener);
+
+    return () => {
+      window.removeEventListener('gta-play-track', handleExternalPlay as EventListener);
+      window.removeEventListener('gta-open-queue', handleExternalQueue as EventListener);
+    };
+  }, [tracks]);
+
+  const selectTrack = (index: number) => {
+    const nextTrack = tracks[index];
+    if (!nextTrack) return;
+
+    if (!nextTrack.isPlayable || (!nextTrack.youtubeId && !nextTrack.audioUrl)) {
+      return;
+    }
+
+    if (index === currentTrackIndexRef.current) {
+      togglePlay();
+      return;
+    }
+
+    setCurrentTrackIndex(index);
+    setCurrentTime(0);
+    setDuration(nextTrack.durationSec);
+    manualPauseRef.current = false;
+
+    // Direct MP3 Audio URL Track
+    if (nextTrack.audioUrl && audioElRef.current) {
+      if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+        try {
+          playerRef.current.pauseVideo();
+        } catch {}
+      }
+      audioElRef.current.src = nextTrack.audioUrl;
+      audioElRef.current.volume = isMuted ? 0 : volume / 100;
+      audioElRef.current.currentTime = 0;
+      audioElRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.warn('Audio playback deferred:', err);
+      });
+      return;
+    }
+
+    // YouTube Stream Track
+    if (nextTrack.youtubeId) {
+      if (audioElRef.current) {
+        audioElRef.current.pause();
+      }
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.loadVideoById === 'function') {
+            playerRef.current.loadVideoById({
+              videoId: nextTrack.youtubeId,
+              startSeconds: 0,
+            });
+            playerRef.current.setVolume(isMuted ? 0 : volume);
+            playerRef.current.playVideo();
+            setIsPlaying(true);
+          } else if (typeof playerRef.current.cueVideoById === 'function') {
+            playerRef.current.cueVideoById(nextTrack.youtubeId);
+            playerRef.current.playVideo();
+            setIsPlaying(true);
+          }
+        } catch (err) {
+          console.error('Error switching track:', err);
+        }
+      }
+    }
+  };
+
+  const playNextTrack = () => {
+    let nextIdx = (currentTrackIndexRef.current + 1) % tracks.length;
+    let attempts = 0;
+    while (!tracks[nextIdx].isPlayable && attempts < tracks.length) {
+      nextIdx = (nextIdx + 1) % tracks.length;
+      attempts++;
+    }
+    if (tracks[nextIdx].isPlayable) {
+      selectTrack(nextIdx);
+    }
+  };
+
+  const playPrevTrack = () => {
+    if (currentTime > 3 && playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      playerRef.current.seekTo(0, true);
+      setCurrentTime(0);
+      return;
+    }
+    let prevIdx = (currentTrackIndexRef.current - 1 + tracks.length) % tracks.length;
+    let attempts = 0;
+    while (!tracks[prevIdx].isPlayable && attempts < tracks.length) {
+      prevIdx = (prevIdx - 1 + tracks.length) % tracks.length;
+      attempts++;
+    }
+    if (tracks[prevIdx].isPlayable) {
+      selectTrack(prevIdx);
+    }
+  };
+
+  const togglePlay = () => {
+    const activeTrack = tracks[currentTrackIndexRef.current];
+    if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+      if (isPlaying) {
+        manualPauseRef.current = true;
+        audioElRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        manualPauseRef.current = false;
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
+        audioElRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+      return;
+    }
+
+    if (!playerRef.current || !isReady) return;
+
+    if (isPlaying) {
+      manualPauseRef.current = true;
+      try {
+        playerRef.current.pauseVideo();
+      } catch {
+        // ignore
+      }
+      setIsPlaying(false);
+    } else {
+      manualPauseRef.current = false;
+      try {
+        playerRef.current.setVolume(isMuted ? 0 : volume);
+        playerRef.current.playVideo();
+      } catch {
+        // ignore
+      }
+      setIsPlaying(true);
+    }
+  };
+
+  const seekTo = (seconds: number) => {
+    const activeTrack = tracks[currentTrackIndexRef.current];
+    const clamped = Math.max(0, Math.min(duration || 180, seconds));
+    setCurrentTime(clamped);
+
+    if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
+      audioElRef.current.currentTime = clamped;
+      return;
+    }
+
+    if (!playerRef.current) return;
+    try {
+      if (typeof playerRef.current.seekTo === 'function') {
+        playerRef.current.seekTo(clamped, true);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const setVolumeLevel = (newVol: number) => {
+    const clamped = Math.max(0, Math.min(100, newVol));
+    setVolume(clamped);
+    if (clamped === 0) {
+      setIsMuted(true);
+    } else if (isMuted) {
+      setIsMuted(false);
+    }
+
+    if (audioElRef.current) {
+      audioElRef.current.volume = clamped / 100;
+    }
+
+    if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
+      try {
+        playerRef.current.setVolume(clamped);
+        if (clamped > 0 && typeof playerRef.current.unMute === 'function') {
+          playerRef.current.unMute();
+        }
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (isMuted) {
+      setIsMuted(false);
+      const targetVol = volume > 0 ? volume : 30;
+      if (volume === 0) setVolume(30);
+
+      if (audioElRef.current) {
+        audioElRef.current.volume = targetVol / 100;
+        audioElRef.current.muted = false;
+      }
+
+      if (playerRef.current) {
+        try {
+          playerRef.current.setVolume(targetVol);
+          if (typeof playerRef.current.unMute === 'function') {
+            playerRef.current.unMute();
+          }
+        } catch {}
+      }
+    } else {
+      setIsMuted(true);
+
+      if (audioElRef.current) {
+        audioElRef.current.muted = true;
+      }
+
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.mute === 'function') {
+            playerRef.current.mute();
+          }
+        } catch {}
+      }
+    }
+  };
+
+  const toggleLike = (trackId: string) => {
+    setLikedTrackIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(trackId)) {
+        next.delete(trackId);
+      } else {
+        next.add(trackId);
+      }
+      return next;
+    });
+  };
+
+  const dismissPlayer = () => {
+    if (playerRef.current && typeof playerRef.current.stopVideo === 'function') {
+      try {
+        playerRef.current.stopVideo();
+      } catch {
+        // ignore
+      }
+    }
+    setIsPlaying(false);
+    setIsDismissed(true);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('gta_soundtrack_dismissed', 'true');
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const restorePlayer = () => {
+    setIsDismissed(false);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem('gta_soundtrack_dismissed');
+      } catch {
+        // ignore
+      }
+    }
+  };
 
   return (
-    <SoundtrackContext.Provider value={contextValue}>
+    <SoundtrackContext.Provider
+      value={{
+        tracks,
+        currentTrackIndex,
+        currentTrack,
+        isPlaying,
+        isReady,
+        volume,
+        isMuted,
+        currentTime,
+        duration,
+        isQueueOpen,
+        isDismissed,
+        likedTrackIds,
+        selectTrack,
+        togglePlay,
+        playNextTrack,
+        playPrevTrack,
+        seekTo,
+        setVolumeLevel,
+        toggleMute,
+        toggleLike,
+        setIsQueueOpen,
+        dismissPlayer,
+        restorePlayer,
+      }}
+    >
+      {/* Global persistent YouTube audio engine in DOM */}
+      {!isDismissed && (
+        <div
+          className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none opacity-0 -z-50"
+          aria-hidden="true"
+        >
+          <div id="persistent-yt-audio-element" />
+        </div>
+      )}
       {children}
     </SoundtrackContext.Provider>
   );
 };
 
-export const useSoundtrack = (): SoundtrackContextType => {
-  const ctx = useContext(SoundtrackContext);
-  if (!ctx) throw new Error('useSoundtrack must be used within SoundtrackProvider');
-
-  const currentTime = useSyncExternalStore(
-    audioProgressStore.subscribe,
-    audioProgressStore.getSnapshot,
-    audioProgressStore.getSnapshot
-  );
-
-  return {
-    ...ctx,
-    currentTime,
-  };
-};
+export function useSoundtrack(): SoundtrackContextValue {
+  const context = useContext(SoundtrackContext);
+  if (!context) {
+    throw new Error('useSoundtrack must be used within a SoundtrackProvider');
+  }
+  return context;
+}

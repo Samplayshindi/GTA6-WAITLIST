@@ -1,63 +1,49 @@
-import { GALLERY_IMAGES } from '../data/galleryData';
-import { getResponsiveImageUrl } from './imageUtils';
+import { SLIDESHOW_IMAGES } from '../components/AtmosphericBackground';
+import { CHARACTERS_DATA } from '../data/charactersData';
+import { GALLERY_IMAGES, GalleryImage } from '../data/galleryData';
+import { INITIAL_NEWS_ARTICLES } from '../data/newsData';
 
-export const CORE_ESSENTIAL_RESOURCES: string[] = [
+export const CORE_ESSENTIAL_RESOURCES = [
+  '/',
+  '/index.html',
   '/gta-vi-logo.svg',
   '/favicon.svg',
-  '/manifest.json',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/official-gta-vi-cover.png',
-  '/official-gta-vi-hero.jpg',
   '/images/hero-4k.jpg',
-  '/images/trailer-1-landscape.jpg',
+  '/images/launch-trailer-4k.jpg',
+  '/images/extended-look-4k.jpg',
   '/images/trailer-2-landscape.jpg',
+  '/images/trailer-1-landscape.jpg',
 ];
 
 export function getFullImageInventory(): string[] {
-  const urls = GALLERY_IMAGES.map((item) => getResponsiveImageUrl(item.url, 480));
-  return Array.from(new Set(urls));
-}
+  const images = new Set<string>();
 
-const CACHE_NAME = 'gta-vi-site-files-v1';
-
-export async function getCachedImageCount(): Promise<number> {
-  if (typeof window === 'undefined' || !('caches' in window)) return 0;
-  try {
-    const cache = await caches.open(CACHE_NAME);
-    const keys = await cache.keys();
-    return keys.length;
-  } catch {
-    return 0;
-  }
-}
-
-export async function cacheAllSiteImages(
-  onProgress?: (current: number, total: number, percent: number) => void
-): Promise<void> {
-  if (typeof window === 'undefined' || !('caches' in window)) return;
-  const inventory = getFullImageInventory();
-  const cache = await caches.open(CACHE_NAME);
-
-  let completed = 0;
-  for (const url of inventory) {
-    try {
-      await cache.add(url);
-    } catch {
-      // Ignore individual resource failures
+  // 1. Static Core Images & Trailers
+  CORE_ESSENTIAL_RESOURCES.forEach((r) => {
+    if (r.endsWith('.jpg') || r.endsWith('.png') || r.endsWith('.svg') || r.endsWith('.webp')) {
+      images.add(r);
     }
-    completed++;
-    if (onProgress) {
-      onProgress(completed, inventory.length, Math.round((completed / inventory.length) * 100));
-    }
-  }
-}
+  });
 
-export async function clearSiteImageCache(): Promise<void> {
-  if (typeof window === 'undefined' || !('caches' in window)) return;
-  try {
-    await caches.delete(CACHE_NAME);
-  } catch {
-    // Ignore error
-  }
+  // 2. Desktop & Mobile Background Slideshow Images
+  SLIDESHOW_IMAGES.forEach((url) => images.add(url));
+
+  // 3. All Character Profile & Gallery Images
+  CHARACTERS_DATA.forEach((char) => {
+    if (char.images) {
+      char.images.forEach((img) => images.add(img));
+    }
+  });
+
+  // 4. All 117+ Gallery Archive Images
+  GALLERY_IMAGES.forEach((item: GalleryImage) => {
+    if (item.url) images.add(item.url);
+  });
+
+  // 5. All Newswire Fallback Images
+  INITIAL_NEWS_ARTICLES.forEach((article) => {
+    if (article.thumbnailUrl) images.add(article.thumbnailUrl);
+  });
+
+  return Array.from(images);
 }

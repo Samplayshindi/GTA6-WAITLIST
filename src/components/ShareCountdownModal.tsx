@@ -339,7 +339,7 @@ export const ShareCountdownModal: React.FC<ShareCountdownModalProps> = ({ isOpen
       countdownCenterY = height * 0.72;
     }
 
-    const isReleased = launchState === 'released' || (releaseRemaining.days === 0 && releaseRemaining.hours === 0 && releaseRemaining.minutes === 0 && releaseRemaining.seconds === 0);
+    const isReleased = launchState === 'RELEASE_LIVE' || releaseRemaining.isComplete;
 
     if (isReleased) {
       ctx.font = `700 ${Math.round(width * 0.05)}px 'Space Grotesk', system-ui, sans-serif`;
@@ -550,7 +550,7 @@ export const ShareCountdownModal: React.FC<ShareCountdownModalProps> = ({ isOpen
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-[#0A0C12]" data-lenis-prevent>
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-[#0A0C12]">
           {/* Live Canvas Preview Box */}
           <div className="flex flex-col items-center justify-center bg-[#05060A] rounded-xl p-3 sm:p-5 border border-white/10 relative shadow-inner">
             {isBgLoading && (

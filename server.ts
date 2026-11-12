@@ -1,68 +1,130 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import newsHandler from './api/news.ts';
+import cronHandler from './api/cron/refresh-news.ts';
+import diagHandler from './api/admin/news-status.ts';
+import soundtrackHandler from './api/soundtrack.ts';
+import proxyImageHandler from './api/proxy-image.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
 
-// Image Proxy Endpoint for CORS-safe Canvas loading
-app.get('/api/proxy-image', async (req, res) => {
-  const imageUrl = req.query.url as string;
-  if (!imageUrl) {
-    return res.status(400).send('Missing url parameter');
-  }
+app.use(express.json());
 
+// Cross-origin requests from the GitHub Pages frontend to the Render API.
+app.use((req: Request, res: Response, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, HEAD, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
+
+app.use(express.static(path.resolve(__dirname, 'public')));
+
+// Forward /api/proxy-image to the image proxy handler
+app.all('/api/proxy-image', async (req: Request, res: Response) => {
   try {
-    const fetchRes = await fetch(imageUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-    });
-
-    if (!fetchRes.ok) {
-      return res.status(fetchRes.status).send('Failed to fetch image');
-    }
-
-    const contentType = fetchRes.headers.get('content-type') || 'image/jpeg';
-    const buffer = Buffer.from(await fetchRes.arrayBuffer());
-
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    res.send(buffer);
-  } catch (err: any) {
-    res.status(500).send(err.message || 'Image proxy error');
+    await proxyImageHandler(req, res);
+  } catch (err) {
+    console.error('Error in proxy image handler:', err);
+    res.status(500).json({ error: 'Proxy Server Error' });
   }
 });
 
-// Vite Middleware or Static Assets
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// Forward /api/news to the serverless handler
+app.all('/api/news', async (req: Request, res: Response) => {
+  try {
+    await newsHandler(req, res);
+  } catch (err) {
+    console.error('Error in news handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Forward /api/soundtrack to the soundtrack handler
+app.all('/api/soundtrack', async (req: Request, res: Response) => {
+  try {
+    await soundtrackHandler(req, res);
+  } catch (err) {
+    console.error('Error in soundtrack handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Forward /api/cron/refresh-news to the cron handler
+app.all('/api/cron/refresh-news', async (req: Request, res: Response) => {
+  try {
+    await cronHandler(req, res);
+  } catch (err) {
+    console.error('Error in cron refresh handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Diagnostic endpoint
+app.all('/api/admin/news-status', async (req: Request, res: Response) => {
+  try {
+    await diagHandler(req, res);
+  } catch (err) {
+    console.error('Error in diagnostic handler:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/api/news/refresh', async (req: Request, res: Response) => {
+  try {
+    req.method = 'POST';
+    await newsHandler(req, res);
+  } catch (err) {
+    console.error('Error refreshing news:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+// Authoritative server time endpoint to defeat time machine extensions
+app.get('/api/time', (_req: Request, res: Response) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  const now = new Date();
+  res.json({
+    now: now.toISOString(),
+    epoch: now.getTime(),
+    source: 'authoritative-server-time',
   });
-} else {
-  const { createServer: createViteServer } = await import('vite');
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: 'custom',
-  });
-  app.use(vite.middlewares);
-  app.use('*', async (req, res, next) => {
-    const url = req.originalUrl;
-    try {
-      const fs = await import('fs');
-      let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
-      template = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
-    } catch (e: any) {
-      vite.ssrFixStacktrace(e);
-      next(e);
-    }
+});
+
+// Setup Vite middleware in dev or static serving in production
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.resolve(__dirname, 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.resolve(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[GTA VI Countdown Server] Running on http://0.0.0.0:${PORT}`);
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+startServer();

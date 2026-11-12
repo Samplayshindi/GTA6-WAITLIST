@@ -21,7 +21,7 @@
     background-color: #08090D;
     color: #F8FAFC;
     overflow-x: hidden;
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
     min-height: 100vh;
   }
 

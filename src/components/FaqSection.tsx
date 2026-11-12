@@ -1,49 +1,165 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FAQ_DATA } from '../data/faqData';
+import { RevealOnScroll } from './RevealOnScroll';
 
 export const FaqSection: React.FC = () => {
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [expandedId, setExpandedId] = useState<string | null>(FAQ_DATA[0]?.id || null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  const faqs = [
-    { q: 'When is Grand Theft Auto VI scheduled to release?', a: 'Grand Theft Auto VI is scheduled to launch globally in November 2026.' },
-    { q: 'Which platforms will GTA VI be available on at launch?', a: 'GTA VI will be available on PlayStation 5 and Xbox Series X|S at launch.' },
-    { q: 'Will there be digital pre-loading available?', a: 'Yes, digital pre-loading will begin approximately 48 hours prior to local midnight release.' },
-    { q: 'Where does GTA VI take place?', a: 'The game is set in the state of Leonida, encompassing Vice City and surrounding regions.' },
-    { q: 'What is the required storage space?', a: 'Approximately 212 GB of high-speed NVMe storage is required.' },
+  const categories = [
+    'ALL',
+    'Release Information',
+    'Platforms',
+    'Editions & Pricing',
+    'Pre-Loading & Installation',
+    'Gameplay & Setting',
+    'Time Zones & Regional Unlock',
+    'Storage & Technical Specs',
+    'Frequently Asked Launch Questions',
   ];
 
-  return (
-    <section id="faq" className="relative py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center gap-2 mb-2">
-        <HelpCircle className="w-4 h-4 text-cyan-400" />
-        <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-          Knowledgebase &amp; FAQs
-        </span>
-      </div>
-      <h2 className="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight mb-8">
-        Frequently Asked Questions
-      </h2>
+  const filteredFaq =
+    selectedCategory === 'ALL'
+      ? FAQ_DATA
+      : FAQ_DATA.filter((f) => f.category === selectedCategory);
 
-      <div className="space-y-3">
-        {faqs.map((faq, idx) => {
-          const isOpen = openIdx === idx;
-          return (
-            <div key={idx} className="rounded-2xl bg-[#090C10] border border-white/10 overflow-hidden">
-              <button
-                onClick={() => setOpenIdx(isOpen ? null : idx)}
-                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-cyan-300 transition-colors cursor-pointer"
-              >
-                <span>{faq.q}</span>
-                <ChevronDown className={`w-4 h-4 text-cyan-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isOpen && (
-                <div className="px-4 pb-5 sm:px-5 text-xs text-slate-300 leading-relaxed border-t border-white/5 pt-3">
-                  {faq.a}
-                </div>
-              )}
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
+  return (
+    <section
+      id="faq"
+      className="relative py-16 sm:py-20 md:py-28 bg-transparent border-t border-white/10 scroll-mt-20 overflow-hidden"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        {/* Section Header */}
+        <RevealOnScroll>
+          <div className="max-w-3xl mb-8 sm:mb-12">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="w-2 h-2 rounded-full theme-bg-primary" />
+              <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
+                v1.9.0 Expanded Intelligence Hub
+              </span>
             </div>
-          );
-        })}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              FAQ &amp; Game <span className="theme-gradient-text">Information</span>
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal">
+              Verified answers covering launch timing, supported platforms, game editions, pre-loading, storage footprints, and region availability—strictly authenticated through Rockstar Games disclosures.
+            </p>
+          </div>
+        </RevealOnScroll>
+
+        {/* Category Pill Filters */}
+        <RevealOnScroll delayMs={100}>
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#F4F1ED] text-black shadow-md'
+                      : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10'
+                  }`}
+                >
+                  {cat === 'ALL' ? 'All Topics' : cat}
+                </button>
+              );
+            })}
+          </div>
+        </RevealOnScroll>
+
+        {/* FAQ Accordion List */}
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 w-full">
+          {filteredFaq.map((faq, idx) => {
+            const isExpanded = expandedId === faq.id;
+            return (
+              <RevealOnScroll key={faq.id} delayMs={(idx % 5) * 50}>
+                <div
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden w-full ${
+                    isExpanded
+                      ? 'bg-[#0B2425]/75 border-white/30 shadow-xl'
+                      : 'bg-[#0B2425]/30 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleExpand(faq.id)}
+                    className="w-full text-left p-4 sm:p-6 flex items-start sm:items-center justify-between gap-4 cursor-pointer focus:outline-none min-h-[56px]"
+                    aria-expanded={isExpanded}
+                  >
+                    <div className="space-y-1.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold tracking-widest uppercase theme-text-primary">
+                          {faq.category}
+                        </span>
+                        <span
+                          className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider inline-flex items-center gap-1 ${
+                            faq.isConfirmed
+                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                              : 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                          }`}
+                        >
+                          {faq.isConfirmed ? (
+                            <>
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              <span>Confirmed</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              <span>Unannounced</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#F4F1ED] leading-snug">
+                        {faq.question}
+                      </h3>
+                    </div>
+
+                    <div className="p-2 rounded-full bg-white/5 text-slate-300 shrink-0 ml-2 mt-1 sm:mt-0">
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 theme-text-primary" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-0 animate-in fade-in duration-200">
+                      <div className="pt-3 sm:pt-4 border-t border-white/10">
+                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                          {faq.answer}
+                        </p>
+
+                        <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                          <span className="text-slate-400 text-[11px]">
+                            Source: <strong className="text-slate-300">{faq.verifiedSource}</strong>
+                          </span>
+                          <a
+                            href={faq.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 theme-text-primary hover:text-white transition-colors"
+                          >
+                            <span>Official Reference</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </RevealOnScroll>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

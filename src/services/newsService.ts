@@ -9,7 +9,7 @@ export interface NewsArticle {
   source: string;
   publishedAt: string;
   category: 'official' | 'release' | 'gameplay' | 'trailers' | 'leaks';
-  isUnconfirmed?: boolean;
+  isUnconfirmed: boolean;
   thumbnailUrl?: string;
 }
 

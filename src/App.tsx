@@ -22,6 +22,8 @@ import { CharactersPage } from './components/CharactersPage';
 import { LaunchStateProvider } from './context/LaunchStateContext';
 import { SoundtrackProvider } from './context/SoundtrackContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { useSmoothScroll } from './hooks/useSmoothScroll';
+
 function normalizePath(rawPath: string): string {
   const basePath = import.meta.env.BASE_URL || '/';
   const withoutBase = basePath !== '/' && rawPath.startsWith(basePath)
@@ -44,6 +46,9 @@ function normalizePath(rawPath: string): string {
 }
 
 function MainAppContent() {
+  // Desktop smooth scrolling hook
+  useSmoothScroll();
+
   // Desktop route tracking (e.g. '/', '/gallery', '/videos', '/newswire', '/timeline', '/faq', '/details')
   const [currentPath, setCurrentPath] = useState<string>(() =>
     typeof window !== 'undefined' ? normalizePath(window.location.pathname) : '/'
