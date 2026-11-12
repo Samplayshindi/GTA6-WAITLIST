@@ -22,14 +22,13 @@ import { CharactersPage } from './components/CharactersPage';
 import { LaunchStateProvider } from './context/LaunchStateContext';
 import { SoundtrackProvider } from './context/SoundtrackContext';
 import { SettingsProvider } from './context/SettingsContext';
-
 function normalizePath(rawPath: string): string {
   const basePath = import.meta.env.BASE_URL || '/';
   const withoutBase = basePath !== '/' && rawPath.startsWith(basePath)
     ? `/${rawPath.slice(basePath.length)}`
     : rawPath;
   const clean = withoutBase.toLowerCase().split('?')[0].split('#')[0];
-  if (clean === '/specifications') return '/specs';
+  if (clean === '/specifications' || clean === '/specs') return '/details';
   if (
     clean === '/characters' ||
     clean === '/gallery' ||
@@ -37,7 +36,7 @@ function normalizePath(rawPath: string): string {
     clean === '/newswire' ||
     clean === '/timeline' ||
     clean === '/faq' ||
-    clean === '/specs'
+    clean === '/details'
   ) {
     return clean;
   }
@@ -45,7 +44,7 @@ function normalizePath(rawPath: string): string {
 }
 
 function MainAppContent() {
-  // Desktop route tracking (e.g. '/', '/gallery', '/videos', '/newswire', '/timeline', '/faq', '/specs')
+  // Desktop route tracking (e.g. '/', '/gallery', '/videos', '/newswire', '/timeline', '/faq', '/details')
   const [currentPath, setCurrentPath] = useState<string>(() =>
     typeof window !== 'undefined' ? normalizePath(window.location.pathname) : '/'
   );
@@ -77,7 +76,7 @@ function MainAppContent() {
       else if (normalized === '/newswire') setActiveSection('newswire');
       else if (normalized === '/timeline') setActiveSection('timeline');
       else if (normalized === '/faq') setActiveSection('faq');
-      else if (normalized === '/specs') setActiveSection('specifications');
+      else if (normalized === '/details') setActiveSection('specifications');
       else setActiveSection('overview');
     };
 
@@ -122,7 +121,7 @@ function MainAppContent() {
   // Handle direct link landing on mobile
   useEffect(() => {
     if (!isDesktop && currentPath !== '/') {
-      const targetId = currentPath === '/specs' ? 'specifications' : currentPath.replace('/', '');
+      const targetId = (currentPath === '/details' || currentPath === '/specs') ? 'specifications' : currentPath.replace('/', '');
       const timer = setTimeout(() => {
         const el = document.getElementById(targetId);
         if (el) {
@@ -151,11 +150,13 @@ function MainAppContent() {
     else if (sectionId === 'faq' || sectionId === '/faq') targetPath = '/faq';
     else if (
       sectionId === 'specifications' ||
+      sectionId === 'details' ||
+      sectionId === '/details' ||
       sectionId === 'specs' ||
       sectionId === '/specs' ||
       sectionId === '/specifications'
     )
-      targetPath = '/specs';
+      targetPath = '/details';
     else if (sectionId === 'overview' || sectionId === '/') targetPath = '/';
     else if (sectionId === 'countdown') targetPath = '/';
 
@@ -303,10 +304,10 @@ function MainAppContent() {
               </>
             )}
 
-            {currentPath === '/specs' && (
+            {currentPath === '/details' && (
               <>
                 <PageHeaderBanner
-                  category="Technical Specifications"
+                  category="Technical Specifications & Details"
                   title="System Specs &amp; Preload Details"
                   description="Confirmed console hardware targets, pre-load unlock schedules, storage allocation requirements, and verified platform support."
                   onNavigateHome={() => handleNavigate('overview')}

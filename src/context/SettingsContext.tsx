@@ -1,17 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
-export type ColorPalette =
-  | 'vice-city'
-  | 'sunset'
-  | 'ocean'
-  | 'midnight'
-  | 'tropical'
-  | 'crimson'
-  | 'monochrome';
+export interface CountryItem {
+  code: string;
+  name: string;
+  flagEmoji: string;
+  timeZone: string;
+}
 
-export type MotionMode = 'high' | 'low';
+export type ColorPalette = 'vice-city' | 'sunset' | 'neon' | 'ocean';
 
-export interface PaletteDefinition {
+export interface PaletteItem {
   id: ColorPalette;
   name: string;
   primaryHex: string;
@@ -19,326 +17,107 @@ export interface PaletteDefinition {
   tertiaryHex: string;
 }
 
-export interface TimeZoneOption {
-  value: string;
-  label: string;
-}
-
-export const TIME_ZONES: TimeZoneOption[] = [
-  { value: 'auto', label: 'Auto System Detected' },
-  { value: 'America/New_York', label: 'Eastern Time (ET - Miami/NYC)' },
-  { value: 'America/Chicago', label: 'Central Time (CT)' },
-  { value: 'America/Denver', label: 'Mountain Time (MT)' },
-  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-  { value: 'Europe/London', label: 'Greenwich Mean Time / BST (London)' },
-  { value: 'Europe/Paris', label: 'Central European Time (CET)' },
-  { value: 'Asia/Tokyo', label: 'Japan Standard Time (JST)' },
-  { value: 'Australia/Sydney', label: 'Australian Eastern Time (AEST)' },
-  { value: 'UTC', label: 'Coordinated Universal Time (UTC)' },
+export const PALETTES: PaletteItem[] = [
+  { id: 'vice-city', name: 'Vice City Classic', primaryHex: '#FF4FA3', secondaryHex: '#A855F7', tertiaryHex: '#00F5D4' },
+  { id: 'sunset', name: 'Leonida Sunset', primaryHex: '#F15A24', secondaryHex: '#FF4FA3', tertiaryHex: '#FFD166' },
+  { id: 'neon', name: 'Downtown Neon', primaryHex: '#00F5D4', secondaryHex: '#3B82F6', tertiaryHex: '#A855F7' },
+  { id: 'ocean', name: 'Ocean Drive Dusk', primaryHex: '#06B6D4', secondaryHex: '#3B82F6', tertiaryHex: '#EC4899' },
 ];
 
-export const PALETTES: PaletteDefinition[] = [
-  {
-    id: 'vice-city',
-    name: 'Vice City Neon',
-    primaryHex: '#FF4FA3', // Pink
-    secondaryHex: '#A855F7', // Purple
-    tertiaryHex: '#00F5D4', // Cyan
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset Boulevard',
-    primaryHex: '#F15A24', // Orange
-    secondaryHex: '#FF6B6B', // Coral
-    tertiaryHex: '#FF4FA3', // Warm Pink
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean Drive',
-    primaryHex: '#00F5D4', // Turquoise
-    secondaryHex: '#0D9488', // Teal
-    tertiaryHex: '#3B82F6', // Deep Blue
-  },
-  {
-    id: 'midnight',
-    name: 'Midnight',
-    primaryHex: '#8B5CF6', // Violet
-    secondaryHex: '#6366F1', // Indigo
-    tertiaryHex: '#3B82F6', // Electric Blue
-  },
-  {
-    id: 'tropical',
-    name: 'Tropical',
-    primaryHex: '#84CC16', // Lime
-    secondaryHex: '#10B981', // Emerald
-    tertiaryHex: '#00F5D4', // Turquoise
-  },
-  {
-    id: 'crimson',
-    name: 'Crimson',
-    primaryHex: '#EF4444', // Red
-    secondaryHex: '#B91C1C', // Burgundy
-    tertiaryHex: '#F97316', // Warm Orange
-  },
-  {
-    id: 'monochrome',
-    name: 'Monochrome',
-    primaryHex: '#CBD5E1', // High-contrast silver accent (prevents white-on-white text bug)
-    secondaryHex: '#94A3B8', // Silver
-    tertiaryHex: '#64748B', // Slate grey
-  },
+export const COUNTRIES: CountryItem[] = [
+  { code: 'US', name: 'United States (Eastern)', flagEmoji: '🇺🇸', timeZone: 'America/New_York' },
+  { code: 'GB', name: 'United Kingdom', flagEmoji: '🇬🇧', timeZone: 'Europe/London' },
+  { code: 'DE', name: 'Germany', flagEmoji: '🇩🇪', timeZone: 'Europe/Berlin' },
+  { code: 'JP', name: 'Japan', flagEmoji: '🇯🇵', timeZone: 'Asia/Tokyo' },
+  { code: 'AU', name: 'Australia (Sydney)', flagEmoji: '🇦🇺', timeZone: 'Australia/Sydney' },
+  { code: 'BR', name: 'Brazil', flagEmoji: '🇧🇷', timeZone: 'America/Sao_Paulo' },
+  { code: 'CA', name: 'Canada', flagEmoji: '🇨🇦', timeZone: 'America/Toronto' },
 ];
 
-interface SettingsContextValue {
+interface SettingsContextType {
+  selectedCountry: CountryItem;
+  effectiveTimeZone: string;
+  selectedPalette: PaletteItem;
+  colorPalette: ColorPalette;
+  activePalette: PaletteItem;
   isSlideshowPaused: boolean;
   mobileSlideshowEnabled: boolean;
-  colorPalette: ColorPalette;
-  motionMode: MotionMode;
+  motionMode: 'high' | 'low';
   performanceMode: boolean;
-  selectedTimeZone: string;
-  effectiveTimeZone: string;
+  isSettingsOpen: boolean;
+  isCountryModalOpen: boolean;
   isResourceInstallerOpen: boolean;
-  activePalette: PaletteDefinition;
-  setSlideshowPaused: (paused: boolean) => void;
-  setMobileSlideshowEnabled: (enabled: boolean) => void;
-  toggleSlideshowPaused: () => void;
-  setColorPalette: (palette: ColorPalette) => void;
-  setMotionMode: (mode: MotionMode) => void;
-  setPerformanceMode: (perf: boolean) => void;
-  setSelectedTimeZone: (tz: string) => void;
+  setSelectedCountry: (c: CountryItem) => void;
+  setSelectedPalette: (p: PaletteItem) => void;
+  setColorPalette: (cp: ColorPalette) => void;
+  setSlideshowPaused: (p: boolean) => void;
+  setMobileSlideshowEnabled: (e: boolean) => void;
+  setMotionMode: (m: 'high' | 'low') => void;
+  setPerformanceMode: (p: boolean) => void;
+  openSettings: () => void;
+  closeSettings: () => void;
+  openCountryModal: () => void;
+  closeCountryModal: () => void;
   openResourceInstaller: () => void;
   closeResourceInstaller: () => void;
   resetPreferences: () => void;
 }
 
-const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  slideshowPaused: 'gtavi_slideshow_paused',
-  mobileSlideshowEnabled: 'gtavi_mobile_slideshow_enabled',
-  colorPalette: 'gtavi_color_palette_v2',
-  motionMode: 'gtavi_motion_mode',
-  performanceMode: 'gtavi_performance_mode',
-  selectedTimeZone: 'gtavi_selected_timezone',
-};
-
-export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 1. Background Slideshow Paused preference
-  const [isSlideshowPaused, setIsSlideshowPausedState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem(STORAGE_KEYS.slideshowPaused) === 'true';
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  });
-
-  // 2. Mobile Background Slideshow Enabled preference (OFF by default)
-  const [mobileSlideshowEnabled, setMobileSlideshowEnabledState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem(STORAGE_KEYS.mobileSlideshowEnabled) === 'true';
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  });
-
-  // 3. Color Palette preference (default: Vice City Neon)
-  const [colorPalette, setColorPaletteState] = useState<ColorPalette>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.colorPalette) as ColorPalette;
-        if (saved && PALETTES.some((p) => p.id === saved)) return saved;
-      } catch {
-        return 'vice-city';
-      }
-    }
-    return 'vice-city';
-  });
-
-  // 4. Motion Mode preference
-  const [motionMode, setMotionModeState] = useState<MotionMode>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.motionMode) as MotionMode;
-        if (saved === 'high' || saved === 'low') return saved;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          return 'low';
-        }
-      } catch {
-        return 'high';
-      }
-    }
-    return 'high';
-  });
-
-  // 5. Performance Mode preference
-  const [performanceMode, setPerformanceModeState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem(STORAGE_KEYS.performanceMode) === 'true';
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  });
-
-  // 6. Time Zone preference (default: 'auto')
-  const [selectedTimeZone, setSelectedTimeZoneState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem(STORAGE_KEYS.selectedTimeZone) || 'auto';
-      } catch {
-        return 'auto';
-      }
-    }
-    return 'auto';
-  });
-
-  // 7. Resource Installer Modal state
+export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [selectedCountry, setSelectedCountry] = useState<CountryItem>(COUNTRIES[0]);
+  const [selectedPalette, setSelectedPalette] = useState<PaletteItem>(PALETTES[0]);
+  const [isSlideshowPaused, setSlideshowPaused] = useState<boolean>(false);
+  const [mobileSlideshowEnabled, setMobileSlideshowEnabled] = useState<boolean>(false);
+  const [motionMode, setMotionMode] = useState<'high' | 'low'>('high');
+  const [performanceMode, setPerformanceMode] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isCountryModalOpen, setIsCountryModalOpen] = useState<boolean>(false);
   const [isResourceInstallerOpen, setIsResourceInstallerOpen] = useState<boolean>(false);
 
-  const setSlideshowPaused = (paused: boolean) => {
-    setIsSlideshowPausedState(paused);
-    try {
-      localStorage.setItem(STORAGE_KEYS.slideshowPaused, String(paused));
-    } catch {
-      // ignore
-    }
+  const setColorPalette = (id: ColorPalette) => {
+    const found = PALETTES.find((p) => p.id === id);
+    if (found) setSelectedPalette(found);
   };
-
-  const setMobileSlideshowEnabled = (enabled: boolean) => {
-    setMobileSlideshowEnabledState(enabled);
-    try {
-      localStorage.setItem(STORAGE_KEYS.mobileSlideshowEnabled, String(enabled));
-    } catch {
-      // ignore
-    }
-  };
-
-  const toggleSlideshowPaused = () => {
-    setSlideshowPaused(!isSlideshowPaused);
-  };
-
-  const setColorPalette = (palette: ColorPalette) => {
-    setColorPaletteState(palette);
-    try {
-      localStorage.setItem(STORAGE_KEYS.colorPalette, palette);
-    } catch {
-      // ignore
-    }
-  };
-
-  const setMotionMode = (mode: MotionMode) => {
-    setMotionModeState(mode);
-    try {
-      localStorage.setItem(STORAGE_KEYS.motionMode, mode);
-    } catch {
-      // ignore
-    }
-  };
-
-  const setPerformanceMode = (perf: boolean) => {
-    setPerformanceModeState(perf);
-    try {
-      localStorage.setItem(STORAGE_KEYS.performanceMode, String(perf));
-    } catch {
-      // ignore
-    }
-  };
-
-  const setSelectedTimeZone = (tz: string) => {
-    setSelectedTimeZoneState(tz);
-    try {
-      localStorage.setItem(STORAGE_KEYS.selectedTimeZone, tz);
-    } catch {
-      // ignore
-    }
-  };
-
-  const openResourceInstaller = () => setIsResourceInstallerOpen(true);
-  const closeResourceInstaller = () => setIsResourceInstallerOpen(false);
 
   const resetPreferences = () => {
-    setIsSlideshowPausedState(false);
-    setMobileSlideshowEnabledState(false);
-    setColorPaletteState('vice-city');
-    const defaultMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high';
-    setMotionModeState(defaultMotion);
-    setPerformanceModeState(false);
-    setSelectedTimeZoneState('auto');
-
-    try {
-      localStorage.removeItem(STORAGE_KEYS.slideshowPaused);
-      localStorage.removeItem(STORAGE_KEYS.mobileSlideshowEnabled);
-      localStorage.removeItem(STORAGE_KEYS.colorPalette);
-      localStorage.removeItem(STORAGE_KEYS.motionMode);
-      localStorage.removeItem(STORAGE_KEYS.performanceMode);
-      localStorage.removeItem(STORAGE_KEYS.selectedTimeZone);
-    } catch {
-      // ignore
-    }
+    setSelectedCountry(COUNTRIES[0]);
+    setSelectedPalette(PALETTES[0]);
+    setSlideshowPaused(false);
+    setMobileSlideshowEnabled(false);
+    setMotionMode('high');
+    setPerformanceMode(false);
   };
-
-  const activePalette = PALETTES.find((p) => p.id === colorPalette) || PALETTES[0];
-
-  const effectiveTimeZone = React.useMemo(() => {
-    if (selectedTimeZone !== 'auto') return selectedTimeZone;
-    if (typeof window !== 'undefined') {
-      try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
-      } catch {
-        return 'America/New_York';
-      }
-    }
-    return 'America/New_York';
-  }, [selectedTimeZone]);
-
-  // Apply CSS root variables on colorPalette change
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    root.setAttribute('data-theme', colorPalette);
-    root.style.setProperty('--theme-primary', activePalette.primaryHex);
-    root.style.setProperty('--theme-secondary', activePalette.secondaryHex);
-    root.style.setProperty('--theme-tertiary', activePalette.tertiaryHex);
-    root.style.setProperty('--theme-accent', activePalette.primaryHex);
-    root.style.setProperty(
-      '--theme-gradient',
-      `linear-gradient(to right, ${activePalette.primaryHex}, ${activePalette.secondaryHex})`
-    );
-    root.style.setProperty(
-      '--theme-gradient-3',
-      `linear-gradient(to right, ${activePalette.primaryHex}, ${activePalette.secondaryHex}, ${activePalette.tertiaryHex})`
-    );
-  }, [colorPalette, activePalette]);
 
   return (
     <SettingsContext.Provider
       value={{
+        selectedCountry,
+        effectiveTimeZone: selectedCountry.timeZone,
+        selectedPalette,
+        colorPalette: selectedPalette.id,
+        activePalette: selectedPalette,
         isSlideshowPaused,
         mobileSlideshowEnabled,
-        colorPalette,
         motionMode,
         performanceMode,
-        selectedTimeZone,
-        effectiveTimeZone,
+        isSettingsOpen,
+        isCountryModalOpen,
         isResourceInstallerOpen,
-        activePalette,
+        setSelectedCountry,
+        setSelectedPalette,
+        setColorPalette,
         setSlideshowPaused,
         setMobileSlideshowEnabled,
-        toggleSlideshowPaused,
-        setColorPalette,
         setMotionMode,
         setPerformanceMode,
-        setSelectedTimeZone,
-        openResourceInstaller,
-        closeResourceInstaller,
+        openSettings: () => setIsSettingsOpen(true),
+        closeSettings: () => setIsSettingsOpen(false),
+        openCountryModal: () => setIsCountryModalOpen(true),
+        closeCountryModal: () => setIsCountryModalOpen(false),
+        openResourceInstaller: () => setIsResourceInstallerOpen(true),
+        closeResourceInstaller: () => setIsResourceInstallerOpen(false),
         resetPreferences,
       }}
     >
@@ -347,11 +126,8 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
-export function useSettings(): SettingsContextValue {
-  const context = useContext(SettingsContext);
-  if (!context) {
-    throw new Error('useSettings must be used within a SettingsProvider');
-  }
-  return context;
-}
-
+export const useSettings = () => {
+  const ctx = useContext(SettingsContext);
+  if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
+  return ctx;
+};

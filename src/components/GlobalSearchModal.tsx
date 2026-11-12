@@ -84,7 +84,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         id: s.id,
         title: `${s.title} — ${s.artist}`,
         category: 'Soundtrack',
-        snippet: `${s.sourceLabel} · Duration: ${s.durationText}`,
+        snippet: `${s.artist} · Duration: ${Math.floor(s.durationSec / 60)}:${(s.durationSec % 60).toString().padStart(2, '0')}`,
         imageUrl: s.coverUrl,
         targetSection: 'overview',
       });
@@ -196,7 +196,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         </div>
 
         {/* Scrollable Results List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-2">
+        <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-2" data-lenis-prevent>
           {filteredResults.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <p className="text-sm text-slate-400">No matching intel found for &ldquo;{query}&rdquo;</p>

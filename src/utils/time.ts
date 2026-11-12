@@ -235,12 +235,21 @@ export function calculateTimeRemainingFromDate(targetDate: Date): TimeRemaining 
   };
 }
 
+export function getTimezoneShortAbbr(tz?: string): string {
+  try {
+    const targetTz = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: targetTz, timeZoneName: 'short' }).formatToParts(new Date());
+    const shortCode = parts.find((p) => p.type === 'timeZoneName')?.value;
+    if (shortCode) return shortCode;
+  } catch {}
+  return tz || 'Local';
+}
+
 export function getUserLocalTimezoneName(overrideTz?: string): string {
   try {
     const tz = overrideTz && overrideTz !== 'auto' ? overrideTz : Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz) {
-      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(new Date());
-      const shortCode = parts.find((p) => p.type === 'timeZoneName')?.value;
+      const shortCode = getTimezoneShortAbbr(tz);
       const cleanTz = tz.replace(/_/g, ' ');
       return shortCode && !cleanTz.includes(shortCode) ? `${cleanTz} (${shortCode})` : cleanTz;
     }

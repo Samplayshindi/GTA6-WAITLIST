@@ -3,14 +3,17 @@ import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clo
 import { RELEASE_SPECS } from '../config/countdown';
 import { FULL_VERSION_STRING } from '../config/version';
 import { PWAInstallButton } from './PWAInstallButton';
+import { useLenis } from '../context/LenisContext';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const { scrollTo } = useLenis();
+
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollTo(0);
   };
 
   return (

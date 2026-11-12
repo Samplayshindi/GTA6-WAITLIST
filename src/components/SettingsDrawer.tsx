@@ -14,56 +14,65 @@ import {
   Monitor,
   AlertCircle,
 } from 'lucide-react';
-import { useSettings, PALETTES, TIME_ZONES } from '../context/SettingsContext';
+import { useSettings, PALETTES } from '../context/SettingsContext';
 import { useSoundtrack } from '../context/SoundtrackContext';
 import { MobileSlideshowWarningModal } from './MobileSlideshowWarningModal';
 import { ResourceInstallerModal } from './ResourceInstallerModal';
+import { CountrySelectorModal } from './CountrySelectorModal';
 import { APP_VERSION } from '../config/version';
+import { getTimezoneShortAbbr } from '../utils/time';
 
 interface SettingsDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose }) => {
   const {
+    isSettingsOpen,
+    closeSettings,
     isSlideshowPaused,
     mobileSlideshowEnabled,
     colorPalette,
     motionMode,
     performanceMode,
-    selectedTimeZone,
+    selectedCountry,
     effectiveTimeZone,
     isResourceInstallerOpen,
+    isCountryModalOpen,
     activePalette,
     setSlideshowPaused,
     setMobileSlideshowEnabled,
     setColorPalette,
     setMotionMode,
     setPerformanceMode,
-    setSelectedTimeZone,
     openResourceInstaller,
     closeResourceInstaller,
+    openCountryModal,
+    closeCountryModal,
     resetPreferences,
   } = useSettings();
+
+  const drawerIsOpen = isOpen ?? isSettingsOpen;
+  const handleClose = onClose ?? closeSettings;
 
   const { isMuted, toggleMute } = useSoundtrack();
   const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
 
   // Escape key listener to close drawer
   useEffect(() => {
-    if (!isOpen) return;
+    if (!drawerIsOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [drawerIsOpen, handleClose]);
 
   const handleMobileSlideshowToggle = () => {
     if (mobileSlideshowEnabled) {
@@ -73,7 +82,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
     }
   };
 
-  if (!isOpen) return null;
+  if (!drawerIsOpen) return null;
 
   return (
     <>
@@ -81,12 +90,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
         role="dialog"
         aria-modal="true"
         aria-label="Website Preferences & Settings"
-        onClick={onClose}
+        onClick={handleClose}
         className="fixed inset-0 z-[120] flex justify-end bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       >
         <div
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-lg h-full bg-[#08090D] border-l border-[#24262B] text-slate-100 p-5 sm:p-6 overflow-y-auto flex flex-col justify-between shadow-2xl animate-in slide-in-from-right-8 duration-300"
+          data-lenis-prevent
         >
           {/* Header */}
           <div>
@@ -109,7 +119,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
               </div>
 
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 aria-label="Close preferences panel"
                 className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
               >
@@ -175,40 +185,42 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                 </div>
               </section>
 
-              {/* 2. AUTOMATIC TIME ZONE DETECTION SECTION */}
+              {/* 2. AUTOMATIC TIME ZONE & COUNTRY SELECTION SECTION */}
               <section className="space-y-3">
-                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-                  <Globe className="w-4 h-4 text-cyan-400" />
-                  <span>Time Zone Detection</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    <span>Launch Country &amp; Time Zone</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-cyan-400 font-semibold">
+                    v1.9.0 Audited
+                  </span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#0F1015] border border-white/10 space-y-3">
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Automatically detect your local region or manually select a custom time zone to display launch and pre-load schedules.
+                    Select your country or location to automatically align local midnight release and pre-load schedules.
                   </p>
 
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-mono text-slate-300 font-semibold block">
-                      Target Time Zone Region:
-                    </label>
-                    <select
-                      value={selectedTimeZone}
-                      onChange={(e) => setSelectedTimeZone(e.target.value)}
-                      className="w-full bg-[#08090D] border border-white/15 rounded-xl p-2.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
-                    >
-                      {TIME_ZONES.map((tz) => (
-                        <option key={tz.value} value={tz.value} className="bg-[#08090D] text-white">
-                          {tz.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <div className="p-3 rounded-xl bg-[#121318] border border-cyan-500/30 flex items-center justify-between gap-3 shadow-sm">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-2xl shrink-0">{selectedCountry.flagEmoji}</span>
+                      <div className="min-w-0">
+                        <div className="text-xs sm:text-sm font-bold text-white truncate">
+                          {selectedCountry.name}
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-400 truncate">
+                          {effectiveTimeZone} &middot; {getTimezoneShortAbbr(effectiveTimeZone)}
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-slate-400">Active Zone:</span>
-                    <span className="text-cyan-400 font-bold truncate max-w-[200px]">
-                      {effectiveTimeZone}
-                    </span>
+                    <button
+                      onClick={openCountryModal}
+                      className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0"
+                    >
+                      Change
+                    </button>
                   </div>
                 </div>
               </section>
@@ -221,8 +233,8 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#0F1015] border border-white/10 space-y-3">
-                  {/* Desktop Background Toggle */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  {/* Desktop Background Toggle (Desktop Only) */}
+                  <div className="hidden lg:flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
                     <div>
                       <div className="flex items-center gap-2">
                         <Monitor className="w-3.5 h-3.5 text-purple-400" />
@@ -358,24 +370,21 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                 </div>
               </section>
 
-              {/* 6. WEBSITE RESOURCE INSTALLATION (BETA) */}
+              {/* 6. SITE FILES DOWNLOADER */}
               <section className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
                   <HardDrive className="w-4 h-4 text-cyan-400" />
-                  <span>Offline Storage</span>
+                  <span>Site Files Downloader</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#0F1015] border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <span>Install Website Resources</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 uppercase">
-                          BETA
-                        </span>
+                        <span>Site Files Downloader</span>
                       </h4>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        Pre-cache application bundles for instant offline access
+                        Pre-cache high-resolution artwork and site bundles for maximum loading speed &amp; offline capability
                       </p>
                     </div>
                   </div>
@@ -385,7 +394,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                     className="w-full py-3 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <HardDrive className="w-4 h-4" />
-                    <span>Manage Cached Resources</span>
+                    <span>Manage Site Files &amp; Cache</span>
                   </button>
                 </div>
               </section>
@@ -416,6 +425,12 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
       <ResourceInstallerModal
         isOpen={isResourceInstallerOpen}
         onClose={closeResourceInstaller}
+      />
+
+      {/* Launch Country & Time Zone Selection Modal */}
+      <CountrySelectorModal
+        isOpen={isCountryModalOpen}
+        onClose={closeCountryModal}
       />
     </>
   );

@@ -25,7 +25,7 @@ interface FailedItem {
   reason: string;
 }
 
-const CACHE_NAME = 'gtavi-resources-v1.8';
+const CACHE_NAME = 'gtavi-resources-v1.9.0';
 const BATCH_SIZE = 5;
 
 async function fetchAndCacheResource(
@@ -303,13 +303,14 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Install Website Resources BETA"
+      aria-label="Site Files Downloader"
       onClick={onClose}
       className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg bg-[#0B0C10] border border-cyan-500/40 rounded-2xl p-5 sm:p-6 text-slate-100 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+        data-lenis-prevent
       >
         {/* Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-[#FF4FA3]" />
@@ -323,14 +324,11 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-black uppercase tracking-wide text-white">
-                  Offline Media Cache
+                  Site Files Downloader
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 uppercase">
-                  BETA
-                </span>
               </div>
               <p className="text-[11px] font-mono text-slate-400">
-                Offline Pre-Caching &amp; Proxy Acceleration Engine
+                High-Performance File Caching &amp; Offline Acceleration Engine
               </p>
             </div>
           </div>
@@ -346,7 +344,7 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
         {/* Modal Body */}
         <div className="space-y-4 mb-6">
           <p className="text-xs text-slate-300 leading-relaxed">
-            Pre-cache application assets and high-resolution media directly into your browser's Cache Storage via server-assisted image proxy for instant offline loading.
+            Download and cache site files, scripts, character artwork, gallery media, and video thumbnails directly into your browser's Cache Storage for instant repeat loading speeds (up to 4x faster) and offline access.
           </p>
 
           {/* Mode Selector */}
