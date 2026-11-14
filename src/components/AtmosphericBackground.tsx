@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettings } from '../context/SettingsContext';
-import { getPreferredPreloadUrl } from '../utils/imageUtils';
-import { OptimizedImage } from './OptimizedImage';
 
 export const SLIDESHOW_IMAGES: string[] = [
   'https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_15.0m-_zb~mcy2zr.jpg?akim=1&imdensity=1&imwidth=1920',
@@ -61,16 +59,7 @@ const getImageObjectPosition = (url: string): string => {
 
 export const AtmosphericBackground: React.FC = () => {
   const { isSlideshowPaused, mobileSlideshowEnabled, motionMode, performanceMode } = useSettings();
-  const [isDesktopSlideshow, setIsDesktopSlideshow] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    const isMobile = window.innerWidth < 1024;
-    const prefersReducedMotion =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const connection = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
-    const isSaveData = connection?.saveData === true;
-    return (!isMobile || mobileSlideshowEnabled) && !prefersReducedMotion && !isSaveData && !performanceMode;
-  });
+  const [isDesktopSlideshow, setIsDesktopSlideshow] = useState<boolean>(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
 
   // Memory-optimized dual slots (Slot A and Slot B)
@@ -134,31 +123,21 @@ export const AtmosphericBackground: React.FC = () => {
   const preloadNextImage = useCallback(
     (nextIdx: number): Promise<boolean> => {
       return new Promise((resolve) => {
-        const rawUrl = SLIDESHOW_IMAGES[nextIdx];
-        const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
-        const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-        const targetWidth = Math.min(1920, Math.round(vw * dpr));
+        const url = SLIDESHOW_IMAGES[nextIdx];
+        const img = new Image();
+        preloadedImageRef.current = img;
 
-        getPreferredPreloadUrl(rawUrl, targetWidth).then((url) => {
-          const img = new Image();
-          preloadedImageRef.current = img;
+        img.onload = () => {
+          resolve(true);
+        };
 
-          img.onload = () => {
-            if (typeof img.decode === 'function') {
-              img.decode().catch(() => {}).finally(() => resolve(true));
-            } else {
-              resolve(true);
-            }
-          };
+        img.onerror = () => {
+          console.warn(`[AtmosphericBackground] Image failed to load: ${url}`);
+          setFailedIndices((prev) => new Set(prev).add(nextIdx));
+          resolve(false);
+        };
 
-          img.onerror = () => {
-            console.warn(`[AtmosphericBackground] Image failed to load: ${rawUrl}`);
-            setFailedIndices((prev) => new Set(prev).add(nextIdx));
-            resolve(false);
-          };
-
-          img.src = url;
-        });
+        img.src = url;
       });
     },
     []
@@ -290,33 +269,29 @@ export const AtmosphericBackground: React.FC = () => {
       className="fixed inset-0 w-screen h-screen h-[100dvh] pointer-events-none overflow-hidden z-0 select-none bg-[#08090D] transform-gpu translate-z-0"
       aria-hidden="true"
     >
-      {/* 1. Static Baseline Fallback Layer (Mounted only when Paused, on Mobile, or Reduced Motion) */}
-      {(!isDesktopSlideshow || isSlideshowPaused || (!slotASrc && !slotBSrc)) && (
-        <OptimizedImage
-          src={DEFAULT_STATIC_POSTER}
-          alt=""
-          maxWidth={1920}
-          sizes="100vw"
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-40 scale-100 transition-opacity duration-1000"
-        />
-      )}
+      {/* 1. Static Baseline Fallback Layer (Used when Paused, on Mobile, or Reduced Motion) */}
+      <img
+        src={DEFAULT_STATIC_POSTER}
+        alt=""
+        loading="eager"
+        decoding="async"
+        className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+          isDesktopSlideshow && !isSlideshowPaused && (slotASrc || slotBSrc)
+            ? 'opacity-0'
+            : 'opacity-40 scale-100'
+        }`}
+      />
 
       {/* 2. Desktop Sequential Fade-to-Black Slideshow Layers */}
       {isDesktopSlideshow && !isSlideshowPaused && (
         <>
           {/* Image Slot A */}
           {slotASrc && (
-            <OptimizedImage
+            <img
               src={slotASrc}
               alt=""
-              maxWidth={1920}
-              sizes="100vw"
-              loading="eager"
+              loading="lazy"
               decoding="async"
-              fetchPriority="high"
               onError={() => {
                 const idx = SLIDESHOW_IMAGES.indexOf(slotASrc);
                 if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));
@@ -334,14 +309,11 @@ export const AtmosphericBackground: React.FC = () => {
 
           {/* Image Slot B */}
           {slotBSrc && (
-            <OptimizedImage
+            <img
               src={slotBSrc}
               alt=""
-              maxWidth={1920}
-              sizes="100vw"
-              loading="eager"
+              loading="lazy"
               decoding="async"
-              fetchPriority="high"
               onError={() => {
                 const idx = SLIDESHOW_IMAGES.indexOf(slotBSrc);
                 if (idx !== -1) setFailedIndices((prev) => new Set(prev).add(idx));

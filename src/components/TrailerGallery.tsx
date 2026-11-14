@@ -1,7 +1,7 @@
 import React from 'react';
 import { Play, ExternalLink, Clock, Calendar } from 'lucide-react';
 import { OFFICIAL_VIDEOS, RELEASE_SPECS } from '../config/countdown';
-import { OptimizedImage } from './OptimizedImage';
+import { getResponsiveImageUrl } from '../utils/imageUtils';
 import { RevealOnScroll } from './RevealOnScroll';
 
 interface TrailerGalleryProps {
@@ -53,169 +53,141 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
 
         {/* Featured Video Tier */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
-          {featuredVideos.map((video, idx) => {
-            const isOddOrphanOnTablet =
-              featuredVideos.length % 2 === 1 && idx === featuredVideos.length - 1;
-            return (
-              <RevealOnScroll
-                key={video.id}
-                delayMs={idx * 100}
-                className={`h-full min-w-0 ${
-                  isOddOrphanOnTablet
-                    ? 'md:col-span-2 md:w-[calc(50%-1rem)] md:mx-auto lg:col-span-1 lg:w-full lg:mx-0'
-                    : ''
-                }`}
+          {featuredVideos.map((video, idx) => (
+            <RevealOnScroll key={video.id} delayMs={idx * 100}>
+              <a
+                href={video.officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${video.title} - Watch on official YouTube channel`}
+                className="group rounded-2xl bg-[#0B2425]/40 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-2xl focus:outline-none cursor-pointer block text-left h-full"
               >
-                <a
-                  href={video.officialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${video.title} - Watch on official YouTube channel`}
-                  className="group rounded-2xl bg-[#0B2425]/40 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-2xl focus:outline-none cursor-pointer text-left h-full w-full"
-                >
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
-                    <OptimizedImage
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      maxWidth={768}
-                      sizes="(max-width: 767px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 29vw, 384px"
-                      loading={idx < 3 ? 'eager' : 'lazy'}
-                      decoding="async"
-                      className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
-                    />
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
+                  <img
+                    src={getResponsiveImageUrl(video.thumbnailUrl, 1080)}
+                    alt={video.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
+                  />
 
-                    <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
+                  <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
 
-                    <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30">
-                      <span className="px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
-                        {video.badge}
-                      </span>
-                    </div>
+                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30">
+                    <span className="px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
+                      {video.badge}
+                    </span>
+                  </div>
 
-                    <div className="absolute inset-0 z-30 flex items-center justify-center">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#F4F1ED] text-black border-2 border-transparent flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-[#08090D] group-hover:text-white group-hover:border-[var(--theme-primary,#FF4FA3)] transition-all duration-300">
-                        <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current translate-x-0.5" />
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-30 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] sm:text-xs font-mono backdrop-blur-md border border-white/10">
-                      <Clock className="w-3.5 h-3.5 theme-text-primary" />
-                      <span>{video.runtime}</span>
+                  <div className="absolute inset-0 z-30 flex items-center justify-center">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#F4F1ED] text-black flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:text-white transition-all duration-300">
+                      <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current translate-x-0.5" />
                     </div>
                   </div>
 
-                  <div className="p-5 sm:p-7 md:p-8 flex-1 flex flex-col justify-between pointer-events-none">
-                    <div>
-                      <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-2">
-                        <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Premiered {video.releaseDate}</span>
-                      </div>
-
-                      <h3 className="text-xl sm:text-2xl font-black text-[#F4F1ED] group-hover:text-white transition-colors leading-snug">
-                        {video.title}
-                      </h3>
-
-                      <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                        {video.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                      <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase theme-text-primary transition-colors min-h-[44px]">
-                        <span>{video.buttonText}</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </span>
-
-                      <span className="text-[11px] font-mono text-slate-500">Official Rockstar Video</span>
-                    </div>
+                  <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-30 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] sm:text-xs font-mono backdrop-blur-md border border-white/10">
+                    <Clock className="w-3.5 h-3.5 theme-text-primary" />
+                    <span>{video.runtime}</span>
                   </div>
-                </a>
-              </RevealOnScroll>
-            );
-          })}
+                </div>
+
+                <div className="p-5 sm:p-7 md:p-8 flex-1 flex flex-col justify-between pointer-events-none">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-2">
+                      <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Premiered {video.releaseDate}</span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-2xl font-black text-[#F4F1ED] group-hover:text-white transition-colors leading-snug">
+                      {video.title}
+                    </h3>
+
+                    <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                      {video.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase theme-text-primary transition-colors min-h-[44px]">
+                      <span>{video.buttonText}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </span>
+
+                    <span className="text-[11px] font-mono text-slate-500">Official Rockstar Video</span>
+                  </div>
+                </div>
+              </a>
+            </RevealOnScroll>
+          ))}
         </div>
 
         {/* Standard Video Tier */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {standardVideos.map((video, idx) => {
-            const isOddOrphanOnTablet =
-              standardVideos.length % 2 === 1 && idx === standardVideos.length - 1;
-            return (
-              <RevealOnScroll
-                key={video.id}
-                delayMs={idx * 100}
-                className={`h-full min-w-0 ${
-                  isOddOrphanOnTablet
-                    ? 'md:col-span-2 md:w-[calc(50%-1rem)] md:mx-auto'
-                    : ''
-                }`}
+          {standardVideos.map((video, idx) => (
+            <RevealOnScroll key={video.id} delayMs={idx * 100}>
+              <a
+                href={video.officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${video.title} - Watch on official YouTube channel`}
+                className="group rounded-xl bg-[#0B2425]/30 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-xl cursor-pointer block text-left h-full"
               >
-                <a
-                  href={video.officialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${video.title} - Watch on official YouTube channel`}
-                  className="group rounded-xl bg-[#0B2425]/30 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-xl cursor-pointer text-left h-full w-full"
-                >
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
-                    <OptimizedImage
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      maxWidth={768}
-                      sizes="(max-width: 767px) 92vw, (max-width: 1279px) 46vw, 592px"
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
-                    />
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
+                  <img
+                    src={getResponsiveImageUrl(video.thumbnailUrl, 640)}
+                    alt={video.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
+                  />
 
-                    <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
+                  <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#08090D] via-transparent to-black/30 pointer-events-none" />
 
-                    <div className="absolute top-3 left-3 z-30">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
-                        {video.badge}
-                      </span>
-                    </div>
+                  <div className="absolute top-3 left-3 z-30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-black/80 text-[#F4F1ED] border border-white/20 backdrop-blur-md">
+                      {video.badge}
+                    </span>
+                  </div>
 
-                    <div className="absolute inset-0 z-30 flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-[#F4F1ED] text-black border-2 border-transparent flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:bg-[#08090D] group-hover:text-white group-hover:border-[var(--theme-primary,#FF4FA3)] transition-all duration-300">
-                        <Play className="w-5 h-5 fill-current translate-x-0.5" />
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] font-mono backdrop-blur-md border border-white/10">
-                      <Clock className="w-3.5 h-3.5 theme-text-primary" />
-                      <span>{video.runtime}</span>
+                  <div className="absolute inset-0 z-30 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-[#F4F1ED] text-black flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:text-white transition-all duration-300">
+                      <Play className="w-5 h-5 fill-current translate-x-0.5" />
                     </div>
                   </div>
 
-                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between pointer-events-none">
-                    <div>
-                      <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Premiered {video.releaseDate}</span>
-                      </div>
-
-                      <h3 className="text-lg sm:text-xl font-bold text-[#F4F1ED] group-hover:text-white transition-colors">
-                        {video.title}
-                      </h3>
-
-                      <p className="mt-2 text-xs text-slate-300 leading-relaxed font-normal">
-                        {video.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-                      <span className="font-semibold theme-text-primary transition-colors flex items-center gap-1.5 min-h-[44px]">
-                        <span>{video.buttonText}</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-500">Official Broadcast</span>
-                    </div>
+                  <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/85 text-[#F4F1ED] text-[11px] font-mono backdrop-blur-md border border-white/10">
+                    <Clock className="w-3.5 h-3.5 theme-text-primary" />
+                    <span>{video.runtime}</span>
                   </div>
-                </a>
-              </RevealOnScroll>
-            );
-          })}
+                </div>
+
+                <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between pointer-events-none">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Premiered {video.releaseDate}</span>
+                    </div>
+
+                    <h3 className="text-lg sm:text-xl font-bold text-[#F4F1ED] group-hover:text-white transition-colors">
+                      {video.title}
+                    </h3>
+
+                    <p className="mt-2 text-xs text-slate-300 leading-relaxed font-normal">
+                      {video.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                    <span className="font-semibold theme-text-primary transition-colors flex items-center gap-1.5 min-h-[44px]">
+                      <span>{video.buttonText}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500">Official Broadcast</span>
+                  </div>
+                </div>
+              </a>
+            </RevealOnScroll>
+          ))}
         </div>
 
       </div>

@@ -24,21 +24,7 @@ app.use((req: Request, res: Response, next) => {
   next();
 });
 
-const setOptimizedImageHeaders = (res: Response, filePath: string) => {
-  if (filePath.endsWith('.avif')) {
-    res.setHeader('Content-Type', 'image/avif');
-    res.setHeader('Cache-Control', 'public, max-age=2592000');
-  } else if (filePath.endsWith('.webp')) {
-    res.setHeader('Content-Type', 'image/webp');
-    res.setHeader('Cache-Control', 'public, max-age=2592000');
-  }
-};
-
-app.use(
-  express.static(path.resolve(__dirname, 'public'), {
-    setHeaders: setOptimizedImageHeaders,
-  })
-);
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 // Forward /api/proxy-image to the image proxy handler
 app.all('/api/proxy-image', async (req: Request, res: Response) => {
@@ -130,11 +116,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(__dirname, 'dist');
-    app.use(
-      express.static(distPath, {
-        setHeaders: setOptimizedImageHeaders,
-      })
-    );
+    app.use(express.static(distPath));
     app.get('*', (_req, res) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
     });

@@ -5,6 +5,24 @@ import { RevealOnScroll } from './RevealOnScroll';
 
 export const FaqSection: React.FC = () => {
   const [expandedId, setExpandedId] = useState<string | null>(FAQ_DATA[0]?.id || null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  const categories = [
+    'ALL',
+    'Release Information',
+    'Platforms',
+    'Editions & Pricing',
+    'Pre-Loading & Installation',
+    'Gameplay & Setting',
+    'Time Zones & Regional Unlock',
+    'Storage & Technical Specs',
+    'Frequently Asked Launch Questions',
+  ];
+
+  const filteredFaq =
+    selectedCategory === 'ALL'
+      ? FAQ_DATA
+      : FAQ_DATA.filter((f) => f.category === selectedCategory);
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -18,7 +36,7 @@ export const FaqSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         {/* Section Header */}
         <RevealOnScroll>
-          <div className="max-w-3xl mb-8 sm:mb-10">
+          <div className="max-w-3xl mb-8 sm:mb-12">
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <span className="w-2 h-2 rounded-full theme-bg-primary" />
               <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase theme-text-primary">
@@ -34,9 +52,31 @@ export const FaqSection: React.FC = () => {
           </div>
         </RevealOnScroll>
 
+        {/* Category Pill Filters */}
+        <RevealOnScroll delayMs={100}>
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#F4F1ED] text-black shadow-md'
+                      : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10'
+                  }`}
+                >
+                  {cat === 'ALL' ? 'All Topics' : cat}
+                </button>
+              );
+            })}
+          </div>
+        </RevealOnScroll>
+
         {/* FAQ Accordion List */}
         <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 w-full">
-          {FAQ_DATA.map((faq, idx) => {
+          {filteredFaq.map((faq, idx) => {
             const isExpanded = expandedId === faq.id;
             return (
               <RevealOnScroll key={faq.id} delayMs={(idx % 5) * 50}>

@@ -1,65 +1,34 @@
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Image as ImageIcon, ZoomIn, ChevronDown } from 'lucide-react';
-import { GALLERY_IMAGES, GALLERY_CATEGORIES, isCuratedArtworkAsset } from '../data/galleryData';
-import { OptimizedImage } from './OptimizedImage';
+import { GALLERY_IMAGES, GALLERY_CATEGORIES, GalleryImage } from '../data/galleryData';
+import { ImageLightboxModal } from './ImageLightboxModal';
 import { RevealOnScroll } from './RevealOnScroll';
-import { useSettings } from '../context/SettingsContext';
-
-const ImageLightboxModal = lazy(() =>
-  import('./ImageLightboxModal').then((m) => ({ default: m.ImageLightboxModal }))
-);
 
 interface GalleryPageProps {
   onNavigateHome?: () => void;
 }
 
+// Utility to generate optimized thumbnail URLs for the grid view
+const getThumbnailUrl = (url: string): string => {
+  if (url.includes('imwidth=')) {
+    return url.replace(/imwidth=\d+/, 'imwidth=640');
+  }
+  if (url.includes('.jpg') && !url.includes('?')) {
+    return `${url}?imwidth=640`;
+  }
+  return url;
+};
+
 export const GalleryPage: React.FC<GalleryPageProps> = () => {
-  const { motionMode } = useSettings();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mobileVisibleCount, setMobileVisibleCount] = useState<number>(12);
-  const [isMobileViewport, setIsMobileViewport] = useState<boolean>(() =>
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia('(max-width: 639px)').matches
-      : false
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const mq = window.matchMedia('(max-width: 639px)');
-    const onChange = () => setIsMobileViewport(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      all: GALLERY_IMAGES.length,
-      artworks: 0,
-    };
-    for (const img of GALLERY_IMAGES) {
-      counts[img.category] = (counts[img.category] || 0) + 1;
-      if (isCuratedArtworkAsset(img)) {
-        counts.artworks += 1;
-      }
-    }
-    return counts;
-  }, []);
 
   // Filtered gallery images based on active tab
   const filteredImages = useMemo(() => {
     if (activeCategory === 'all') return GALLERY_IMAGES;
-    if (activeCategory === 'artworks') return GALLERY_IMAGES.filter(isCuratedArtworkAsset);
     return GALLERY_IMAGES.filter((img) => img.category === activeCategory);
   }, [activeCategory]);
-
-  const renderedImages = useMemo(() => {
-    if (isMobileViewport && activeCategory !== 'artworks') {
-      return filteredImages.slice(0, mobileVisibleCount);
-    }
-    return filteredImages;
-  }, [isMobileViewport, activeCategory, filteredImages, mobileVisibleCount]);
 
   // Reset mobile visible count when category changes
   useEffect(() => {
@@ -108,7 +77,10 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
         <div className="flex items-center gap-2 min-w-max bg-[#090C10]/80 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
           {GALLERY_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.id;
-            const count = categoryCounts[cat.id] || 0;
+            const count =
+              cat.id === 'all'
+                ? GALLERY_IMAGES.length
+                : GALLERY_IMAGES.filter((i) => i.category === cat.id).length;
 
             return (
               <button
@@ -137,99 +109,95 @@ export const GalleryPage: React.FC<GalleryPageProps> = () => {
         </div>
       </div>
 
-      {/* 3. Consistent Responsive Grid (Desktop 4 cols, Tablet 2 cols, Mobile 2 or 1 col) */}
+      {/* 3. Clean Responsive Masonry Grid */}
       {filteredImages.length === 0 ? (
-        <div className="py-20 text-center rounded-3xl bg-[#090C10]/60 border border-white/10 px-6">
+        <div className="py-20 text-center rounded-3xl bg-[#090C10]/60 border border-white/10">
           <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <p className="text-base font-bold text-slate-300">No media found in this category.</p>
         </div>
       ) : (
-        <div className={`space-y-8 ${motionMode === 'low' ? 'gallery-reduced-motion' : ''}`}>
-          <div
-            data-testid="gallery-grid"
-            className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"
-          >
-            {renderedImages.map((img, idx) => {
+        <div className="space-y-8">
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+            {filteredImages.map((img, idx) => {
+              const isHiddenOnMobile = idx >= mobileVisibleCount;
               return (
-                <button
-                  key={img.id}
-                  type="button"
-                  onClick={() => setLightboxIndex(idx)}
-                  className="gallery-card group relative w-full text-left rounded-2xl bg-[#090C10] border border-white/10 overflow-hidden shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary,#F15A24)]"
-                >
-                  {/* Strict 16:9 Aspect Ratio Cell with GPU-Friendly Hover Zoom */}
-                  <div className="relative w-full aspect-video overflow-hidden bg-[#12141C]">
-                    <OptimizedImage
-                      src={img.url}
-                      alt={img.title}
-                      maxWidth={768}
-                      sizes="(max-width: 379px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 23vw, 290px"
-                      loading="lazy"
-                      decoding="async"
-                      className="gallery-card-media w-full h-full object-cover brightness-95 group-hover:brightness-105"
-                    />
+                <RevealOnScroll key={img.id} delayMs={(idx % 6) * 60}>
+                  <div
+                    onClick={() => setLightboxIndex(idx)}
+                    className={`group relative rounded-2xl bg-[#090C10] border border-white/10 hover:border-white/40 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer break-inside-avoid transform hover:-translate-y-1 ${
+                      isHiddenOnMobile ? 'hidden sm:block' : 'block'
+                    }`}
+                  >
+                    {/* Aspect Ratio Preserved Container with Instant Placeholder & Smooth Load Fade-in */}
+                    <div className="relative w-full overflow-hidden bg-[#12141C] min-h-[160px] aspect-[16/9]">
+                      <img
+                        src={getThumbnailUrl(img.url)}
+                        alt={img.title}
+                        loading="lazy"
+                        decoding="async"
+                        onLoad={(e) => {
+                          (e.currentTarget as HTMLImageElement).classList.remove('opacity-0');
+                          (e.currentTarget as HTMLImageElement).classList.add('opacity-100');
+                        }}
+                        className="w-full h-full object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500 opacity-0"
+                      />
 
-                    {/* Ambient Scrim Overlay for Readable Caption Contrast */}
-                    <div className="gallery-card-scrim absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-75 group-hover:opacity-95 pointer-events-none" />
+                      {/* Ambient Subtle Scrim Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
 
-                    {/* Hover Zoom Icon Affordance */}
-                    <div className="gallery-card-zoom absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 pointer-events-none">
-                      <div
-                        className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
-                        style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
-                      >
-                        <ZoomIn className="w-5 h-5" />
+                      {/* Hover Zoom Icon Affordance */}
+                      <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 pointer-events-none">
+                        <div
+                          className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
+                          style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
+                        >
+                          <ZoomIn className="w-5 h-5" />
+                        </div>
+                      </div>
+
+                      {/* Clean Unobtrusive Title Caption */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
+                        <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-1">
+                          {img.title}
+                        </h3>
                       </div>
                     </div>
-
-                    {/* Clean Unobtrusive Title Caption */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
-                      <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors duration-300 line-clamp-1">
-                        {img.title}
-                      </h3>
-                    </div>
                   </div>
-                </button>
+                </RevealOnScroll>
               );
             })}
           </div>
 
-          {/* Mobile "Show More" Button (only shown when mobile pagination truncates larger categories) */}
-          {activeCategory !== 'artworks' && (
-            <div className="sm:hidden pt-4 flex flex-col items-center justify-center text-center">
-              {mobileVisibleCount < filteredImages.length ? (
-                <button
-                  onClick={handleShowMoreMobile}
-                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase text-[#F4F1ED] bg-[#090C10] border border-white/20 hover:border-white/40 transition-all duration-300 shadow-xl cursor-pointer"
-                >
-                  <span>SHOW MORE ASSETS</span>
-                  <ChevronDown className="w-4 h-4 theme-text-primary" />
-                </button>
-              ) : (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono text-slate-400 bg-white/5 border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full theme-bg-primary" />
-                  <span>Showing all {filteredImages.length} assets</span>
-                </div>
-              )}
-              <p className="mt-2 text-[11px] font-mono text-slate-500">
-                Viewing {Math.min(mobileVisibleCount, filteredImages.length)} of {filteredImages.length} items
-              </p>
-            </div>
-          )}
+          {/* Mobile "Show More" Button */}
+          <div className="sm:hidden pt-4 flex flex-col items-center justify-center text-center">
+            {mobileVisibleCount < filteredImages.length ? (
+              <button
+                onClick={handleShowMoreMobile}
+                className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase text-[#F4F1ED] bg-[#090C10] border border-white/20 hover:border-white/40 transition-all duration-300 shadow-xl cursor-pointer"
+              >
+                <span>SHOW MORE ASSETS</span>
+                <ChevronDown className="w-4 h-4 theme-text-primary" />
+              </button>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono text-slate-400 bg-white/5 border border-white/10">
+                <span className="w-1.5 h-1.5 rounded-full theme-bg-primary" />
+                <span>Showing all {filteredImages.length} assets</span>
+              </div>
+            )}
+            <p className="mt-2 text-[11px] font-mono text-slate-500">
+              Viewing {Math.min(mobileVisibleCount, filteredImages.length)} of {filteredImages.length} items
+            </p>
+          </div>
         </div>
       )}
 
-      {/* 4. Fullscreen Interactive Lightbox Modal (Lazy-loaded on open) */}
-      {lightboxIndex !== null && (
-        <Suspense fallback={null}>
-          <ImageLightboxModal
-            images={filteredImages}
-            currentIndex={lightboxIndex}
-            onClose={() => setLightboxIndex(null)}
-            onNavigateIndex={(newIndex) => setLightboxIndex(newIndex)}
-          />
-        </Suspense>
-      )}
+      {/* 4. Fullscreen Interactive Lightbox Modal */}
+      <ImageLightboxModal
+        images={filteredImages}
+        currentIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigateIndex={(newIndex) => setLightboxIndex(newIndex)}
+      />
     </div>
   );
 };

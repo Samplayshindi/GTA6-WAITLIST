@@ -224,81 +224,16 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   const playerRef = useRef<any>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const manualPauseRef = useRef<boolean>(false);
-  const hasUnlockedAudioRef = useRef<boolean>(false);
-  const tracksRef = useRef<SoundtrackTrack[]>(tracks);
   const currentTrackIndexRef = useRef<number>(currentTrackIndex);
-  const isPlayingRef = useRef<boolean>(isPlaying);
-  const volumeRef = useRef<number>(volume);
-  const isMutedRef = useRef<boolean>(isMuted);
-  const isDismissedRef = useRef<boolean>(isDismissed);
-  const lastSeekAtRef = useRef<number>(0);
-  const pendingAudioSeekRef = useRef<number | null>(null);
-  const handleTrackEndedRef = useRef<() => void>(() => {});
-  const selectTrackRef = useRef<(index: number) => void>(() => {});
 
-  useEffect(() => {
-    tracksRef.current = tracks;
-  }, [tracks]);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
-
-  useEffect(() => {
-    volumeRef.current = volume;
-  }, [volume]);
-
-  useEffect(() => {
-    isMutedRef.current = isMuted;
-  }, [isMuted]);
-
-  useEffect(() => {
-    isDismissedRef.current = isDismissed;
-  }, [isDismissed]);
-
-  const syncAudioOutputState = (vol: number, muted: boolean) => {
-    const safeVol = Math.max(0, Math.min(100, vol));
-    const effectiveMuted = muted || safeVol === 0;
-
-    if (audioElRef.current) {
-      audioElRef.current.volume = safeVol / 100;
-      audioElRef.current.muted = effectiveMuted;
-    }
-
-    if (playerRef.current) {
-      try {
-        if (typeof playerRef.current.setVolume === 'function') {
-          playerRef.current.setVolume(safeVol);
-        }
-        if (effectiveMuted) {
-          if (typeof playerRef.current.mute === 'function') {
-            playerRef.current.mute();
-          }
-        } else if (typeof playerRef.current.unMute === 'function') {
-          playerRef.current.unMute();
-        }
-      } catch {
-        // ignore
-      }
-    }
-  };
-
-  // Initialize HTML5 Audio element instance once
+  // Initialize HTML5 Audio element instance
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const audio = new Audio();
-    audio.preload = 'metadata';
     audioElRef.current = audio;
-    syncAudioOutputState(volumeRef.current, isMutedRef.current);
 
     const handleTimeUpdate = () => {
-      if (
-        audioElRef.current &&
-        !audioElRef.current.seeking &&
-        typeof audioElRef.current.currentTime === 'number' &&
-        !isNaN(audioElRef.current.currentTime) &&
-        Date.now() - lastSeekAtRef.current > 250
-      ) {
+      if (audioElRef.current && audioElRef.current.currentTime) {
         setCurrentTime(audioElRef.current.currentTime);
       }
     };
@@ -307,53 +242,26 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       if (audioElRef.current && audioElRef.current.duration) {
         const dur = audioElRef.current.duration;
         setDuration(dur);
-        const activeTrack = tracksRef.current[currentTrackIndexRef.current];
+        const activeTrack = tracks[currentTrackIndexRef.current];
         if (activeTrack) {
           updateTrackDuration(activeTrack.id, dur);
         }
-        if (pendingAudioSeekRef.current !== null) {
-          const target = Math.max(0, Math.min(dur, pendingAudioSeekRef.current));
-          pendingAudioSeekRef.current = null;
-          audioElRef.current.currentTime = target;
-          setCurrentTime(target);
-        }
-      }
-    };
-
-    const handlePlay = () => {
-      const activeTrack = tracksRef.current[currentTrackIndexRef.current];
-      if (activeTrack?.audioUrl) {
-        setIsPlaying(true);
-      }
-    };
-
-    const handlePause = () => {
-      const activeTrack = tracksRef.current[currentTrackIndexRef.current];
-      if (activeTrack?.audioUrl && !audio.ended) {
-        setIsPlaying(false);
       }
     };
 
     const handleEnded = () => {
-      handleTrackEndedRef.current();
+      handleTrackEnded();
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
       audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-      audioElRef.current = null;
     };
   }, []);
 
@@ -428,45 +336,40 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Automatic progression when track finishes
   const handleTrackEnded = () => {
-    const activeTracks = tracksRef.current;
     const curIdx = currentTrackIndexRef.current;
-    let nextIdx = (curIdx + 1) % activeTracks.length;
+    // Find next playable track in order
+    let nextIdx = (curIdx + 1) % tracks.length;
     let attempts = 0;
-    while (!activeTracks[nextIdx]?.isPlayable && attempts < activeTracks.length) {
-      nextIdx = (nextIdx + 1) % activeTracks.length;
+    while (!tracks[nextIdx].isPlayable && attempts < tracks.length) {
+      nextIdx = (nextIdx + 1) % tracks.length;
       attempts++;
     }
 
-    if (activeTracks[nextIdx]?.isPlayable) {
-      selectTrackRef.current(nextIdx);
+    if (tracks[nextIdx].isPlayable) {
+      selectTrack(nextIdx);
     } else {
       setIsPlaying(false);
     }
   };
-  handleTrackEndedRef.current = handleTrackEnded;
 
-  // Initialize Persistent YouTube Audio Engine once for the app lifetime
+  // Initialize Persistent YouTube Audio Engine once
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    let checkInterval: ReturnType<typeof setInterval> | null = null;
+    if (isDismissed) return;
+    let checkInterval: any = null;
 
     const setupPlayer = () => {
       if (!window.YT || !window.YT.Player) return;
       if (playerRef.current) return;
-      const mountEl = document.getElementById('persistent-yt-audio-element');
-      if (!mountEl) return;
 
-      const activeTracks = tracksRef.current;
-      const initialTrack = activeTracks[currentTrackIndexRef.current] || activeTracks[0];
-      const videoId = initialTrack.youtubeId || '5dPwBWvmcbQ';
-      const shouldAutoplay = !isDismissedRef.current && !manualPauseRef.current && !!initialTrack.youtubeId;
+      const initialTrack = tracks[currentTrackIndex] || tracks[0];
+      const videoId = initialTrack.youtubeId || '-fW1M17EVdE';
 
       playerRef.current = new window.YT.Player('persistent-yt-audio-element', {
         height: '0',
         width: '0',
         videoId: videoId,
         playerVars: {
-          autoplay: shouldAutoplay ? 1 : 0,
+          autoplay: 1,
           controls: 0,
           disablekb: 1,
           fs: 0,
@@ -479,9 +382,9 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
           onReady: (event: any) => {
             setIsReady(true);
             try {
-              syncAudioOutputState(volumeRef.current, isMutedRef.current);
-              const track = tracksRef.current[currentTrackIndexRef.current];
-              if (track && track.youtubeId && !isDismissedRef.current && !manualPauseRef.current) {
+              event.target.setVolume(volume);
+              const track = tracks[currentTrackIndexRef.current];
+              if (track && track.youtubeId) {
                 event.target.playVideo();
               }
             } catch {
@@ -489,22 +392,15 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
             }
           },
           onStateChange: (event: any) => {
-            const activeTrack = tracksRef.current[currentTrackIndexRef.current];
             if (event.data === 1) {
               // PLAYING
-              if (activeTrack?.youtubeId) {
-                setIsPlaying(true);
-              }
+              setIsPlaying(true);
             } else if (event.data === 2) {
               // PAUSED
-              if (activeTrack?.youtubeId) {
-                setIsPlaying(false);
-              }
+              setIsPlaying(false);
             } else if (event.data === 0) {
               // ENDED
-              if (activeTrack?.youtubeId) {
-                handleTrackEndedRef.current();
-              }
+              handleTrackEnded();
             }
           },
         },
@@ -522,30 +418,22 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
         document.body.appendChild(tag);
       }
 
-      const prevReady = window.onYouTubeIframeAPIReady;
       window.onYouTubeIframeAPIReady = () => {
-        if (typeof prevReady === 'function') prevReady();
         setupPlayer();
       };
     }
 
     checkInterval = setInterval(() => {
-      if (!isPlayingRef.current) return;
-      const activeTrack = tracksRef.current[currentTrackIndexRef.current];
+      const activeTrack = tracks[currentTrackIndexRef.current];
       if (activeTrack && activeTrack.youtubeId && playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
         try {
           const curr = playerRef.current.getCurrentTime();
           const dur = playerRef.current.getDuration();
-          if (
-            typeof curr === 'number' &&
-            !isNaN(curr) &&
-            curr >= 0 &&
-            Date.now() - lastSeekAtRef.current > 1000
-          ) {
-            setCurrentTime((prev) => (Math.abs(prev - curr) >= 0.25 ? curr : prev));
+          if (typeof curr === 'number' && !isNaN(curr) && curr >= 0) {
+            setCurrentTime(curr);
           }
           if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) {
-            setDuration((prev) => (prev !== dur ? dur : prev));
+            setDuration(dur);
           }
         } catch {
           // ignore
@@ -556,37 +444,21 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     return () => {
       if (checkInterval) clearInterval(checkInterval);
     };
-  }, []);
+  }, [isDismissed]);
 
-  // Unlock audio once on first global user interaction if initial autoplay was blocked
+  // Unlock audio on first global user interaction if autoplay was blocked
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const cleanupListeners = () => {
-      window.removeEventListener('pointerdown', handleFirstInteraction);
-      window.removeEventListener('keydown', handleFirstInteraction);
-    };
-
+    if (isDismissed) return;
     const handleFirstInteraction = () => {
-      if (hasUnlockedAudioRef.current) {
-        cleanupListeners();
-        return;
-      }
-      hasUnlockedAudioRef.current = true;
-      cleanupListeners();
-
-      if (manualPauseRef.current || isDismissedRef.current || isPlayingRef.current) return;
-
-      const activeTrack = tracksRef.current[currentTrackIndexRef.current];
-      syncAudioOutputState(volumeRef.current, isMutedRef.current);
-
+      if (manualPauseRef.current) return;
+      const activeTrack = tracks[currentTrackIndexRef.current];
       if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
-        if (!audioElRef.current.src) {
-          audioElRef.current.src = activeTrack.audioUrl;
-        }
-        audioElRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-      } else if (activeTrack?.youtubeId && playerRef.current && typeof playerRef.current.playVideo === 'function') {
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
+        audioElRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      } else if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
         try {
+          playerRef.current.setVolume(isMuted ? 0 : volume);
           playerRef.current.playVideo();
         } catch {
           // ignore
@@ -594,17 +466,20 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     };
 
-    window.addEventListener('pointerdown', handleFirstInteraction);
-    window.addEventListener('keydown', handleFirstInteraction);
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    window.addEventListener('keydown', handleFirstInteraction, { once: true });
 
-    return cleanupListeners;
-  }, []);
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [volume, isMuted, isDismissed]);
 
   // Support external triggers (e.g. from Desktop Previews)
   useEffect(() => {
     const handleExternalPlay = (e: any) => {
       if (typeof e.detail?.index === 'number') {
-        selectTrackRef.current(e.detail.index);
+        selectTrack(e.detail.index);
       }
     };
     const handleExternalQueue = () => {
@@ -618,11 +493,10 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       window.removeEventListener('gta-play-track', handleExternalPlay as EventListener);
       window.removeEventListener('gta-open-queue', handleExternalQueue as EventListener);
     };
-  }, []);
+  }, [tracks]);
 
   const selectTrack = (index: number) => {
-    const activeTracks = tracksRef.current;
-    const nextTrack = activeTracks[index];
+    const nextTrack = tracks[index];
     if (!nextTrack) return;
 
     if (!nextTrack.isPlayable || (!nextTrack.youtubeId && !nextTrack.audioUrl)) {
@@ -634,13 +508,10 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       return;
     }
 
-    currentTrackIndexRef.current = index;
     setCurrentTrackIndex(index);
     setCurrentTime(0);
     setDuration(nextTrack.durationSec);
     manualPauseRef.current = false;
-    hasUnlockedAudioRef.current = true;
-    syncAudioOutputState(volumeRef.current, isMutedRef.current);
 
     // Direct MP3 Audio URL Track
     if (nextTrack.audioUrl && audioElRef.current) {
@@ -650,8 +521,8 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
         } catch {}
       }
       audioElRef.current.src = nextTrack.audioUrl;
+      audioElRef.current.volume = isMuted ? 0 : volume / 100;
       audioElRef.current.currentTime = 0;
-      syncAudioOutputState(volumeRef.current, isMutedRef.current);
       audioElRef.current.play().then(() => {
         setIsPlaying(true);
       }).catch((err) => {
@@ -672,12 +543,11 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
               videoId: nextTrack.youtubeId,
               startSeconds: 0,
             });
-            syncAudioOutputState(volumeRef.current, isMutedRef.current);
+            playerRef.current.setVolume(isMuted ? 0 : volume);
             playerRef.current.playVideo();
             setIsPlaying(true);
           } else if (typeof playerRef.current.cueVideoById === 'function') {
             playerRef.current.cueVideoById(nextTrack.youtubeId);
-            syncAudioOutputState(volumeRef.current, isMutedRef.current);
             playerRef.current.playVideo();
             setIsPlaying(true);
           }
@@ -687,52 +557,46 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     }
   };
-  selectTrackRef.current = selectTrack;
 
   const playNextTrack = () => {
-    const activeTracks = tracksRef.current;
-    let nextIdx = (currentTrackIndexRef.current + 1) % activeTracks.length;
+    let nextIdx = (currentTrackIndexRef.current + 1) % tracks.length;
     let attempts = 0;
-    while (!activeTracks[nextIdx]?.isPlayable && attempts < activeTracks.length) {
-      nextIdx = (nextIdx + 1) % activeTracks.length;
+    while (!tracks[nextIdx].isPlayable && attempts < tracks.length) {
+      nextIdx = (nextIdx + 1) % tracks.length;
       attempts++;
     }
-    if (activeTracks[nextIdx]?.isPlayable) {
+    if (tracks[nextIdx].isPlayable) {
       selectTrack(nextIdx);
     }
   };
 
   const playPrevTrack = () => {
-    if (currentTime > 3) {
-      seekTo(0);
+    if (currentTime > 3 && playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      playerRef.current.seekTo(0, true);
+      setCurrentTime(0);
       return;
     }
-    const activeTracks = tracksRef.current;
-    let prevIdx = (currentTrackIndexRef.current - 1 + activeTracks.length) % activeTracks.length;
+    let prevIdx = (currentTrackIndexRef.current - 1 + tracks.length) % tracks.length;
     let attempts = 0;
-    while (!activeTracks[prevIdx]?.isPlayable && attempts < activeTracks.length) {
-      prevIdx = (prevIdx - 1 + activeTracks.length) % activeTracks.length;
+    while (!tracks[prevIdx].isPlayable && attempts < tracks.length) {
+      prevIdx = (prevIdx - 1 + tracks.length) % tracks.length;
       attempts++;
     }
-    if (activeTracks[prevIdx]?.isPlayable) {
+    if (tracks[prevIdx].isPlayable) {
       selectTrack(prevIdx);
     }
   };
 
   const togglePlay = () => {
-    hasUnlockedAudioRef.current = true;
-    const activeTrack = tracksRef.current[currentTrackIndexRef.current];
+    const activeTrack = tracks[currentTrackIndexRef.current];
     if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
-      if (isPlayingRef.current) {
+      if (isPlaying) {
         manualPauseRef.current = true;
         audioElRef.current.pause();
         setIsPlaying(false);
       } else {
         manualPauseRef.current = false;
-        if (!audioElRef.current.src) {
-          audioElRef.current.src = activeTrack.audioUrl;
-        }
-        syncAudioOutputState(volumeRef.current, isMutedRef.current);
+        audioElRef.current.volume = isMuted ? 0 : volume / 100;
         audioElRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
       }
       return;
@@ -740,7 +604,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
 
     if (!playerRef.current || !isReady) return;
 
-    if (isPlayingRef.current) {
+    if (isPlaying) {
       manualPauseRef.current = true;
       try {
         playerRef.current.pauseVideo();
@@ -751,7 +615,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
     } else {
       manualPauseRef.current = false;
       try {
-        syncAudioOutputState(volumeRef.current, isMutedRef.current);
+        playerRef.current.setVolume(isMuted ? 0 : volume);
         playerRef.current.playVideo();
       } catch {
         // ignore
@@ -761,22 +625,12 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const seekTo = (seconds: number) => {
-    const activeTrack = tracksRef.current[currentTrackIndexRef.current];
-    const maxDur = duration > 0 ? duration : (activeTrack?.durationSec || 180);
-    const clamped = Math.max(0, Math.min(maxDur, seconds));
-    lastSeekAtRef.current = Date.now();
+    const activeTrack = tracks[currentTrackIndexRef.current];
+    const clamped = Math.max(0, Math.min(duration || 180, seconds));
     setCurrentTime(clamped);
 
     if (activeTrack && activeTrack.audioUrl && audioElRef.current) {
-      if (!audioElRef.current.src) {
-        audioElRef.current.src = activeTrack.audioUrl;
-      }
-      if (audioElRef.current.readyState >= 1) {
-        pendingAudioSeekRef.current = null;
-        audioElRef.current.currentTime = clamped;
-      } else {
-        pendingAudioSeekRef.current = clamped;
-      }
+      audioElRef.current.currentTime = clamped;
       return;
     }
 
@@ -792,28 +646,62 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const setVolumeLevel = (newVol: number) => {
     const clamped = Math.max(0, Math.min(100, newVol));
-    const nextMuted = clamped === 0;
-    volumeRef.current = clamped;
-    isMutedRef.current = nextMuted;
     setVolume(clamped);
-    setIsMuted(nextMuted);
-    syncAudioOutputState(clamped, nextMuted);
+    if (clamped === 0) {
+      setIsMuted(true);
+    } else if (isMuted) {
+      setIsMuted(false);
+    }
+
+    if (audioElRef.current) {
+      audioElRef.current.volume = clamped / 100;
+    }
+
+    if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
+      try {
+        playerRef.current.setVolume(clamped);
+        if (clamped > 0 && typeof playerRef.current.unMute === 'function') {
+          playerRef.current.unMute();
+        }
+      } catch {
+        // ignore
+      }
+    }
   };
 
   const toggleMute = () => {
-    if (isMutedRef.current) {
-      const targetVol = volumeRef.current > 0 ? volumeRef.current : 30;
-      if (volumeRef.current === 0) {
-        volumeRef.current = targetVol;
-        setVolume(targetVol);
-      }
-      isMutedRef.current = false;
+    if (isMuted) {
       setIsMuted(false);
-      syncAudioOutputState(targetVol, false);
+      const targetVol = volume > 0 ? volume : 30;
+      if (volume === 0) setVolume(30);
+
+      if (audioElRef.current) {
+        audioElRef.current.volume = targetVol / 100;
+        audioElRef.current.muted = false;
+      }
+
+      if (playerRef.current) {
+        try {
+          playerRef.current.setVolume(targetVol);
+          if (typeof playerRef.current.unMute === 'function') {
+            playerRef.current.unMute();
+          }
+        } catch {}
+      }
     } else {
-      isMutedRef.current = true;
       setIsMuted(true);
-      syncAudioOutputState(volumeRef.current, true);
+
+      if (audioElRef.current) {
+        audioElRef.current.muted = true;
+      }
+
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.mute === 'function') {
+            playerRef.current.mute();
+          }
+        } catch {}
+      }
     }
   };
 
@@ -830,9 +718,14 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const dismissPlayer = () => {
-    // Only hide the player UI; keep the active audio/YouTube engine, track, position, volume, and play/pause state intact
-    setIsQueueOpen(false);
-    isDismissedRef.current = true;
+    if (playerRef.current && typeof playerRef.current.stopVideo === 'function') {
+      try {
+        playerRef.current.stopVideo();
+      } catch {
+        // ignore
+      }
+    }
+    setIsPlaying(false);
     setIsDismissed(true);
     if (typeof window !== 'undefined') {
       try {
@@ -844,10 +737,7 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const restorePlayer = () => {
-    // Restore the player UI synchronized with current live audio state (no forced autoplay if paused)
-    isDismissedRef.current = false;
     setIsDismissed(false);
-    syncAudioOutputState(volumeRef.current, isMutedRef.current);
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem('gta_soundtrack_dismissed');
@@ -886,12 +776,14 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
       }}
     >
       {/* Global persistent YouTube audio engine in DOM */}
-      <div
-        className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none opacity-0 -z-50"
-        aria-hidden="true"
-      >
-        <div id="persistent-yt-audio-element" />
-      </div>
+      {!isDismissed && (
+        <div
+          className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none opacity-0 -z-50"
+          aria-hidden="true"
+        >
+          <div id="persistent-yt-audio-element" />
+        </div>
+      )}
       {children}
     </SoundtrackContext.Provider>
   );
