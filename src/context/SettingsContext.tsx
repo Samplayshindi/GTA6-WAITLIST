@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import {
   COUNTRIES_DATA,
   CountryEntry,
@@ -44,7 +44,7 @@ export const PALETTES: PaletteDefinition[] = [
   {
     id: 'ocean',
     name: 'Ocean Drive',
-    primaryHex: '#00F5D4',
+    primaryHex: '#00B4D8',
     secondaryHex: '#0D9488',
     tertiaryHex: '#3B82F6',
   },
@@ -72,7 +72,7 @@ export const PALETTES: PaletteDefinition[] = [
   {
     id: 'monochrome',
     name: 'Monochrome',
-    primaryHex: '#CBD5E1',
+    primaryHex: '#738091',
     secondaryHex: '#94A3B8',
     tertiaryHex: '#64748B',
   },
@@ -211,73 +211,82 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [isResourceInstallerOpen, setIsResourceInstallerOpen] = useState<boolean>(false);
   const [isCountryModalOpen, setIsCountryModalOpen] = useState<boolean>(false);
 
-  const setSlideshowPaused = (paused: boolean) => {
+  const setSlideshowPaused = useCallback((paused: boolean) => {
     setIsSlideshowPausedState(paused);
     try {
       localStorage.setItem(STORAGE_KEYS.slideshowPaused, String(paused));
     } catch {}
-  };
+  }, []);
 
-  const setMobileSlideshowEnabled = (enabled: boolean) => {
+  const setMobileSlideshowEnabled = useCallback((enabled: boolean) => {
     setMobileSlideshowEnabledState(enabled);
     try {
       localStorage.setItem(STORAGE_KEYS.mobileSlideshowEnabled, String(enabled));
     } catch {}
-  };
+  }, []);
 
-  const toggleSlideshowPaused = () => {
-    setSlideshowPaused(!isSlideshowPaused);
-  };
+  const toggleSlideshowPaused = useCallback(() => {
+    setIsSlideshowPausedState((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(STORAGE_KEYS.slideshowPaused, String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
 
-  const setColorPalette = (palette: ColorPalette) => {
+  const setColorPalette = useCallback((palette: ColorPalette) => {
     setColorPaletteState(palette);
     try {
       localStorage.setItem(STORAGE_KEYS.colorPalette, palette);
     } catch {}
-  };
+  }, []);
 
-  const setMotionMode = (mode: MotionMode) => {
+  const setMotionMode = useCallback((mode: MotionMode) => {
     setMotionModeState(mode);
     try {
       localStorage.setItem(STORAGE_KEYS.motionMode, mode);
     } catch {}
-  };
+  }, []);
 
-  const setPerformanceMode = (perf: boolean) => {
+  const setPerformanceMode = useCallback((perf: boolean) => {
     setPerformanceModeState(perf);
     try {
       localStorage.setItem(STORAGE_KEYS.performanceMode, String(perf));
     } catch {}
-  };
+  }, []);
 
-  const setCountryAndRegion = (countryCode: string, iana: string) => {
+  const setCountryAndRegion = useCallback((countryCode: string, iana: string) => {
     setSelectedCountryCodeState(countryCode);
     setSelectedRegionIdState(iana);
     try {
       localStorage.setItem(STORAGE_KEYS.selectedCountryCode, countryCode);
       localStorage.setItem(STORAGE_KEYS.selectedRegionId, iana);
     } catch {}
-  };
+  }, []);
 
-  const setSelectedTimeZone = (tz: string) => {
-    const found = findCountryByIana(tz);
-    if (found) {
-      setCountryAndRegion(found.country.code, found.regionId || found.country.defaultIana);
-    } else {
-      setSelectedRegionIdState(tz);
-      try {
-        localStorage.setItem(STORAGE_KEYS.selectedRegionId, tz);
-      } catch {}
-    }
-  };
+  const setSelectedTimeZone = useCallback(
+    (tz: string) => {
+      const found = findCountryByIana(tz);
+      if (found) {
+        setCountryAndRegion(found.country.code, found.regionId || found.country.defaultIana);
+      } else {
+        setSelectedRegionIdState(tz);
+        try {
+          localStorage.setItem(STORAGE_KEYS.selectedRegionId, tz);
+        } catch {}
+      }
+    },
+    [setCountryAndRegion]
+  );
 
-  const openResourceInstaller = () => setIsResourceInstallerOpen(true);
-  const closeResourceInstaller = () => setIsResourceInstallerOpen(false);
+  const openResourceInstaller = useCallback(() => setIsResourceInstallerOpen(true), []);
+  const closeResourceInstaller = useCallback(() => setIsResourceInstallerOpen(false), []);
 
-  const openCountryModal = () => setIsCountryModalOpen(true);
-  const closeCountryModal = () => setIsCountryModalOpen(false);
+  const openCountryModal = useCallback(() => setIsCountryModalOpen(true), []);
+  const closeCountryModal = useCallback(() => setIsCountryModalOpen(false), []);
 
-  const resetPreferences = () => {
+  const resetPreferences = useCallback(() => {
     setIsSlideshowPausedState(false);
     setMobileSlideshowEnabledState(false);
     setColorPaletteState('vice-city');
@@ -301,9 +310,12 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       localStorage.removeItem(STORAGE_KEYS.selectedCountryCode);
       localStorage.removeItem(STORAGE_KEYS.selectedRegionId);
     } catch {}
-  };
+  }, []);
 
-  const activePalette = PALETTES.find((p) => p.id === colorPalette) || PALETTES[0];
+  const activePalette = useMemo(
+    () => PALETTES.find((p) => p.id === colorPalette) || PALETTES[0],
+    [colorPalette]
+  );
 
   const selectedCountry = useMemo(
     () => findCountryByCode(selectedCountryCode) || COUNTRIES_DATA[0],
@@ -334,37 +346,66 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     );
   }, [colorPalette, activePalette]);
 
+  const contextValue = useMemo<SettingsContextValue>(
+    () => ({
+      isSlideshowPaused,
+      mobileSlideshowEnabled,
+      colorPalette,
+      motionMode,
+      performanceMode,
+      selectedCountryCode,
+      selectedRegionId,
+      selectedCountry,
+      effectiveTimeZone,
+      isResourceInstallerOpen,
+      isCountryModalOpen,
+      activePalette,
+      setSlideshowPaused,
+      setMobileSlideshowEnabled,
+      toggleSlideshowPaused,
+      setColorPalette,
+      setMotionMode,
+      setPerformanceMode,
+      setCountryAndRegion,
+      openResourceInstaller,
+      closeResourceInstaller,
+      openCountryModal,
+      closeCountryModal,
+      resetPreferences,
+      selectedTimeZone: effectiveTimeZone,
+      setSelectedTimeZone,
+    }),
+    [
+      isSlideshowPaused,
+      mobileSlideshowEnabled,
+      colorPalette,
+      motionMode,
+      performanceMode,
+      selectedCountryCode,
+      selectedRegionId,
+      selectedCountry,
+      effectiveTimeZone,
+      isResourceInstallerOpen,
+      isCountryModalOpen,
+      activePalette,
+      setSlideshowPaused,
+      setMobileSlideshowEnabled,
+      toggleSlideshowPaused,
+      setColorPalette,
+      setMotionMode,
+      setPerformanceMode,
+      setCountryAndRegion,
+      openResourceInstaller,
+      closeResourceInstaller,
+      openCountryModal,
+      closeCountryModal,
+      resetPreferences,
+      setSelectedTimeZone,
+    ]
+  );
+
   return (
-    <SettingsContext.Provider
-      value={{
-        isSlideshowPaused,
-        mobileSlideshowEnabled,
-        colorPalette,
-        motionMode,
-        performanceMode,
-        selectedCountryCode,
-        selectedRegionId,
-        selectedCountry,
-        effectiveTimeZone,
-        isResourceInstallerOpen,
-        isCountryModalOpen,
-        activePalette,
-        setSlideshowPaused,
-        setMobileSlideshowEnabled,
-        toggleSlideshowPaused,
-        setColorPalette,
-        setMotionMode,
-        setPerformanceMode,
-        setCountryAndRegion,
-        openResourceInstaller,
-        closeResourceInstaller,
-        openCountryModal,
-        closeCountryModal,
-        resetPreferences,
-        selectedTimeZone: effectiveTimeZone,
-        setSelectedTimeZone,
-      }}
-    >
+    <SettingsContext.Provider value={contextValue}>
       {children}
     </SettingsContext.Provider>
   );

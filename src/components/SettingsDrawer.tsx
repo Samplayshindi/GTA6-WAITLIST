@@ -18,7 +18,6 @@ import { useSettings, PALETTES } from '../context/SettingsContext';
 import { useSoundtrack } from '../context/SoundtrackContext';
 import { MobileSlideshowWarningModal } from './MobileSlideshowWarningModal';
 import { ResourceInstallerModal } from './ResourceInstallerModal';
-import { CountrySelectorModal } from './CountrySelectorModal';
 import { APP_VERSION } from '../config/version';
 import { getTimezoneShortAbbr } from '../utils/time';
 
@@ -47,19 +46,18 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
     openResourceInstaller,
     closeResourceInstaller,
     openCountryModal,
-    closeCountryModal,
     resetPreferences,
   } = useSettings();
 
   const { isMuted, toggleMute } = useSoundtrack();
   const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
 
-  // Escape key listener to close drawer
+  // Escape key listener to close drawer only when no child modal is active
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !isCountryModalOpen && !isResourceInstallerOpen && !isWarningModalOpen) {
         e.preventDefault();
         onClose();
       }
@@ -67,7 +65,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isCountryModalOpen, isResourceInstallerOpen, isWarningModalOpen, onClose]);
 
   const handleMobileSlideshowToggle = () => {
     if (mobileSlideshowEnabled) {
@@ -419,12 +417,6 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
       <ResourceInstallerModal
         isOpen={isResourceInstallerOpen}
         onClose={closeResourceInstaller}
-      />
-
-      {/* Launch Country & Time Zone Selection Modal */}
-      <CountrySelectorModal
-        isOpen={isCountryModalOpen}
-        onClose={closeCountryModal}
       />
     </>
   );

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Sliders, Users } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
-import { SettingsDrawer } from './SettingsDrawer';
 import { useSettings } from '../context/SettingsContext';
+
+const SettingsDrawer = lazy(() =>
+  import('./SettingsDrawer').then((m) => ({ default: m.SettingsDrawer }))
+);
 
 interface NavbarProps {
   activeSection: string;
@@ -211,8 +214,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
 
-      {/* Hamburger Settings Drawer */}
-      <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {/* Hamburger Settings Drawer (Lazy-loaded & mounted only when open) */}
+      {settingsOpen && (
+        <Suspense fallback={null}>
+          <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 };

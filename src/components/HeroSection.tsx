@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, Suspense, lazy } from 'react';
 import {
   Play,
   Newspaper,
@@ -16,16 +16,16 @@ import {
   Share2,
 } from 'lucide-react';
 import {
-  getUserLocalTimezoneName,
   getTimezoneShortAbbr,
-  formatLocalDateString,
   getGlobalReleaseLocalDate,
 } from '../utils/time';
 import { useLaunchState } from '../context/LaunchStateContext';
 import { useSettings } from '../context/SettingsContext';
 import { RevealOnScroll } from './RevealOnScroll';
-import { CountrySelectorModal } from './CountrySelectorModal';
-import { ShareCountdownModal } from './ShareCountdownModal';
+
+const ShareCountdownModal = lazy(() =>
+  import('./ShareCountdownModal').then((m) => ({ default: m.ShareCountdownModal }))
+);
 
 interface HeroSectionProps {
   onNavigate: (sectionId: string) => void;
@@ -37,38 +37,38 @@ interface CountdownTileProps {
   isMilestoneActive?: boolean;
 }
 
-const CountdownTile: React.FC<CountdownTileProps> = ({ value, label, isMilestoneActive }) => {
-  const displayVal = typeof value === 'number' ? value.toString().padStart(2, '0') : value;
+const CountdownTile: React.FC<CountdownTileProps> = React.memo(
+  ({ value, label, isMilestoneActive }) => {
+    const displayVal = typeof value === 'number' ? value.toString().padStart(2, '0') : value;
 
-  return (
-    <div
-      className={`flex flex-col items-center justify-center p-3 sm:p-5 md:p-6 rounded-xl bg-[#08090D]/90 border shadow-[0_4px_16px_rgba(0,0,0,0.6)] relative group overflow-hidden transition-all duration-200 ${
-        isMilestoneActive
-          ? 'border-cyan-400/50 bg-[#0C101A]/95 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
-          : 'border-white/10 hover:border-white/30'
-      }`}
-    >
+    return (
       <div
-        key={displayVal}
-        className="animate-digit-tick font-mono font-black tabular-nums text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#F4F1ED] tracking-tight drop-shadow-md"
+        className={`flex flex-col items-center justify-center p-3 sm:p-5 md:p-6 rounded-xl bg-[#08090D]/90 border shadow-[0_4px_16px_rgba(0,0,0,0.6)] relative group overflow-hidden transition-all duration-200 ${
+          isMilestoneActive
+            ? 'border-cyan-400/50 bg-[#0C101A]/95 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
+            : 'border-white/10 hover:border-white/30'
+        }`}
       >
-        {displayVal}
+        <div
+          key={displayVal}
+          className="animate-digit-tick font-mono font-black tabular-nums text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#F4F1ED] tracking-tight drop-shadow-md"
+        >
+          {displayVal}
+        </div>
+        <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-mono font-bold tracking-[0.22em] uppercase text-slate-400">
+          {label}
+        </span>
       </div>
-      <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-mono font-bold tracking-[0.22em] uppercase text-slate-400">
-        {label}
-      </span>
-    </div>
-  );
-};
+    );
+  }
+);
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const { launchState, releaseRemaining } = useLaunchState();
   const {
     selectedCountry,
     effectiveTimeZone,
-    isCountryModalOpen,
     openCountryModal,
-    closeCountryModal,
     motionMode,
   } = useSettings();
 
@@ -80,7 +80,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     onNavigate('newswire');
   };
 
-  const tzDisplayName = getUserLocalTimezoneName(effectiveTimeZone);
   const tzShortAbbr = getTimezoneShortAbbr(effectiveTimeZone);
 
   const localReleaseDateObj = useMemo(
@@ -387,7 +386,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
                       </span>
                     </span>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <button
                         onClick={() => setIsShareModalOpen(true)}
                         className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-bold uppercase tracking-wider text-xs transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 shrink-0"
@@ -396,13 +395,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
                         <span>Share Card</span>
                       </button>
 
-                      <button
-                        onClick={openCountryModal}
-                        className="theme-text-primary hover:text-white font-bold uppercase tracking-wider text-xs shrink-0 cursor-pointer flex items-center gap-1"
-                      >
-                        <span>{selectedCountry.flagEmoji} {tzDisplayName}</span>
-                        <ChevronDown className="w-3 h-3" />
-                      </button>
+                      <span className="theme-text-primary font-bold uppercase tracking-wider text-xs shrink-0">
+                        MIDNIGHT LAUNCH WORLDWIDE
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -413,11 +408,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Country Selection Modal */}
-      <CountrySelectorModal isOpen={isCountryModalOpen} onClose={closeCountryModal} />
-
-      {/* Personalised Countdown Card Generator Modal */}
-      <ShareCountdownModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} />
+      {/* Personalised Countdown Card Generator Modal (Lazy-loaded & mounted only when open) */}
+      {isShareModalOpen && (
+        <Suspense fallback={null}>
+          <ShareCountdownModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 };

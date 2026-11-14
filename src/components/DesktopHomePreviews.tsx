@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Play, ExternalLink, ArrowRight, Clock, Newspaper, Disc3, ZoomIn } from 'lucide-react';
 import { OFFICIAL_VIDEOS } from '../config/countdown';
 import { SOUNDTRACK_LIBRARY, OFFICIAL_ALBUM_ARTWORK_URL } from '../config/soundtrack';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 import { GALLERY_IMAGES, GalleryImage } from '../data/galleryData';
-import { getResponsiveImageUrl } from '../utils/imageUtils';
-import { ImageLightboxModal } from './ImageLightboxModal';
+import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
+
+const ImageLightboxModal = lazy(() =>
+  import('./ImageLightboxModal').then((m) => ({ default: m.ImageLightboxModal }))
+);
 
 interface DesktopHomePreviewsProps {
   onNavigate: (sectionId: string) => void;
@@ -102,9 +105,11 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                   className="group relative rounded-2xl bg-[#090C10] border border-white/10 hover:border-white/40 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block transform hover:-translate-y-1"
                 >
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
-                    <img
-                      src={getResponsiveImageUrl(img.url, 640)}
+                    <OptimizedImage
+                      src={img.url}
                       alt={img.title}
+                      maxWidth={768}
+                      sizes="(max-width: 639px) 90vw, (max-width: 1023px) 44vw, (max-width: 1279px) 28vw, 365px"
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover brightness-95 group-hover:brightness-105 group-hover:scale-105 transition-all duration-500"
@@ -132,7 +137,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
 
       {/* 2. COMPACT OFFICIAL VIDEOS PREVIEW */}
       <RevealOnScroll>
-        <section className="relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
+        <section className="home-section-opt relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -180,9 +185,11 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                   className="group rounded-2xl bg-[#0B2425]/40 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-xl block text-left cursor-pointer h-full"
                 >
                   <div className="relative aspect-[16/9] w-full overflow-hidden bg-black pointer-events-none">
-                    <img
-                      src={getResponsiveImageUrl(video.thumbnailUrl, 640)}
+                    <OptimizedImage
+                      src={video.thumbnailUrl}
                       alt={video.title}
+                      maxWidth={768}
+                      sizes="(max-width: 639px) 90vw, (max-width: 1023px) 44vw, (max-width: 1279px) 28vw, 365px"
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
@@ -196,7 +203,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                     </div>
 
                     <div className="absolute inset-0 z-30 flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-[#F4F1ED] text-black flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:text-white transition-all duration-300">
+                      <div className="w-12 h-12 rounded-full bg-[#F4F1ED] text-black border-2 border-transparent flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-[#08090D] group-hover:text-white group-hover:border-[var(--theme-primary,#FF4FA3)] transition-all duration-300">
                         <Play className="w-5 h-5 fill-current translate-x-0.5" />
                       </div>
                     </div>
@@ -233,7 +240,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
 
       {/* 3. COMPACT NEWSWIRE INTELLIGENCE PREVIEW */}
       <RevealOnScroll>
-        <section className="relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
+        <section className="home-section-opt relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -253,10 +260,10 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => onNavigate('newswire')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white bg-[#0B2425] hover:bg-[#102D2A] border border-white/20 transition-colors shadow-lg cursor-pointer min-h-[40px]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-colors shadow-lg cursor-pointer min-h-[40px] theme-bg-primary"
               >
                 <span>Explore All Newswire</span>
-                <ArrowRight className="w-3.5 h-3.5 theme-text-primary" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -268,7 +275,9 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
               ))
             ) : (
               latestArticles.map((article, idx) => {
-                const articleImage = getDeterministicArticleImage(article.id);
+                const articleImage =
+                  article.thumbnailUrl ||
+                  getDeterministicArticleImage(article.title, article.description);
                 return (
                   <RevealOnScroll key={article.id} delayMs={idx * 80}>
                     <a
@@ -278,9 +287,11 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                       className="group rounded-2xl bg-[#0B2425]/30 border border-white/10 hover:border-white/40 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-xl block text-left cursor-pointer h-full"
                     >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
-                        <img
-                          src={getResponsiveImageUrl(articleImage, 640)}
+                        <OptimizedImage
+                          src={articleImage}
                           alt={article.title}
+                          maxWidth={768}
+                          sizes="(max-width: 767px) 90vw, (max-width: 1279px) 28vw, 365px"
                           loading="lazy"
                           decoding="async"
                           className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-opacity"
@@ -326,7 +337,7 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
 
       {/* 4. COMPACT SOUNDTRACK PREVIEW */}
       <RevealOnScroll>
-        <section className="relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
+        <section className="home-section-opt relative rounded-3xl bg-[#090C10]/80 border border-white/10 p-8 lg:p-10 overflow-hidden shadow-2xl backdrop-blur-sm">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -346,10 +357,10 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={handleOpenQueue}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white bg-[#0B2425] hover:bg-[#102D2A] border border-white/20 transition-colors shadow-lg cursor-pointer min-h-[40px]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-colors shadow-lg cursor-pointer min-h-[40px] theme-bg-primary"
               >
-                <Disc3 className="w-3.5 h-3.5 theme-text-primary" />
                 <span>Open Music Queue</span>
+                <Disc3 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -362,14 +373,16 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                   className="group p-3 rounded-2xl bg-[#0B2425]/20 hover:bg-[#0B2425]/50 border border-white/5 hover:border-white/30 transition-all duration-300 flex items-center gap-3 cursor-pointer shadow-md h-full"
                 >
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-black shrink-0">
-                    <img
+                    <OptimizedImage
                       src={track.coverUrl}
                       alt={track.title}
+                      maxWidth={375}
+                      sizes="48px"
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
+                        (e.currentTarget as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
                       }}
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -395,13 +408,17 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
         </section>
       </RevealOnScroll>
 
-      {/* Lightbox for Overview Preview Section */}
-      <ImageLightboxModal
-        images={curatedPreviewImages}
-        currentIndex={previewLightboxIndex}
-        onClose={() => setPreviewLightboxIndex(null)}
-        onNavigateIndex={(newIdx) => setPreviewLightboxIndex(newIdx)}
-      />
+      {/* Lightbox for Overview Preview Section (Lazy-loaded on open) */}
+      {previewLightboxIndex !== null && (
+        <Suspense fallback={null}>
+          <ImageLightboxModal
+            images={curatedPreviewImages}
+            currentIndex={previewLightboxIndex}
+            onClose={() => setPreviewLightboxIndex(null)}
+            onNavigateIndex={(newIdx) => setPreviewLightboxIndex(newIdx)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

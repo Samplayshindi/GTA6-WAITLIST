@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { getNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
-import { getResponsiveImageUrl } from '../utils/imageUtils';
+import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
 
 export const NewsSection: React.FC = () => {
@@ -119,11 +119,14 @@ export const NewsSection: React.FC = () => {
               <RevealOnScroll>
                 <article className="group relative rounded-2xl bg-[#0B2425]/60 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
                   <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
-                    <img
-                      src={getResponsiveImageUrl(featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description), 1080)}
+                    <OptimizedImage
+                      src={featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
                       alt={featuredArticle.title}
-                      loading="lazy"
+                      maxWidth={1280}
+                      sizes="(max-width: 1023px) 94vw, (max-width: 1279px) 55vw, 710px"
+                      loading="eager"
                       decoding="async"
+                      fetchPriority="high"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B2425] via-transparent to-transparent lg:hidden" />
@@ -178,15 +181,16 @@ export const NewsSection: React.FC = () => {
                   }).format(new Date(article.publishedAt));
 
                   const rawSrc = article.thumbnailUrl || getDeterministicArticleImage(article.title, article.description);
-                  const imgSrc = getResponsiveImageUrl(rawSrc, 640);
 
                   return (
                     <RevealOnScroll key={article.id} delayMs={(idx % 3) * 80}>
                       <article className="group rounded-xl bg-[#0B2425]/40 border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden flex flex-col justify-between h-full">
                         <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
-                          <img
-                            src={imgSrc}
+                          <OptimizedImage
+                            src={rawSrc}
                             alt={article.title}
+                            maxWidth={768}
+                            sizes="(max-width: 767px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 29vw, 384px"
                             loading="lazy"
                             decoding="async"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"

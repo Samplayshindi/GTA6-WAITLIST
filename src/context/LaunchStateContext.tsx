@@ -58,16 +58,24 @@ export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     const updateCountdown = () => {
       const rel = calculateTimeRemainingFromDate(globalReleaseDate);
       const pre = calculateTimeRemainingFromDate(activePreloadDate);
-      setReleaseRemaining(rel);
-      setPreloadRemaining(pre);
+      setReleaseRemaining((prev) =>
+        prev.isComplete && rel.isComplete && prev.totalMs === 0 && rel.totalMs === 0 ? prev : rel
+      );
+      setPreloadRemaining((prev) =>
+        prev.isComplete && pre.isComplete && prev.totalMs === 0 && pre.totalMs === 0 ? prev : pre
+      );
 
-      // Dynamic browser tab title
+      // Dynamic browser tab title (only write to DOM when text actually changes)
+      let nextTitle: string;
       if (launchState === 'RELEASE_LIVE') {
-        document.title = 'GTA VI | AVAILABLE NOW WORLDWIDE';
+        nextTitle = 'GTA VI | AVAILABLE NOW WORLDWIDE';
       } else if (launchState === 'PRELOAD_LIVE') {
-        document.title = `GTA VI | PRE-LOAD LIVE · ${rel.days}d ${rel.hours}h Left`;
+        nextTitle = `GTA VI | PRE-LOAD LIVE · ${rel.days}d ${rel.hours}h Left`;
       } else {
-        document.title = formatTabTitle(rel);
+        nextTitle = formatTabTitle(rel);
+      }
+      if (document.title !== nextTitle) {
+        document.title = nextTitle;
       }
     };
 
@@ -84,18 +92,21 @@ export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
   }, [globalReleaseDate, activePreloadDate, launchState]);
 
+  const contextValue = useMemo<LaunchStateContextValue>(
+    () => ({
+      launchState,
+      releaseRemaining,
+      preloadRemaining,
+      isPreloadLive: launchState === 'PRELOAD_LIVE' || launchState === 'RELEASE_LIVE',
+      isReleaseLive: launchState === 'RELEASE_LIVE',
+      selectedConsole,
+      setSelectedConsole,
+    }),
+    [launchState, releaseRemaining, preloadRemaining, selectedConsole]
+  );
+
   return (
-    <LaunchStateContext.Provider
-      value={{
-        launchState,
-        releaseRemaining,
-        preloadRemaining,
-        isPreloadLive: launchState === 'PRELOAD_LIVE' || launchState === 'RELEASE_LIVE',
-        isReleaseLive: launchState === 'RELEASE_LIVE',
-        selectedConsole,
-        setSelectedConsole,
-      }}
-    >
+    <LaunchStateContext.Provider value={contextValue}>
       {children}
     </LaunchStateContext.Provider>
   );

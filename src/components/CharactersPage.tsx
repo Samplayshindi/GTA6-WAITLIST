@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Users, ChevronLeft, ChevronRight, BookOpen, Award, Sparkles } from 'lucide-react';
 import { CHARACTERS_DATA } from '../data/charactersData';
-import { getResponsiveImageUrl } from '../utils/imageUtils';
+import { getPreferredPreloadUrl, pickClosestWidth } from '../utils/imageUtils';
+import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
 
 interface CharactersPageProps {
@@ -31,13 +32,16 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
     (nextIdx: number) => {
       clearTransitionTimeouts();
 
-      // Preload target image to guarantee smooth display without blank loading state
-      const targetSrc = getResponsiveImageUrl(
-        selectedCharacter.images[nextIdx] || selectedCharacter.images[0],
-        1920
-      );
+      // Preload target image using matching format & viewport-appropriate width
+      const rawNextUrl = selectedCharacter.images[nextIdx] || selectedCharacter.images[0];
+      const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
+      const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+      const stageWidth = vw <= 1023 ? vw * 0.94 * dpr : Math.min(vw * 0.56, 710) * dpr;
+      const targetWidth = pickClosestWidth([375, 768, 1280, 1920], stageWidth);
       const img = new Image();
-      img.src = targetSrc;
+      getPreferredPreloadUrl(rawNextUrl, targetWidth).then((url) => {
+        if (url) img.src = url;
+      });
 
       // Phase 1: Fade Out to Black (1.5s)
       setTransitionPhase('FADING_OUT');
@@ -108,10 +112,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
     transitionToNextImage(nextIdx);
   };
 
-  const currentImageUrl = getResponsiveImageUrl(
-    selectedCharacter.images[activeImageIndex] || selectedCharacter.images[0],
-    1920
-  );
+  const currentRawImageUrl =
+    selectedCharacter.images[activeImageIndex] || selectedCharacter.images[0];
 
   const isImageVisible = transitionPhase === 'VISIBLE' || transitionPhase === 'FADING_IN';
 
@@ -169,11 +171,14 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
         <div className="lg:col-span-7 relative min-h-[340px] sm:min-h-[460px] lg:min-h-[560px] bg-black overflow-hidden flex items-center justify-center group">
           {/* Image Stage Container */}
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center">
-            <img
-              src={currentImageUrl}
+            <OptimizedImage
+              src={currentRawImageUrl}
               alt={selectedCharacter.name}
+              maxWidth={1920}
+              sizes="(max-width: 1023px) 94vw, (max-width: 1279px) 56vw, 710px"
               loading="eager"
               decoding="async"
+              fetchPriority="high"
               className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-[1500ms] ease-in-out ${
                 isImageVisible ? 'opacity-100' : 'opacity-0'
               } ${

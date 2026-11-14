@@ -1,7 +1,13 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { X, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, RotateCcw } from 'lucide-react';
 import { GalleryImage } from '../data/galleryData';
-import { getResponsiveImageUrl } from '../utils/imageUtils';
+import {
+  getResponsiveImageUrl,
+  getPreferredPreloadUrl,
+  estimateLightboxTargetWidth,
+} from '../utils/imageUtils';
+import { OptimizedImage } from './OptimizedImage';
 import { useSettings } from '../context/SettingsContext';
 
 interface ImageLightboxModalProps {
@@ -20,24 +26,46 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   const { motionMode } = useSettings();
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [retryCount, setRetryCount] = useState<number>(0);
   const [isClosing, setIsClosing] = useState<boolean>(false);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev' | null>(null);
 
   // Animation lock to prevent rapid clicks from breaking transitions
   const isAnimatingRef = useRef<boolean>(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const prevIndexRef = useRef<number | null>(currentIndex);
 
   // Touch gesture tracking
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
   const activeImage = currentIndex !== null && images[currentIndex] ? images[currentIndex] : null;
+  const currentFullResUrl = activeImage ? getResponsiveImageUrl(activeImage.url, 1920) : '';
 
   const [showGestureGuide, setShowGestureGuide] = useState<boolean>(true);
 
-  // Reset loading state and show gesture guide (fading out after 3.5s) on image change
+  // Synchronize loading state immediately before paint (prevents loader flicker for cached/preloaded images)
+  useLayoutEffect(() => {
+    if (prevIndexRef.current !== currentIndex) {
+      prevIndexRef.current = currentIndex;
+      if (retryCount !== 0) {
+        setRetryCount(0);
+        return;
+      }
+    }
+
+    const imgEl = imgRef.current;
+    if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+      setImageLoaded(true);
+      setHasError(false);
+    } else {
+      setImageLoaded(false);
+      setHasError(false);
+    }
+  }, [currentIndex, retryCount, currentFullResUrl]);
+
+  // Show gesture guide (fading out after 3.5s) on image change
   useEffect(() => {
-    setImageLoaded(false);
-    setHasError(false);
     setShowGestureGuide(true);
 
     const timer = setTimeout(() => {
@@ -47,18 +75,29 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
-  // Preload adjacent next and previous images only
+  // Preload adjacent next and previous images using matching format & viewport-appropriate width
   useEffect(() => {
     if (currentIndex === null || images.length === 0) return;
 
+    let cancelled = false;
     const nextIdx = (currentIndex + 1) % images.length;
     const prevIdx = (currentIndex - 1 + images.length) % images.length;
+    const targetWidth = estimateLightboxTargetWidth();
 
     const imgNext = new Image();
-    imgNext.src = getResponsiveImageUrl(images[nextIdx].url, 1920);
-
     const imgPrev = new Image();
-    imgPrev.src = getResponsiveImageUrl(images[prevIdx].url, 1920);
+
+    getPreferredPreloadUrl(images[nextIdx].url, targetWidth).then((url) => {
+      if (!cancelled && url) imgNext.src = url;
+    });
+
+    getPreferredPreloadUrl(images[prevIdx].url, targetWidth).then((url) => {
+      if (!cancelled && url) imgPrev.src = url;
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentIndex, images]);
 
   // Handle Close with smooth animation
@@ -90,6 +129,12 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
       isAnimatingRef.current = false;
     }, 350);
   }, [currentIndex, images.length, onNavigateIndex]);
+
+  const handleRetry = useCallback(() => {
+    setHasError(false);
+    setImageLoaded(false);
+    setRetryCount((prev) => prev + 1);
+  }, []);
 
   // Keyboard navigation & Escape key listener
   useEffect(() => {
@@ -164,7 +209,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
     ? 'animate-slide-in-left'
     : '';
 
-  return (
+  const modalContent = (
     <div
       role="dialog"
       aria-modal="true"
@@ -279,39 +324,121 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
         {/* Fullscreen Artwork Container */}
         <div
           key={currentIndex}
-          className={`relative max-w-full max-h-[64vh] sm:max-h-[72vh] w-auto flex items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-[#090C10] border border-white/10 shadow-2xl ${slideAnimationClass}`}
+          className={`relative max-w-full max-h-[64vh] sm:max-h-[72vh] flex items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl bg-[#090C10] border border-white/10 shadow-2xl ${
+            imageLoaded && !hasError
+              ? 'w-auto'
+              : 'w-[90vw] sm:w-[76vw] max-w-4xl h-[46vh] sm:h-[58vh] max-h-[580px]'
+          } ${slideAnimationClass}`}
         >
-          {/* Skeleton Loader */}
+          {/* Centered Loading Experience (only while image has not loaded or errored) */}
           {!imageLoaded && !hasError && (
-            <div className="w-[85vw] sm:w-[80vw] h-[45vh] sm:h-[55vh] max-w-4xl max-h-[600px] flex flex-col items-center justify-center bg-[#090C10] animate-pulse">
-              <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 theme-text-primary mb-3 animate-bounce" />
-              <span className="text-[11px] sm:text-xs font-mono text-slate-500 uppercase tracking-widest">
-                Loading High-Res Artwork...
+            <div
+              role="status"
+              aria-live="polite"
+              className="relative z-10 w-full h-full flex flex-col items-center justify-center px-6 text-center select-none"
+            >
+              {/* Subtle ambient radial glow matching active theme */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute w-44 h-44 rounded-full blur-3xl opacity-20"
+                style={{ backgroundColor: 'var(--theme-primary, #FF4FA3)' }}
+              />
+
+              {/* Centered Dual-Ring Theme Spinner */}
+              <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-4">
+                <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+                <div
+                  className={`absolute inset-0 rounded-full border-2 border-transparent ${
+                    isLowMotion ? '' : 'animate-spin motion-reduce:animate-none'
+                  }`}
+                  style={{
+                    borderTopColor: 'var(--theme-primary, #FF4FA3)',
+                    borderRightColor: 'var(--theme-tertiary, #00F5D4)',
+                    animationDuration: '0.95s',
+                  }}
+                />
+                <div
+                  className="w-2 h-2 rounded-full opacity-90"
+                  style={{ backgroundColor: 'var(--theme-primary, #FF4FA3)' }}
+                />
+              </div>
+
+              <span
+                className="text-xs sm:text-sm font-bold uppercase tracking-[0.28em] text-[#F4F1ED]"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                LOADING ARTWORK
               </span>
+
+              {/* Subtle Indeterminate Theme Progress Bar */}
+              <div className="mt-3 w-36 sm:w-44 h-0.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full w-1/2 rounded-full theme-progress-fill animate-lightbox-progress" />
+              </div>
             </div>
           )}
 
-          {/* Broken Image Fallback */}
+          {/* Clean Error State with Retry */}
           {hasError && (
-            <div className="p-8 sm:p-12 text-center bg-[#121318] border border-red-500/30 rounded-2xl">
-              <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto mb-3" />
-              <p className="text-xs sm:text-sm font-bold text-slate-200">Failed to load media asset</p>
+            <div
+              role="alert"
+              className="relative z-10 w-full h-full flex flex-col items-center justify-center px-6 text-center bg-[#090C10]"
+            >
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-3.5">
+                <AlertCircle className="w-6 h-6 text-red-400" />
+              </div>
+              <p
+                className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#F4F1ED]"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Failed to load artwork
+              </p>
+              <p className="mt-1.5 text-xs text-slate-400 max-w-xs">
+                Unable to retrieve the high-resolution image.
+              </p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRetry();
+                }}
+                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#F4F1ED] bg-white/5 hover:bg-white/10 border transition-all duration-200 cursor-pointer min-h-[42px] active:scale-95"
+                style={{ borderColor: 'var(--theme-primary, #FF4FA3)' }}
+              >
+                <RotateCcw className="w-3.5 h-3.5 theme-text-primary" />
+                <span>Retry</span>
+              </button>
             </div>
           )}
 
-          {/* Full-Resolution Image */}
+          {/* Full-Resolution Responsive Optimized Image */}
           {!hasError && (
-            <img
-              src={fullResUrl}
+            <OptimizedImage
+              key={`${currentIndex}-${retryCount}`}
+              imgRef={imgRef}
+              src={activeImage.url}
               alt={activeImage.title}
+              maxWidth={1920}
+              sizes="(max-width: 639px) 94vw, (max-width: 1279px) 90vw, 1440px"
+              loading="eager"
               decoding="async"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => {
+              fetchPriority="high"
+              disableOriginalFallbackOnError
+              onLoad={() => {
+                setHasError(false);
                 setImageLoaded(true);
+              }}
+              onError={() => {
+                setImageLoaded(false);
                 setHasError(true);
               }}
-              className={`max-w-full max-h-[64vh] sm:max-h-[72vh] w-auto h-auto object-contain transition-all duration-300 shadow-2xl ${
-                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              className={`max-w-full max-h-[64vh] sm:max-h-[72vh] w-auto h-auto object-contain shadow-2xl ${
+                isLowMotion
+                  ? 'transition-opacity duration-200'
+                  : 'transition-[opacity,transform] duration-300 ease-out'
+              } ${
+                imageLoaded
+                  ? 'relative opacity-100 scale-100'
+                  : 'absolute inset-0 m-auto opacity-0 scale-[0.985] pointer-events-none select-none'
               }`}
             />
           )}
@@ -402,4 +529,6 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };
