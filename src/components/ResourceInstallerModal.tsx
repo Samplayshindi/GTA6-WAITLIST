@@ -310,7 +310,6 @@ export const ResourceInstallerModal: React.FC<ResourceInstallerModalProps> = ({ 
       <div
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg bg-[#0B0C10] border border-cyan-500/40 rounded-2xl p-5 sm:p-6 text-slate-100 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
-        data-lenis-prevent
       >
         {/* Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-[#FF4FA3]" />

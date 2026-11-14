@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { useLenis } from '../context/LenisContext';
 
 export const BackToTopButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const { scrollTo } = useLenis();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,7 +16,10 @@ export const BackToTopButton: React.FC = () => {
 
   const scrollToTop = () => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    scrollTo(0, { immediate: prefersReducedMotion });
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
   };
 
   if (!isVisible) return null;

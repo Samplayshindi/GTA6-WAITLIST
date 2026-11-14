@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Play,
   Pause,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSoundtrack } from '../context/SoundtrackContext';
 import { OFFICIAL_ALBUM_ARTWORK_URL } from '../config/soundtrack';
+import { OptimizedImage } from './OptimizedImage';
 
 export const MusicPlayer: React.FC = () => {
   const {
@@ -43,67 +44,155 @@ export const MusicPlayer: React.FC = () => {
     restorePlayer,
   } = useSoundtrack();
 
-  const mobileProgressRef = useRef<HTMLDivElement>(null);
-  const desktopProgressRef = useRef<HTMLDivElement>(null);
+  const mobileTrackRef = useRef<HTMLDivElement>(null);
+  const desktopTrackRef = useRef<HTMLDivElement>(null);
   const isSeekingRef = useRef<boolean>(false);
+  const activePointerIdRef = useRef<number | null>(null);
+  const activeTrackElRef = useRef<HTMLDivElement | null>(null);
+  const scrubSecondsRef = useRef<number>(0);
+  const windowCleanupRef = useRef<(() => void) | null>(null);
 
-  const performSeek = (clientX: number, targetRef: React.RefObject<HTMLDivElement | null>) => {
-    if (!targetRef.current || duration <= 0) return;
-    const rect = targetRef.current.getBoundingClientRect();
-    const clickX = clientX - rect.left;
-    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
-    seekTo(ratio * duration);
+  const [scrubTime, setScrubTime] = useState<number | null>(null);
+
+  const safeDuration =
+    Number.isFinite(duration) && duration > 0 ? duration : currentTrack.durationSec || 0;
+
+  useEffect(() => {
+    windowCleanupRef.current?.();
+    windowCleanupRef.current = null;
+    isSeekingRef.current = false;
+    activePointerIdRef.current = null;
+    activeTrackElRef.current = null;
+    setScrubTime(null);
+  }, [currentTrack.id]);
+
+  useEffect(() => {
+    return () => {
+      windowCleanupRef.current?.();
+      windowCleanupRef.current = null;
+    };
+  }, []);
+
+  const getSecondsFromClientX = (clientX: number, trackEl: HTMLDivElement | null): number | null => {
+    if (!trackEl || safeDuration <= 0) return null;
+    const rect = trackEl.getBoundingClientRect();
+    if (rect.width <= 0) return null;
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return ratio * safeDuration;
   };
 
-  const createSeekHandler = (targetRef: React.RefObject<HTMLDivElement | null>) => {
-    return (
-      e:
-        | React.PointerEvent<HTMLDivElement>
-        | React.TouchEvent<HTMLDivElement>
-        | React.MouseEvent<HTMLDivElement>
-    ) => {
-      e.stopPropagation();
-      if ('cancelable' in e && e.cancelable) {
-        e.preventDefault();
-      }
+  const finishSeek = (commit: boolean, finalClientX?: number) => {
+    if (!isSeekingRef.current) return;
+    const trackEl = activeTrackElRef.current;
+    const pointerSeconds =
+      typeof finalClientX === 'number' ? getSecondsFromClientX(finalClientX, trackEl) : null;
+    const commitSeconds = pointerSeconds !== null ? pointerSeconds : scrubSecondsRef.current;
 
-      isSeekingRef.current = true;
-      const initialX =
-        'touches' in e && e.touches.length > 0
-          ? e.touches[0].clientX
-          : (e as React.PointerEvent).clientX;
+    isSeekingRef.current = false;
+    activePointerIdRef.current = null;
+    activeTrackElRef.current = null;
+    windowCleanupRef.current?.();
+    windowCleanupRef.current = null;
 
-      performSeek(initialX, targetRef);
+    if (commit) {
+      seekTo(commitSeconds);
+    }
+    setScrubTime(null);
+  };
 
-      const handleMove = (moveEvent: PointerEvent | TouchEvent) => {
-        moveEvent.stopPropagation();
-        if ('cancelable' in moveEvent && moveEvent.cancelable) {
-          moveEvent.preventDefault();
-        }
-        if (!isSeekingRef.current) return;
-        const currentX =
-          'touches' in moveEvent && moveEvent.touches.length > 0
-            ? moveEvent.touches[0].clientX
-            : (moveEvent as PointerEvent).clientX;
-        performSeek(currentX, targetRef);
-      };
+  const handleSeekPointerDown = (
+    e: React.PointerEvent<HTMLDivElement>,
+    trackRef: React.RefObject<HTMLDivElement | null>
+  ) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.stopPropagation();
 
-      const handleEnd = (endEvent: Event) => {
-        endEvent.stopPropagation();
-        isSeekingRef.current = false;
-        window.removeEventListener('pointermove', handleMove);
-        window.removeEventListener('pointerup', handleEnd);
-        window.removeEventListener('touchmove', handleMove);
-        window.removeEventListener('touchend', handleEnd);
-        window.removeEventListener('touchcancel', handleEnd);
-      };
+    const seconds = getSecondsFromClientX(e.clientX, trackRef.current);
+    if (seconds === null) return;
 
-      window.addEventListener('pointermove', handleMove, { passive: false });
-      window.addEventListener('pointerup', handleEnd, { passive: false });
-      window.addEventListener('touchmove', handleMove, { passive: false });
-      window.addEventListener('touchend', handleEnd, { passive: false });
-      window.addEventListener('touchcancel', handleEnd, { passive: false });
+    windowCleanupRef.current?.();
+    isSeekingRef.current = true;
+    activePointerIdRef.current = e.pointerId;
+    activeTrackElRef.current = trackRef.current;
+    scrubSecondsRef.current = seconds;
+    setScrubTime(seconds);
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Fallback handled by window listeners below
+    }
+
+    const onWindowPointerMove = (moveEvent: PointerEvent) => {
+      if (!isSeekingRef.current || moveEvent.pointerId !== activePointerIdRef.current) return;
+      const nextSeconds = getSecondsFromClientX(moveEvent.clientX, activeTrackElRef.current);
+      if (nextSeconds === null) return;
+      scrubSecondsRef.current = nextSeconds;
+      setScrubTime(nextSeconds);
     };
+
+    const onWindowPointerUp = (upEvent: PointerEvent) => {
+      if (!isSeekingRef.current || upEvent.pointerId !== activePointerIdRef.current) return;
+      finishSeek(true, upEvent.clientX);
+    };
+
+    const onWindowPointerCancel = (cancelEvent: PointerEvent) => {
+      if (!isSeekingRef.current || cancelEvent.pointerId !== activePointerIdRef.current) return;
+      finishSeek(false);
+    };
+
+    window.addEventListener('pointermove', onWindowPointerMove);
+    window.addEventListener('pointerup', onWindowPointerUp);
+    window.addEventListener('pointercancel', onWindowPointerCancel);
+
+    windowCleanupRef.current = () => {
+      window.removeEventListener('pointermove', onWindowPointerMove);
+      window.removeEventListener('pointerup', onWindowPointerUp);
+      window.removeEventListener('pointercancel', onWindowPointerCancel);
+    };
+  };
+
+  const handleSeekPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isSeekingRef.current || activePointerIdRef.current !== e.pointerId) return;
+    e.stopPropagation();
+    const seconds = getSecondsFromClientX(e.clientX, activeTrackElRef.current);
+    if (seconds === null) return;
+    scrubSecondsRef.current = seconds;
+    setScrubTime(seconds);
+  };
+
+  const handleSeekPointerEnd = (
+    e: React.PointerEvent<HTMLDivElement>,
+    shouldCommit: boolean
+  ) => {
+    if (!isSeekingRef.current || activePointerIdRef.current !== e.pointerId) return;
+    e.stopPropagation();
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // ignore
+    }
+    finishSeek(shouldCommit, e.clientX);
+  };
+
+  const handleSeekKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (safeDuration <= 0) return;
+    const step = e.shiftKey ? 10 : 5;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      seekTo(Math.min(safeDuration, displayedTime + step));
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      seekTo(Math.max(0, displayedTime - step));
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      seekTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      seekTo(safeDuration);
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,7 +207,11 @@ export const MusicPlayer: React.FC = () => {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const displayedTime =
+    scrubTime !== null ? scrubTime : Math.max(0, Math.min(currentTime, safeDuration || currentTime));
+  const progressPercent =
+    safeDuration > 0 ? Math.max(0, Math.min(100, (displayedTime / safeDuration) * 100)) : 0;
+  const isScrubbing = scrubTime !== null;
   const isCurrentTrackLiked = likedTrackIds.has(currentTrack.id);
 
   if (isDismissed) {
@@ -129,11 +222,13 @@ export const MusicPlayer: React.FC = () => {
         title="Restore GTA VI Soundtrack Player"
         aria-label="Restore Soundtrack Player"
       >
-        <Radio className="w-4 h-4 animate-pulse text-[#FF4FA3]" />
-        <span className="font-semibold text-white truncate max-w-[150px] sm:max-w-none">
+        <Radio className={`w-4 h-4 ${isPlaying ? 'animate-pulse text-[#FF4FA3]' : 'text-slate-400'}`} />
+        <span className="font-semibold text-white truncate max-w-[150px] sm:max-w-[200px]">
           {currentTrack.title}
         </span>
-        <span className="text-[10px] text-cyan-400 font-mono">NOW PLAYING</span>
+        <span className={`text-[10px] font-mono ${isPlaying ? 'text-cyan-400' : 'text-slate-400'}`}>
+          {isPlaying ? 'NOW PLAYING' : 'PAUSED'}
+        </span>
       </button>
     );
   }
@@ -185,7 +280,7 @@ export const MusicPlayer: React.FC = () => {
             </div>
 
             {/* Track Rows */}
-            <div className="p-3 overflow-y-auto space-y-1.5" data-lenis-prevent>
+            <div className="p-3 overflow-y-auto space-y-1.5">
               {tracks
                 .filter((t) => t.isPlayable)
                 .map((track, idx) => {
@@ -204,12 +299,16 @@ export const MusicPlayer: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-white/10 bg-black">
-                          <img
+                          <OptimizedImage
                             src={track.coverUrl}
                             alt={track.title}
+                            maxWidth={375}
+                            sizes="40px"
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
+                              (e.currentTarget as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
                             }}
                           />
                           {isSelected && isPlaying && (
@@ -265,41 +364,55 @@ export const MusicPlayer: React.FC = () => {
       >
         {/* Mobile Scrubbable Progress Bar */}
         <div
-          ref={mobileProgressRef}
-          onPointerDown={createSeekHandler(mobileProgressRef)}
-          onTouchStart={createSeekHandler(mobileProgressRef)}
-          className="sm:hidden w-full h-3 bg-[#0a0d14] cursor-pointer relative touch-none select-none flex items-center px-1 border-b border-[#1e2738]"
+          role="slider"
+          tabIndex={0}
+          aria-label="Seek playback"
+          aria-valuemin={0}
+          aria-valuemax={Math.round(safeDuration)}
+          aria-valuenow={Math.round(displayedTime)}
+          onPointerDown={(e) => handleSeekPointerDown(e, mobileTrackRef)}
+          onPointerMove={handleSeekPointerMove}
+          onPointerUp={(e) => handleSeekPointerEnd(e, true)}
+          onPointerCancel={(e) => handleSeekPointerEnd(e, false)}
+          onKeyDown={handleSeekKeyDown}
+          className="sm:hidden w-full h-4 bg-[#0a0d14] cursor-pointer relative touch-none select-none flex items-center px-2.5 border-b border-[#1e2738] focus:outline-none"
           title="Seek playback"
         >
-          <div className="w-full h-1.5 bg-slate-800 rounded-full relative overflow-visible">
+          <div ref={mobileTrackRef} className="w-full h-1.5 bg-slate-800 rounded-full relative overflow-visible">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-purple-400 to-[#FF4FA3] transition-all duration-150"
+              className="h-full rounded-full theme-progress-fill"
               style={{ width: `${progressPercent}%` }}
             />
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 border-purple-500 shadow-md pointer-events-none"
-              style={{ left: `calc(${progressPercent}% - 7px)` }}
+              className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 theme-progress-thumb transition-transform pointer-events-none ${
+                isScrubbing ? 'scale-125' : ''
+              }`}
+              style={{ left: `${progressPercent}%` }}
             />
           </div>
         </div>
 
         {/* Main Horizontal Player Layout */}
-        <div className="h-[58px] sm:h-[68px] px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6">
+        <div className="h-[58px] sm:h-[68px] px-3 sm:px-5 flex items-center justify-between gap-3 sm:grid sm:grid-cols-[165px_minmax(0,1fr)_165px] md:grid-cols-[220px_minmax(0,1fr)_220px] lg:grid-cols-[290px_minmax(0,1fr)_290px] sm:items-center sm:gap-4 lg:gap-6">
           {/* =========================================
               LEFT SECTION: Track Artwork, Name & Artist
              ========================================= */}
-          <div className="flex items-center gap-3 min-w-0 max-w-[210px] sm:max-w-[280px] md:max-w-[320px] shrink-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-none sm:w-full overflow-hidden">
             <div
               onClick={() => setIsQueueOpen(true)}
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-black shrink-0 border border-white/10 cursor-pointer relative group shadow-md"
               title="Click to view Vice City Airwaves tracklist"
             >
-              <img
+              <OptimizedImage
                 src={currentTrack.coverUrl}
                 alt={currentTrack.title}
-                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-200"
+                maxWidth={375}
+                sizes="48px"
+                loading="eager"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-200 block"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
+                  (e.currentTarget as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
                 }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -307,16 +420,14 @@ export const MusicPlayer: React.FC = () => {
               </div>
             </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <h4
-                  onClick={() => setIsQueueOpen(true)}
-                  className="text-xs sm:text-sm font-bold text-white tracking-tight truncate hover:text-cyan-300 transition-colors cursor-pointer"
-                  title={currentTrack.title}
-                >
-                  {currentTrack.title}
-                </h4>
-              </div>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <h4
+                onClick={() => setIsQueueOpen(true)}
+                className="text-xs sm:text-sm font-bold text-white tracking-tight truncate hover:text-cyan-300 transition-colors cursor-pointer"
+                title={currentTrack.title}
+              >
+                {currentTrack.title}
+              </h4>
               <p
                 className="text-[10px] sm:text-[11px] text-slate-400 truncate mt-0.5"
                 title={currentTrack.artist}
@@ -341,12 +452,12 @@ export const MusicPlayer: React.FC = () => {
           {/* =========================================
               CENTER SECTION: Controls & Progress Bar
              ========================================= */}
-          <div className="hidden sm:flex flex-col items-center flex-1 max-w-lg mx-auto px-2 min-w-0">
+          <div className="hidden sm:flex flex-col items-center w-full max-w-lg mx-auto px-2 min-w-0">
             {/* Controls Row */}
-            <div className="flex items-center gap-5 mb-1">
+            <div className="flex items-center justify-center gap-5 mb-1 shrink-0">
               <button
                 onClick={playPrevTrack}
-                className="text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95 p-1 cursor-pointer"
+                className="text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95 p-1 cursor-pointer shrink-0"
                 title="Previous Track"
                 aria-label="Previous Track"
               >
@@ -367,7 +478,7 @@ export const MusicPlayer: React.FC = () => {
 
               <button
                 onClick={playNextTrack}
-                className="text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95 p-1 cursor-pointer"
+                className="text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95 p-1 cursor-pointer shrink-0"
                 title="Next Track"
                 aria-label="Next Track"
               >
@@ -376,30 +487,45 @@ export const MusicPlayer: React.FC = () => {
             </div>
 
             {/* Timestamps & Scrub Bar */}
-            <div className="w-full flex items-center gap-2.5">
-              <span className="text-[10px] font-mono text-slate-400 w-8 text-right tabular-nums shrink-0">
-                {formatTime(currentTime)}
+            <div className="w-full flex items-center gap-2.5 min-w-0">
+              <span className="text-[10px] font-mono text-slate-400 w-9 text-right tabular-nums shrink-0">
+                {formatTime(displayedTime)}
               </span>
 
               <div
-                ref={desktopProgressRef}
-                onPointerDown={createSeekHandler(desktopProgressRef)}
-                onTouchStart={createSeekHandler(desktopProgressRef)}
-                className="flex-1 h-2 bg-slate-800/80 hover:bg-slate-700 rounded-full cursor-pointer relative transition-all touch-none select-none group"
+                role="slider"
+                tabIndex={0}
+                aria-label="Seek playback"
+                aria-valuemin={0}
+                aria-valuemax={Math.round(safeDuration)}
+                aria-valuenow={Math.round(displayedTime)}
+                onPointerDown={(e) => handleSeekPointerDown(e, desktopTrackRef)}
+                onPointerMove={handleSeekPointerMove}
+                onPointerUp={(e) => handleSeekPointerEnd(e, true)}
+                onPointerCancel={(e) => handleSeekPointerEnd(e, false)}
+                onKeyDown={handleSeekKeyDown}
+                className="flex-1 min-w-0 h-5 flex items-center cursor-pointer relative touch-none select-none group focus:outline-none"
                 title="Seek"
               >
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-purple-400 to-[#FF4FA3] transition-all duration-150"
-                  style={{ width: `${progressPercent}%` }}
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 border-purple-500 shadow-md transition-transform group-hover:scale-125 cursor-grab active:cursor-grabbing pointer-events-none"
-                  style={{ left: `calc(${progressPercent}% - 7px)` }}
-                />
+                  ref={desktopTrackRef}
+                  className="w-full h-1.5 bg-slate-800/80 group-hover:bg-slate-700/90 rounded-full relative transition-colors"
+                >
+                  <div
+                    className="h-full rounded-full theme-progress-fill"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                  <div
+                    className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full border-2 theme-progress-thumb transition-transform pointer-events-none ${
+                      isScrubbing ? 'scale-125 cursor-grabbing' : 'group-hover:scale-125 cursor-grab'
+                    }`}
+                    style={{ left: `${progressPercent}%` }}
+                  />
+                </div>
               </div>
 
-              <span className="text-[10px] font-mono text-slate-400 w-8 text-left tabular-nums shrink-0">
-                {formatTime(duration)}
+              <span className="text-[10px] font-mono text-slate-400 w-9 text-left tabular-nums shrink-0">
+                {formatTime(safeDuration)}
               </span>
             </div>
           </div>
@@ -451,7 +577,7 @@ export const MusicPlayer: React.FC = () => {
           {/* =========================================
               RIGHT SECTION: Volume, Queue & Dismiss (Desktop)
              ========================================= */}
-          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+          <div className="hidden sm:flex items-center justify-end gap-2.5 shrink-0 sm:w-full">
             {/* Volume Icon & Slider */}
             <div className="hidden md:flex items-center gap-2 group p-1 rounded-lg hover:bg-white/5 transition-colors">
               <button

@@ -1,78 +1,121 @@
-import React, { createContext, useContext, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import {
+  calculateTimeRemainingFromDate,
+  getGlobalReleaseLocalDate,
+  getPreloadLocalDate,
+  getPreloadXboxGmtDate,
+  formatTabTitle,
+  subscribeToTimeSync,
+  TimeRemaining,
+} from '../utils/time';
+import { useSettings } from './SettingsContext';
 
-export interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
+export type LaunchState = 'BEFORE_PRELOAD' | 'PRELOAD_LIVE' | 'RELEASE_LIVE';
 
-interface LaunchStateSnapshot {
-  launchState: 'countdown' | 'released';
+interface LaunchStateContextValue {
+  launchState: LaunchState;
   releaseRemaining: TimeRemaining;
+  preloadRemaining: TimeRemaining;
+  isPreloadLive: boolean;
+  isReleaseLive: boolean;
+  selectedConsole: 'ps5' | 'xbox';
+  setSelectedConsole: (c: 'ps5' | 'xbox') => void;
 }
 
-const GLOBAL_RELEASE_DATE = new Date('2026-11-19T00:00:00Z');
+const LaunchStateContext = createContext<LaunchStateContextValue | undefined>(undefined);
 
-function calculateRemaining(): LaunchStateSnapshot {
-  const now = new Date();
-  const diff = GLOBAL_RELEASE_DATE.getTime() - now.getTime();
+export const LaunchStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { effectiveTimeZone } = useSettings();
 
-  if (diff <= 0) {
-    return {
-      launchState: 'released',
-      releaseRemaining: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-    };
-  }
+  const globalReleaseDate = useMemo(() => getGlobalReleaseLocalDate(effectiveTimeZone), [effectiveTimeZone]);
+  const ps5PreloadDate = useMemo(() => getPreloadLocalDate(effectiveTimeZone), [effectiveTimeZone]);
+  const xboxPreloadDate = useMemo(() => getPreloadXboxGmtDate(), []); // Xbox is fixed 00:00 GMT globally
 
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / 1000 / 60) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
+  const [selectedConsole, setSelectedConsole] = useState<'ps5' | 'xbox'>('ps5');
+  const activePreloadDate = selectedConsole === 'ps5' ? ps5PreloadDate : xboxPreloadDate;
 
-  return {
-    launchState: 'countdown',
-    releaseRemaining: { days, hours, minutes, seconds },
-  };
-}
+  // Real-time Countdown states
+  const [releaseRemaining, setReleaseRemaining] = useState<TimeRemaining>(() =>
+    calculateTimeRemainingFromDate(globalReleaseDate)
+  );
+  const [preloadRemaining, setPreloadRemaining] = useState<TimeRemaining>(() =>
+    calculateTimeRemainingFromDate(activePreloadDate)
+  );
 
-let currentSnapshot: LaunchStateSnapshot = calculateRemaining();
-const listeners = new Set<() => void>();
-let timerId: ReturnType<typeof setInterval> | null = null;
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  if (listeners.size === 1 && !timerId) {
-    timerId = setInterval(() => {
-      const next = calculateRemaining();
-      if (
-        next.releaseRemaining.seconds !== currentSnapshot.releaseRemaining.seconds ||
-        next.launchState !== currentSnapshot.launchState
-      ) {
-        currentSnapshot = next;
-        listeners.forEach((l) => l());
-      }
-    }, 1000);
-  }
-  return () => {
-    listeners.delete(listener);
-    if (listeners.size === 0 && timerId) {
-      clearInterval(timerId);
-      timerId = null;
+  // Compute launch state strictly from real timestamps
+  const launchState: LaunchState = useMemo(() => {
+    if (releaseRemaining.isComplete) {
+      return 'RELEASE_LIVE';
     }
-  };
-}
+    if (preloadRemaining.isComplete) {
+      return 'PRELOAD_LIVE';
+    }
+    return 'BEFORE_PRELOAD';
+  }, [releaseRemaining.isComplete, preloadRemaining.isComplete]);
 
-function getSnapshot(): LaunchStateSnapshot {
-  return currentSnapshot;
-}
+  // Update countdown timers and browser tab title every second
+  useEffect(() => {
+    const updateCountdown = () => {
+      const rel = calculateTimeRemainingFromDate(globalReleaseDate);
+      const pre = calculateTimeRemainingFromDate(activePreloadDate);
+      setReleaseRemaining((prev) =>
+        prev.isComplete && rel.isComplete && prev.totalMs === 0 && rel.totalMs === 0 ? prev : rel
+      );
+      setPreloadRemaining((prev) =>
+        prev.isComplete && pre.isComplete && prev.totalMs === 0 && pre.totalMs === 0 ? prev : pre
+      );
 
-const LaunchStateContext = createContext<LaunchStateSnapshot | undefined>(undefined);
+      // Dynamic browser tab title (only write to DOM when text actually changes)
+      let nextTitle: string;
+      if (launchState === 'RELEASE_LIVE') {
+        nextTitle = 'GTA VI | AVAILABLE NOW WORLDWIDE';
+      } else if (launchState === 'PRELOAD_LIVE') {
+        nextTitle = `GTA VI | PRE-LOAD LIVE · ${rel.days}d ${rel.hours}h Left`;
+      } else {
+        nextTitle = formatTabTitle(rel);
+      }
+      if (document.title !== nextTitle) {
+        document.title = nextTitle;
+      }
+    };
 
-export const LaunchStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <LaunchStateContext.Provider value={currentSnapshot}>{children}</LaunchStateContext.Provider>;
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    const unsubscribe = subscribeToTimeSync(() => {
+      updateCountdown();
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, [globalReleaseDate, activePreloadDate, launchState]);
+
+  const contextValue = useMemo<LaunchStateContextValue>(
+    () => ({
+      launchState,
+      releaseRemaining,
+      preloadRemaining,
+      isPreloadLive: launchState === 'PRELOAD_LIVE' || launchState === 'RELEASE_LIVE',
+      isReleaseLive: launchState === 'RELEASE_LIVE',
+      selectedConsole,
+      setSelectedConsole,
+    }),
+    [launchState, releaseRemaining, preloadRemaining, selectedConsole]
+  );
+
+  return (
+    <LaunchStateContext.Provider value={contextValue}>
+      {children}
+    </LaunchStateContext.Provider>
+  );
 };
 
-export const useLaunchState = (): LaunchStateSnapshot => {
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-};
+export function useLaunchState(): LaunchStateContextValue {
+  const context = useContext(LaunchStateContext);
+  if (!context) {
+    throw new Error('useLaunchState must be used within a LaunchStateProvider');
+  }
+  return context;
+}

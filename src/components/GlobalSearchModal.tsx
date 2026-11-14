@@ -4,6 +4,7 @@ import { OFFICIAL_VIDEOS } from '../config/countdown';
 import { TIMELINE_DATA } from '../data/timelineData';
 import { FAQ_DATA } from '../data/faqData';
 import { SOUNDTRACK_LIBRARY } from '../config/soundtrack';
+import { OptimizedImage } from './OptimizedImage';
 
 interface SearchResultItem {
   id: string;
@@ -84,7 +85,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         id: s.id,
         title: `${s.title} — ${s.artist}`,
         category: 'Soundtrack',
-        snippet: `${s.artist} · Duration: ${Math.floor(s.durationSec / 60)}:${(s.durationSec % 60).toString().padStart(2, '0')}`,
+        snippet: `${s.sourceLabel} · Duration: ${s.durationText}`,
         imageUrl: s.coverUrl,
         targetSection: 'overview',
       });
@@ -196,7 +197,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         </div>
 
         {/* Scrollable Results List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-2" data-lenis-prevent>
+        <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-2">
           {filteredResults.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <p className="text-sm text-slate-400">No matching intel found for &ldquo;{query}&rdquo;</p>
@@ -212,9 +213,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* Optional Thumbnail or Category Icon */}
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-black/60 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                   {item.imageUrl ? (
-                    <img
+                    <OptimizedImage
                       src={item.imageUrl}
                       alt={item.title}
+                      maxWidth={375}
+                      sizes="48px"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (

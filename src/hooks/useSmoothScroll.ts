@@ -1,7 +1,11 @@
+import { useEffect } from 'react';
+
 /**
- * Default browser scrolling enabled.
- * Custom mouse wheel scroll interception removed.
+ * Hook previously used for desktop mouse-wheel inertia scrolling.
+ * Disabled to restore default browser native scrolling on desktop/PC.
  */
 export function useSmoothScroll() {
-  // Native default browser scrolling active
+  useEffect(() => {
+    // Custom desktop wheel inertia scrolling disabled to restore native browser scrolling.
+  }, []);
 }

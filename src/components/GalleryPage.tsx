@@ -1,137 +1,235 @@
-import React, { useState } from 'react';
-import { Image, Maximize2, Filter, Sparkles, AlertCircle } from 'lucide-react';
-import { GALLERY_IMAGES, GalleryImage } from '../data/galleryData';
-import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { ImageLightboxModal } from './ImageLightboxModal';
+import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import { Image as ImageIcon, ZoomIn, ChevronDown } from 'lucide-react';
+import { GALLERY_IMAGES, GALLERY_CATEGORIES, isCuratedArtworkAsset } from '../data/galleryData';
+import { OptimizedImage } from './OptimizedImage';
+import { RevealOnScroll } from './RevealOnScroll';
+import { useSettings } from '../context/SettingsContext';
+
+const ImageLightboxModal = lazy(() =>
+  import('./ImageLightboxModal').then((m) => ({ default: m.ImageLightboxModal }))
+);
 
 interface GalleryPageProps {
   onNavigateHome?: () => void;
 }
 
-const CATEGORIES = [
-  { id: 'all', label: 'All Media' },
-  { id: 'jason-lucia', label: 'Jason & Lucia' },
-  { id: 'characters', label: 'Characters' },
-  { id: 'vice-city', label: 'Vice City' },
-  { id: 'leonida', label: 'Leonida & Locations' },
-];
+export const GalleryPage: React.FC<GalleryPageProps> = () => {
+  const { motionMode } = useSettings();
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState<number>(12);
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 639px)').matches
+      : false
+  );
 
-const GalleryCard: React.FC<{
-  item: GalleryImage;
-  onOpenLightbox: (index: number) => void;
-  index: number;
-}> = ({ item, onOpenLightbox, index }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(max-width: 639px)');
+    const onChange = () => setIsMobileViewport(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
-  const optimizedCardUrl = getOptimizedImageUrl(item.url, 'card');
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: GALLERY_IMAGES.length,
+      artworks: 0,
+    };
+    for (const img of GALLERY_IMAGES) {
+      counts[img.category] = (counts[img.category] || 0) + 1;
+      if (isCuratedArtworkAsset(img)) {
+        counts.artworks += 1;
+      }
+    }
+    return counts;
+  }, []);
+
+  // Filtered gallery images based on active tab
+  const filteredImages = useMemo(() => {
+    if (activeCategory === 'all') return GALLERY_IMAGES;
+    if (activeCategory === 'artworks') return GALLERY_IMAGES.filter(isCuratedArtworkAsset);
+    return GALLERY_IMAGES.filter((img) => img.category === activeCategory);
+  }, [activeCategory]);
+
+  const renderedImages = useMemo(() => {
+    if (isMobileViewport && activeCategory !== 'artworks') {
+      return filteredImages.slice(0, mobileVisibleCount);
+    }
+    return filteredImages;
+  }, [isMobileViewport, activeCategory, filteredImages, mobileVisibleCount]);
+
+  // Reset mobile visible count when category changes
+  useEffect(() => {
+    setMobileVisibleCount(12);
+  }, [activeCategory]);
+
+  const handleShowMoreMobile = () => {
+    setMobileVisibleCount((prev) => Math.min(prev + 12, filteredImages.length));
+  };
 
   return (
-    <div
-      onClick={() => onOpenLightbox(index)}
-      className="group relative rounded-2xl overflow-hidden bg-[#0D0F17] border border-white/10 hover:border-pink-500/50 transition-all duration-300 shadow-xl cursor-pointer flex flex-col aspect-video sm:aspect-4/3"
-    >
-      {/* Loading Skeleton */}
-      {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-slate-800/80 animate-pulse flex items-center justify-center">
-          <Sparkles className="w-6 h-6 text-pink-500/40 animate-spin" />
-        </div>
-      )}
+    <div className="min-h-screen py-10 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 1. Header & Filter Control Bar */}
+      <RevealOnScroll>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: 'var(--theme-accent, #FF4FA3)' }}
+              />
+              <span
+                className="text-xs font-mono font-bold tracking-[0.25em] uppercase"
+                style={{ color: 'var(--theme-accent, #FF4FA3)' }}
+              >
+                Official Rockstar Media Archive
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
+              Grand Theft Auto VI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-accent,#FF4FA3)] to-[var(--theme-primary,#F15A24)]">Gallery</span>
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              High-resolution in-engine screenshots, official character key art, and environment showcases captured directly from PlayStation 5 and Xbox Series X|S.
+            </p>
+          </div>
 
-      {/* Fallback Error Display */}
-      {hasError ? (
-        <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-4 text-center space-y-2 border border-rose-500/30">
-          <AlertCircle className="w-8 h-8 text-rose-400 shrink-0" />
-          <p className="text-xs font-bold text-slate-200">{item.title}</p>
-          <span className="text-[10px] text-slate-400 font-mono">Rockstar Games Media</span>
-        </div>
-      ) : (
-        <img
-          src={optimizedCardUrl}
-          alt={item.title}
-          loading="lazy"
-          onLoad={() => setIsLoaded(true)}
-          onError={() => setHasError(true)}
-          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-      )}
-
-      {/* Hover overlay details */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-        <div className="flex items-center justify-between text-xs text-pink-400 font-mono font-bold uppercase tracking-wider mb-1">
-          <span>{item.category.replace('-', ' ')}</span>
-          <span className="bg-pink-500/20 px-2 py-0.5 rounded text-[10px] text-pink-300 border border-pink-500/30">
-            {item.tag || '4K UHD'}
-          </span>
-        </div>
-        <h3 className="text-sm font-bold text-white leading-snug">{item.title}</h3>
-
-        <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between">
-          <span className="text-[10px] text-slate-400 font-mono">Click to view 4K</span>
-          <div className="p-1.5 rounded-lg bg-pink-500 text-white shadow-lg">
-            <Maximize2 className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#090C10]/80 px-4 py-2 rounded-full border border-white/10 shrink-0 self-start md:self-auto">
+            <ImageIcon className="w-4 h-4 text-[var(--theme-primary,#F15A24)]" />
+            <span>{filteredImages.length} Official Assets</span>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
+      </RevealOnScroll>
 
-export const GalleryPage: React.FC<GalleryPageProps> = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
+      {/* 2. Responsive Segmented Category Filter Tabs */}
+      <div className="mb-10 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex items-center gap-2 min-w-max bg-[#090C10]/80 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+          {GALLERY_CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            const count = categoryCounts[cat.id] || 0;
 
-  const filteredItems = GALLERY_IMAGES.filter((item) => {
-    if (selectedCategory === 'all') return true;
-    return item.category === selectedCategory;
-  });
-
-  return (
-    <section id="gallery-container" className="relative py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none border-b border-white/10">
-        <Filter className="w-4 h-4 text-pink-400 shrink-0 mr-1" />
-        {CATEGORIES.map((cat) => {
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap cursor-pointer transition-all ${
-                isActive
-                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25 border border-pink-400'
-                  : 'bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5'
-              }`}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Exactly FOUR columns per row on desktop (lg:grid-cols-4) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {filteredItems.map((item, idx) => (
-          <GalleryCard
-            key={item.id}
-            item={item}
-            index={idx}
-            onOpenLightbox={(i) => setActiveLightboxIndex(i)}
-          />
-        ))}
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer flex items-center gap-2 min-h-[40px] whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? 'text-white shadow-lg'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+                style={{
+                  backgroundColor: isActive ? 'var(--theme-primary, #F15A24)' : undefined,
+                }}
+              >
+                <span>{cat.label}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-400'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Lightbox Modal */}
-      {activeLightboxIndex !== null && (
-        <ImageLightboxModal
-          images={filteredItems}
-          currentIndex={activeLightboxIndex}
-          onClose={() => setActiveLightboxIndex(null)}
-          onNavigateIndex={(index) => setActiveLightboxIndex(index)}
-        />
+      {/* 3. Consistent Responsive Grid (Desktop 4 cols, Tablet 2 cols, Mobile 2 or 1 col) */}
+      {filteredImages.length === 0 ? (
+        <div className="py-20 text-center rounded-3xl bg-[#090C10]/60 border border-white/10 px-6">
+          <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <p className="text-base font-bold text-slate-300">No media found in this category.</p>
+        </div>
+      ) : (
+        <div className={`space-y-8 ${motionMode === 'low' ? 'gallery-reduced-motion' : ''}`}>
+          <div
+            data-testid="gallery-grid"
+            className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"
+          >
+            {renderedImages.map((img, idx) => {
+              return (
+                <button
+                  key={img.id}
+                  type="button"
+                  onClick={() => setLightboxIndex(idx)}
+                  className="gallery-card group relative w-full text-left rounded-2xl bg-[#090C10] border border-white/10 overflow-hidden shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary,#F15A24)]"
+                >
+                  {/* Strict 16:9 Aspect Ratio Cell with GPU-Friendly Hover Zoom */}
+                  <div className="relative w-full aspect-video overflow-hidden bg-[#12141C]">
+                    <OptimizedImage
+                      src={img.url}
+                      alt={img.title}
+                      maxWidth={768}
+                      sizes="(max-width: 379px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 23vw, 290px"
+                      loading="lazy"
+                      decoding="async"
+                      className="gallery-card-media w-full h-full object-cover brightness-95 group-hover:brightness-105"
+                    />
+
+                    {/* Ambient Scrim Overlay for Readable Caption Contrast */}
+                    <div className="gallery-card-scrim absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-75 group-hover:opacity-95 pointer-events-none" />
+
+                    {/* Hover Zoom Icon Affordance */}
+                    <div className="gallery-card-zoom absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 pointer-events-none">
+                      <div
+                        className="w-11 h-11 rounded-full text-white flex items-center justify-center shadow-2xl"
+                        style={{ backgroundColor: 'var(--theme-primary, #F15A24)' }}
+                      >
+                        <ZoomIn className="w-5 h-5" />
+                      </div>
+                    </div>
+
+                    {/* Clean Unobtrusive Title Caption */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 z-10 pointer-events-none">
+                      <h3 className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors duration-300 line-clamp-1">
+                        {img.title}
+                      </h3>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile "Show More" Button (only shown when mobile pagination truncates larger categories) */}
+          {activeCategory !== 'artworks' && (
+            <div className="sm:hidden pt-4 flex flex-col items-center justify-center text-center">
+              {mobileVisibleCount < filteredImages.length ? (
+                <button
+                  onClick={handleShowMoreMobile}
+                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase text-[#F4F1ED] bg-[#090C10] border border-white/20 hover:border-white/40 transition-all duration-300 shadow-xl cursor-pointer"
+                >
+                  <span>SHOW MORE ASSETS</span>
+                  <ChevronDown className="w-4 h-4 theme-text-primary" />
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono text-slate-400 bg-white/5 border border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full theme-bg-primary" />
+                  <span>Showing all {filteredImages.length} assets</span>
+                </div>
+              )}
+              <p className="mt-2 text-[11px] font-mono text-slate-500">
+                Viewing {Math.min(mobileVisibleCount, filteredImages.length)} of {filteredImages.length} items
+              </p>
+            </div>
+          )}
+        </div>
       )}
-    </section>
+
+      {/* 4. Fullscreen Interactive Lightbox Modal (Lazy-loaded on open) */}
+      {lightboxIndex !== null && (
+        <Suspense fallback={null}>
+          <ImageLightboxModal
+            images={filteredImages}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+            onNavigateIndex={(newIndex) => setLightboxIndex(newIndex)}
+          />
+        </Suspense>
+      )}
+    </div>
   );
 };
