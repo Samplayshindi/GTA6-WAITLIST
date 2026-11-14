@@ -9,7 +9,7 @@ export const TimelineSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <RevealOnScroll>
+        <RevealOnScroll immediate>
           <div className="max-w-3xl mb-10 sm:mb-16">
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <span className="w-2 h-2 rounded-full theme-bg-primary" />

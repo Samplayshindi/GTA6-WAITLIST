@@ -55,14 +55,22 @@ class RootErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
   }
 }
 
-// Ensure active Service Workers are updated to current build
+// Ensure active Service Workers are updated to current build without unhandled InvalidStateError rejections
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      for (const registration of registrations) {
-        registration.update();
-      }
-    }).catch(() => {});
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) =>
+        Promise.allSettled(
+          registrations.map((registration) => {
+            if (registration.active || registration.waiting || registration.installing) {
+              return registration.update().catch(() => undefined);
+            }
+            return Promise.resolve();
+          })
+        )
+      )
+      .catch(() => {});
   });
 }
 

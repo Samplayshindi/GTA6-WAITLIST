@@ -8,9 +8,10 @@ interface TrailerGalleryProps {
   activeTrailerModal?: string | null;
   onOpenTrailer?: (videoId: string) => void;
   onCloseTrailer?: () => void;
+  isPrimaryRoute?: boolean;
 }
 
-export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
+export const TrailerGallery: React.FC<TrailerGalleryProps> = ({ isPrimaryRoute = true }) => {
   const featuredVideos = OFFICIAL_VIDEOS.filter((v) => v.isFeatured);
   const standardVideos = OFFICIAL_VIDEOS.filter((v) => !v.isFeatured);
 
@@ -22,7 +23,7 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <RevealOnScroll>
+        <RevealOnScroll immediate>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-2 sm:mb-3">
@@ -79,8 +80,9 @@ export const TrailerGallery: React.FC<TrailerGalleryProps> = () => {
                       alt={video.title}
                       maxWidth={768}
                       sizes="(max-width: 767px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 29vw, 384px"
-                      loading={idx < 3 ? 'eager' : 'lazy'}
+                      loading={isPrimaryRoute && idx < 3 ? 'eager' : 'lazy'}
                       decoding="async"
+                      fetchPriority={isPrimaryRoute && idx === 0 ? 'high' : 'auto'}
                       className="w-full h-full object-cover object-center brightness-95 group-hover:brightness-105 transition-all duration-300"
                     />
 

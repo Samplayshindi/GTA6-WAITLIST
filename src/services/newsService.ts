@@ -24,6 +24,33 @@ export interface FetchNewsResult {
   stale: boolean;
 }
 
+interface CachedNewsEntry {
+  result: FetchNewsResult;
+  timestamp: number;
+}
+
+const NEWS_CACHE_TTL_MS = 60 * 1000;
+let cachedFullPool: NewsArticle[] = [];
+let cachedMeta: Omit<FetchNewsResult, 'articles'> | null = null;
+const cachedPageMap = new Map<string, CachedNewsEntry>();
+
+export function getCachedNewsArticles(limit?: number, offset = 0): FetchNewsResult | null {
+  const key = `${limit ?? 'all'}:${offset}`;
+  const exact = cachedPageMap.get(key);
+  if (exact && Date.now() - exact.timestamp < NEWS_CACHE_TTL_MS * 5) {
+    return exact.result;
+  }
+  if (cachedFullPool.length > 0 && cachedMeta && offset === 0) {
+    const count = limit ?? cachedFullPool.length;
+    return {
+      ...cachedMeta,
+      articles: cachedFullPool.slice(0, count),
+      hasMore: cachedFullPool.length < cachedMeta.totalCount || count < cachedFullPool.length,
+    };
+  }
+  return null;
+}
+
 export async function getNewsArticles(limit?: number, offset?: number): Promise<FetchNewsResult> {
   try {
     const params = new URLSearchParams();
@@ -54,7 +81,7 @@ export async function getNewsArticles(limit?: number, offset?: number): Promise<
           (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
         );
 
-        return {
+        const result: FetchNewsResult = {
           articles: sortedArticles,
           totalCount: typeof data.totalCount === 'number' ? data.totalCount : sortedArticles.length,
           hasMore: Boolean(data.hasMore),
@@ -64,6 +91,16 @@ export async function getNewsArticles(limit?: number, offset?: number): Promise<
           sourceStatus: data.sourceStatus || {},
           stale: Boolean(data.stale)
         };
+
+        const cacheKey = `${limit ?? 'all'}:${offset ?? 0}`;
+        cachedPageMap.set(cacheKey, { result, timestamp: Date.now() });
+        if ((offset ?? 0) === 0 && sortedArticles.length >= cachedFullPool.length) {
+          cachedFullPool = sortedArticles;
+          const { articles: _ignored, ...meta } = result;
+          cachedMeta = meta;
+        }
+
+        return result;
       }
     }
   } catch (err) {

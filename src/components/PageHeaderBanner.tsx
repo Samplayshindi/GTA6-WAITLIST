@@ -43,7 +43,7 @@ export const PageHeaderBanner: React.FC<PageHeaderBannerProps> = ({
         </button>
 
         {/* Main Title & Description */}
-        <RevealOnScroll>
+        <RevealOnScroll immediate>
           <div className="max-w-3xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight">
               {title}

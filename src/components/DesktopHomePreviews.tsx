@@ -2,11 +2,13 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Play, ExternalLink, ArrowRight, Clock, Newspaper, Disc3, ZoomIn } from 'lucide-react';
 import { OFFICIAL_VIDEOS } from '../config/countdown';
 import { SOUNDTRACK_LIBRARY, OFFICIAL_ALBUM_ARTWORK_URL } from '../config/soundtrack';
-import { getNewsArticles, NewsArticle } from '../services/newsService';
+import { getNewsArticles, getCachedNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 import { GALLERY_IMAGES, GalleryImage } from '../data/galleryData';
+import { getOptimizedImageData } from '../utils/imageUtils';
 import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
+import { prefetchRoute } from '../utils/routeLoaders';
 
 const ImageLightboxModal = lazy(() =>
   import('./ImageLightboxModal').then((m) => ({ default: m.ImageLightboxModal }))
@@ -16,9 +18,26 @@ interface DesktopHomePreviewsProps {
   onNavigate: (sectionId: string) => void;
 }
 
+let cachedSessionPreviewImages: GalleryImage[] | null = null;
+
+function getHomePreviewGallerySelection(): GalleryImage[] {
+  if (cachedSessionPreviewImages && cachedSessionPreviewImages.length === 6) {
+    return cachedSessionPreviewImages;
+  }
+  const optimizedPool = GALLERY_IMAGES.filter((img) => getOptimizedImageData(img.url, 768).isOptimized);
+  const pool = optimizedPool.length >= 6 ? [...optimizedPool] : [...GALLERY_IMAGES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  cachedSessionPreviewImages = pool.slice(0, 6);
+  return cachedSessionPreviewImages;
+}
+
 export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavigate }) => {
-  const [latestArticles, setLatestArticles] = useState<NewsArticle[]>([]);
-  const [loadingNews, setLoadingNews] = useState<boolean>(true);
+  const initialNews = getCachedNewsArticles(3, 0);
+  const [latestArticles, setLatestArticles] = useState<NewsArticle[]>(() => initialNews?.articles || []);
+  const [loadingNews, setLoadingNews] = useState<boolean>(() => !initialNews || initialNews.articles.length === 0);
   const [previewLightboxIndex, setPreviewLightboxIndex] = useState<number | null>(null);
 
   // Featured official videos for compact presentation
@@ -27,15 +46,8 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
   // Top 4 iconic soundtrack tracks
   const previewTracks = SOUNDTRACK_LIBRARY.slice(0, 4);
 
-  // Dynamic random 6-image preview selection from GALLERY_IMAGES (Desktop Overview only)
-  const [curatedPreviewImages] = useState<GalleryImage[]>(() => {
-    const pool = [...GALLERY_IMAGES];
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    return pool.slice(0, 6);
-  });
+  // Dynamic random 6-image preview selection from verified optimized GALLERY_IMAGES (Desktop Overview only)
+  const [curatedPreviewImages] = useState<GalleryImage[]>(getHomePreviewGallerySelection);
 
   useEffect(() => {
     let isMounted = true;
@@ -88,6 +100,8 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => onNavigate('gallery')}
+                onMouseEnter={() => prefetchRoute('gallery')}
+                onFocus={() => prefetchRoute('gallery')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-all duration-200 shadow-lg cursor-pointer min-h-[40px] hover:scale-105 active:scale-95 theme-bg-primary"
               >
                 <span>View Full Gallery ({GALLERY_IMAGES.length})</span>
@@ -157,6 +171,8 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => onNavigate('videos')}
+                onMouseEnter={() => prefetchRoute('videos')}
+                onFocus={() => prefetchRoute('videos')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-colors shadow-lg cursor-pointer min-h-[40px] theme-bg-primary"
               >
                 <span>View All Videos ({OFFICIAL_VIDEOS.length})</span>
@@ -260,6 +276,8 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => onNavigate('newswire')}
+                onMouseEnter={() => prefetchRoute('newswire')}
+                onFocus={() => prefetchRoute('newswire')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase text-white transition-colors shadow-lg cursor-pointer min-h-[40px] theme-bg-primary"
               >
                 <span>Explore All Newswire</span>
@@ -289,6 +307,10 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                         <OptimizedImage
                           src={articleImage}
+                          secondaryFallbackSrc={getDeterministicArticleImage(
+                            article.title,
+                            article.description
+                          )}
                           alt={article.title}
                           maxWidth={768}
                           sizes="(max-width: 767px) 90vw, (max-width: 1279px) 28vw, 365px"
@@ -375,15 +397,13 @@ export const DesktopHomePreviews: React.FC<DesktopHomePreviewsProps> = ({ onNavi
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-black shrink-0">
                     <OptimizedImage
                       src={track.coverUrl}
+                      secondaryFallbackSrc={OFFICIAL_ALBUM_ARTWORK_URL}
                       alt={track.title}
                       maxWidth={375}
                       sizes="48px"
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = OFFICIAL_ALBUM_ARTWORK_URL;
-                      }}
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Play className="w-5 h-5 text-white fill-current" />

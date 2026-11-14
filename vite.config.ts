@@ -27,15 +27,15 @@ export default defineConfig(() => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,svg}'],
           navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api/],
+          navigateFallbackDenylist: [/^\/api/, /^\/optimized-images/],
           runtimeCaching: [
             {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/i,
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)$/i,
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'images-cache',
                 expiration: {
-                  maxEntries: 60,
+                  maxEntries: 300,
                   maxAgeSeconds: 30 * 24 * 60 * 60,
                 },
                 cacheableResponse: {

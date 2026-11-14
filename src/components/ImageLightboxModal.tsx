@@ -4,7 +4,7 @@ import { X, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, RotateCcw } fr
 import { GalleryImage } from '../data/galleryData';
 import {
   getResponsiveImageUrl,
-  getPreferredPreloadUrl,
+  preloadImageWithFallback,
   estimateLightboxTargetWidth,
 } from '../utils/imageUtils';
 import { OptimizedImage } from './OptimizedImage';
@@ -29,6 +29,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   const [retryCount, setRetryCount] = useState<number>(0);
   const [isClosing, setIsClosing] = useState<boolean>(false);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev' | null>(null);
+  const [resolvedHref, setResolvedHref] = useState<string | null>(null);
 
   // Animation lock to prevent rapid clicks from breaking transitions
   const isAnimatingRef = useRef<boolean>(false);
@@ -48,6 +49,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   useLayoutEffect(() => {
     if (prevIndexRef.current !== currentIndex) {
       prevIndexRef.current = currentIndex;
+      setResolvedHref(null);
       if (retryCount !== 0) {
         setRetryCount(0);
         return;
@@ -75,29 +77,18 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
-  // Preload adjacent next and previous images using matching format & viewport-appropriate width
+  // Preload adjacent next and previous images using AVIF -> WebP -> canonical fallback
   useEffect(() => {
-    if (currentIndex === null || images.length === 0) return;
+    if (currentIndex === null || images.length <= 1) return;
 
-    let cancelled = false;
     const nextIdx = (currentIndex + 1) % images.length;
     const prevIdx = (currentIndex - 1 + images.length) % images.length;
     const targetWidth = estimateLightboxTargetWidth();
 
-    const imgNext = new Image();
-    const imgPrev = new Image();
-
-    getPreferredPreloadUrl(images[nextIdx].url, targetWidth).then((url) => {
-      if (!cancelled && url) imgNext.src = url;
-    });
-
-    getPreferredPreloadUrl(images[prevIdx].url, targetWidth).then((url) => {
-      if (!cancelled && url) imgPrev.src = url;
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    preloadImageWithFallback(images[nextIdx].url, targetWidth).catch(() => {});
+    if (prevIdx !== nextIdx) {
+      preloadImageWithFallback(images[prevIdx].url, targetWidth).catch(() => {});
+    }
   }, [currentIndex, images]);
 
   // Handle Close with smooth animation
@@ -194,7 +185,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
 
   if (currentIndex === null || !activeImage) return null;
 
-  const fullResUrl = getResponsiveImageUrl(activeImage.url, 1920);
+  const fullResUrl = resolvedHref || getResponsiveImageUrl(activeImage.url, 1920) || activeImage.url;
 
   // Check if low motion preference or setting is active
   const isLowMotion =
@@ -422,7 +413,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
               loading="eager"
               decoding="async"
               fetchPriority="high"
-              disableOriginalFallbackOnError
+              onResolvedSrc={(resolved) => setResolvedHref(resolved)}
               onLoad={() => {
                 setHasError(false);
                 setImageLoaded(true);

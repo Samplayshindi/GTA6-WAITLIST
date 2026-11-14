@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, ReactNode } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, ReactNode } from 'react';
 import { useSettings } from '../context/SettingsContext';
 
 interface RevealOnScrollProps {
@@ -7,6 +7,7 @@ interface RevealOnScrollProps {
   delayMs?: number;
   threshold?: number;
   once?: boolean;
+  immediate?: boolean;
 }
 
 type RevealCallback = (isIntersecting: boolean) => void;
@@ -46,19 +47,22 @@ const prefersReducedMotion = (): boolean => {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
 
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export const RevealOnScroll: React.FC<RevealOnScrollProps> = ({
   children,
   className = '',
   delayMs = 0,
   threshold = 0.08,
   once = true,
+  immediate = false,
 }) => {
   const { motionMode } = useSettings();
-  const isReducedMotion = motionMode === 'low' || prefersReducedMotion();
+  const isReducedMotion = immediate || motionMode === 'low' || prefersReducedMotion();
   const [isVisible, setIsVisible] = useState<boolean>(isReducedMotion);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (isReducedMotion) {
       setIsVisible(true);
       return;
@@ -71,6 +75,14 @@ export const RevealOnScroll: React.FC<RevealOnScrollProps> = ({
 
     const currentEl = ref.current;
     if (!currentEl) return;
+
+    // If element is already within or above the viewport at mount (including during route switches),
+    // reveal immediately without waiting for async IntersectionObserver or smooth-scroll completion.
+    const rect = currentEl.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight - 20) {
+      setIsVisible(true);
+      if (once) return;
+    }
 
     const { observer, callbacks } = getSharedObserver(threshold, '0px 0px -40px 0px');
 

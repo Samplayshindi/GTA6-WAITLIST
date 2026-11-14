@@ -22,6 +22,7 @@ import {
 import { useLaunchState } from '../context/LaunchStateContext';
 import { useSettings } from '../context/SettingsContext';
 import { RevealOnScroll } from './RevealOnScroll';
+import { prefetchRoute } from '../utils/routeLoaders';
 
 const ShareCountdownModal = lazy(() =>
   import('./ShareCountdownModal').then((m) => ({ default: m.ShareCountdownModal }))
@@ -194,11 +195,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 text-center relative">
           
           {/* 1. Official GTA VI Logo */}
-          <RevealOnScroll delayMs={0}>
+          <RevealOnScroll immediate>
             <div className="flex justify-center mb-4 sm:mb-6">
               <img
                 src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
                 alt="Grand Theft Auto VI Logo"
+                width={448}
+                height={160}
+                decoding="async"
+                fetchPriority="high"
                 className="h-20 sm:h-28 md:h-40 max-w-[80vw] sm:max-w-xs md:max-w-md w-auto object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)]"
               />
             </div>
@@ -263,6 +268,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
             <RevealOnScroll delayMs={400} className="w-full sm:w-auto">
               <button
                 onClick={handleWatchTrailers}
+                onMouseEnter={() => prefetchRoute('videos')}
+                onFocus={() => prefetchRoute('videos')}
+                onPointerDown={() => prefetchRoute('videos')}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-xs font-bold tracking-widest uppercase text-black bg-[#F4F1ED] hover:bg-white transition-all shadow-2xl active:scale-95 cursor-pointer min-h-[48px]"
               >
                 <Play className="w-4 h-4 fill-black" />
@@ -273,6 +281,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
             <RevealOnScroll delayMs={500} className="w-full sm:w-auto">
               <button
                 onClick={handleExploreNewswire}
+                onMouseEnter={() => prefetchRoute('newswire')}
+                onFocus={() => prefetchRoute('newswire')}
+                onPointerDown={() => prefetchRoute('newswire')}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-xs font-bold tracking-widest uppercase text-[#F4F1ED] bg-[#0B2425]/90 hover:bg-[#102D2A] border border-white/20 transition-all active:scale-95 cursor-pointer min-h-[48px]"
               >
                 <Newspaper className="w-4 h-4 theme-text-primary" />

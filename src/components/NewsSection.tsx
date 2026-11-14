@@ -1,20 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
-import { getNewsArticles, NewsArticle } from '../services/newsService';
+import { getNewsArticles, getCachedNewsArticles, NewsArticle } from '../services/newsService';
 import { getDeterministicArticleImage } from '../utils/newsImageMapper';
 import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
 
-export const NewsSection: React.FC = () => {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+interface NewsSectionProps {
+  isPrimaryRoute?: boolean;
+  isActive?: boolean;
+}
+
+export const NewsSection: React.FC<NewsSectionProps> = ({ isPrimaryRoute = true, isActive = true }) => {
+  const initialSnapshot = getCachedNewsArticles(6, 0);
+  const [articles, setArticles] = useState<NewsArticle[]>(() => initialSnapshot?.articles || []);
+  const [hasMore, setHasMore] = useState<boolean>(() => initialSnapshot?.hasMore ?? true);
+  const [totalCount, setTotalCount] = useState<number>(() => initialSnapshot?.totalCount ?? 0);
+  const [loading, setLoading] = useState<boolean>(() => !initialSnapshot || initialSnapshot.articles.length === 0);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
-  // Initial load: Fetch first 6 articles
+  // Initial load: Fetch first 6 articles (without blanking cached articles)
   const loadInitialNews = useCallback(async () => {
-    setLoading(true);
+    setLoading((prev) => (prev && articles.length === 0));
     try {
       const res = await getNewsArticles(6, 0);
       setArticles(res.articles);
@@ -46,12 +52,12 @@ export const NewsSection: React.FC = () => {
     }
   };
 
-  // Background polling every 5 minutes
+  // Background polling every 5 minutes (only when active)
   useEffect(() => {
     loadInitialNews();
 
     const interval = setInterval(async () => {
-      if (document.visibilityState === 'visible') {
+      if (isActive && document.visibilityState === 'visible') {
         const res = await getNewsArticles(6, 0);
         if (res.articles.length > 0) {
           setArticles((prev) => {
@@ -69,7 +75,7 @@ export const NewsSection: React.FC = () => {
     }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [loadInitialNews]);
+  }, [loadInitialNews, isActive]);
 
   const featuredArticle = articles[0];
   const gridArticles = articles.slice(1);
@@ -79,7 +85,7 @@ export const NewsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Hero Header */}
-        <RevealOnScroll>
+        <RevealOnScroll immediate>
           <div className="max-w-3xl mb-10 sm:mb-14">
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <span className="w-2 h-2 rounded-full theme-bg-primary" />
@@ -111,7 +117,7 @@ export const NewsSection: React.FC = () => {
         )}
 
         {/* Content Area */}
-        {!loading && articles.length > 0 && (
+        {articles.length > 0 && (
           <div className="space-y-10 sm:space-y-16">
             
             {/* 1. Large Featured Lead Story */}
@@ -121,12 +127,13 @@ export const NewsSection: React.FC = () => {
                   <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-black min-h-[240px] sm:min-h-[320px]">
                     <OptimizedImage
                       src={featuredArticle.thumbnailUrl || getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
+                      secondaryFallbackSrc={getDeterministicArticleImage(featuredArticle.title, featuredArticle.description)}
                       alt={featuredArticle.title}
                       maxWidth={1280}
                       sizes="(max-width: 1023px) 94vw, (max-width: 1279px) 55vw, 710px"
-                      loading="eager"
+                      loading={isPrimaryRoute ? 'eager' : 'lazy'}
                       decoding="async"
-                      fetchPriority="high"
+                      fetchPriority={isPrimaryRoute ? 'high' : 'auto'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-95 group-hover:brightness-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B2425] via-transparent to-transparent lg:hidden" />
@@ -188,6 +195,7 @@ export const NewsSection: React.FC = () => {
                         <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                           <OptimizedImage
                             src={rawSrc}
+                            secondaryFallbackSrc={getDeterministicArticleImage(article.title, article.description)}
                             alt={article.title}
                             maxWidth={768}
                             sizes="(max-width: 767px) 92vw, (max-width: 1023px) 46vw, (max-width: 1279px) 29vw, 384px"

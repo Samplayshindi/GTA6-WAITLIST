@@ -25,12 +25,15 @@ app.use((req: Request, res: Response, next) => {
 });
 
 const setOptimizedImageHeaders = (res: Response, filePath: string) => {
-  if (filePath.endsWith('.avif')) {
+  const lower = filePath.toLowerCase();
+  if (lower.endsWith('.avif')) {
     res.setHeader('Content-Type', 'image/avif');
-    res.setHeader('Cache-Control', 'public, max-age=2592000');
-  } else if (filePath.endsWith('.webp')) {
+    res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+  } else if (lower.endsWith('.webp')) {
     res.setHeader('Content-Type', 'image/webp');
-    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+  } else if (/\.(svg|png|jpe?g|ico|gif)$/i.test(lower)) {
+    res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
   }
 };
 
@@ -39,6 +42,11 @@ app.use(
     setHeaders: setOptimizedImageHeaders,
   })
 );
+
+// Return 404 immediately for any missing optimized image so Vite/SPA never returns 200 text/html
+app.use('/optimized-images', (_req: Request, res: Response) => {
+  res.status(404).end();
+});
 
 // Forward /api/proxy-image to the image proxy handler
 app.all('/api/proxy-image', async (req: Request, res: Response) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Menu, X, Video, Calendar, Newspaper, HelpCircle, Cpu, Clock, Image as ImageIcon, Sliders, Users } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { useSettings } from '../context/SettingsContext';
+import { prefetchRoute } from '../utils/routeLoaders';
 
 const SettingsDrawer = lazy(() =>
   import('./SettingsDrawer').then((m) => ({ default: m.SettingsDrawer }))
@@ -10,6 +11,7 @@ const SettingsDrawer = lazy(() =>
 interface NavbarProps {
   activeSection: string;
   currentPath?: string;
+  isNavigating?: boolean;
   onNavigate: (sectionId: string) => void;
   onOpenSearch?: () => void;
 }
@@ -17,6 +19,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   currentPath,
+  isNavigating = false,
   onNavigate,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -82,6 +85,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <img
               src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
               alt="Grand Theft Auto VI"
+              width={160}
+              height={36}
+              decoding="async"
+              fetchPriority="high"
               className="h-7 sm:h-8 md:h-9 w-auto object-contain hover:opacity-90 transition-opacity"
             />
           </button>
@@ -92,6 +99,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={link.id}
                 onClick={() => handleLinkClick(link.id)}
+                onMouseEnter={() => prefetchRoute(link.id)}
+                onFocus={() => prefetchRoute(link.id)}
+                onPointerDown={() => prefetchRoute(link.id)}
                 className={`py-1.5 transition-colors cursor-pointer min-h-[36px] whitespace-nowrap shrink-0 ${
                   isLinkActive(link.id)
                     ? 'text-[#F5F5F5] border-b-2'
@@ -144,6 +154,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
         </div>
+
+        {/* Subtle non-blocking transition bar shown only while a lazy chunk is loading on slow networks */}
+        {isNavigating && (
+          <div
+            aria-hidden="true"
+            className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden bg-white/10 pointer-events-none"
+          >
+            <div className="h-full w-1/2 theme-progress-fill animate-lightbox-progress" />
+          </div>
+        )}
       </header>
 
       {/* Mobile & Tablet Full-Width Responsive Menu Drawer */}
@@ -173,6 +193,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={link.id}
                     onClick={() => handleLinkClick(link.id)}
+                    onPointerDown={() => prefetchRoute(link.id)}
+                    onFocus={() => prefetchRoute(link.id)}
                     className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-left text-sm font-semibold tracking-wider uppercase transition-colors min-h-[48px] ${
                       isActive
                         ? 'text-white shadow-lg'

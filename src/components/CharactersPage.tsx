@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Users, ChevronLeft, ChevronRight, BookOpen, Award, Sparkles } from 'lucide-react';
 import { CHARACTERS_DATA } from '../data/charactersData';
-import { getPreferredPreloadUrl, pickClosestWidth } from '../utils/imageUtils';
+import { preloadImageWithFallback, pickClosestWidth } from '../utils/imageUtils';
 import { OptimizedImage } from './OptimizedImage';
 import { RevealOnScroll } from './RevealOnScroll';
 
 interface CharactersPageProps {
   onNavigateHome?: () => void;
+  isPrimaryRoute?: boolean;
+  isActive?: boolean;
 }
 
 type TransitionPhase = 'VISIBLE' | 'FADING_OUT' | 'HOLDING_BLACK' | 'FADING_IN';
 
-export const CharactersPage: React.FC<CharactersPageProps> = () => {
+export const CharactersPage: React.FC<CharactersPageProps> = ({ isPrimaryRoute = true, isActive = true }) => {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>('jason-duval');
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('VISIBLE');
@@ -38,10 +40,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
       const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
       const stageWidth = vw <= 1023 ? vw * 0.94 * dpr : Math.min(vw * 0.56, 710) * dpr;
       const targetWidth = pickClosestWidth([375, 768, 1280, 1920], stageWidth);
-      const img = new Image();
-      getPreferredPreloadUrl(rawNextUrl, targetWidth).then((url) => {
-        if (url) img.src = url;
-      });
+      preloadImageWithFallback(rawNextUrl, targetWidth).catch(() => {});
 
       // Phase 1: Fade Out to Black (1.5s)
       setTransitionPhase('FADING_OUT');
@@ -83,12 +82,21 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
     };
   }, [clearTransitionTimeouts]);
 
+  // Pause transitions cleanly when kept mounted in background
+  useEffect(() => {
+    if (!isActive) {
+      clearTransitionTimeouts();
+      if (rotationTimerRef.current) clearInterval(rotationTimerRef.current);
+      setTransitionPhase('VISIBLE');
+    }
+  }, [isActive, clearTransitionTimeouts]);
+
   // Automatic character artwork slideshow loop
   useEffect(() => {
-    if (selectedCharacter.images.length <= 1) return;
+    if (!isActive || selectedCharacter.images.length <= 1) return;
 
     rotationTimerRef.current = setInterval(() => {
-      if (document.visibilityState === 'visible' && transitionPhase === 'VISIBLE') {
+      if (isActive && document.visibilityState === 'visible' && transitionPhase === 'VISIBLE') {
         const nextIdx = (activeImageIndex + 1) % selectedCharacter.images.length;
         transitionToNextImage(nextIdx);
       }
@@ -97,7 +105,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
     return () => {
       if (rotationTimerRef.current) clearInterval(rotationTimerRef.current);
     };
-  }, [selectedCharacter.images.length, activeImageIndex, transitionPhase, transitionToNextImage]);
+  }, [isActive, selectedCharacter.images.length, activeImageIndex, transitionPhase, transitionToNextImage]);
 
   const handleManualPrevImage = () => {
     if (transitionPhase !== 'VISIBLE') return;
@@ -120,7 +128,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
       {/* 1. Page Header */}
-      <RevealOnScroll>
+      <RevealOnScroll immediate>
         <div className="mb-6 pb-6 border-b border-white/10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-[#F4F1ED] tracking-tight font-display">
             Grand Theft Auto VI{' '}
@@ -176,9 +184,9 @@ export const CharactersPage: React.FC<CharactersPageProps> = () => {
               alt={selectedCharacter.name}
               maxWidth={1920}
               sizes="(max-width: 1023px) 94vw, (max-width: 1279px) 56vw, 710px"
-              loading="eager"
+              loading={isPrimaryRoute ? 'eager' : 'lazy'}
               decoding="async"
-              fetchPriority="high"
+              fetchPriority={isPrimaryRoute ? 'high' : 'auto'}
               className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-[1500ms] ease-in-out ${
                 isImageVisible ? 'opacity-100' : 'opacity-0'
               } ${

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettings } from '../context/SettingsContext';
-import { getPreferredPreloadUrl } from '../utils/imageUtils';
+import { preloadImageWithFallback, getOptimizedImageData } from '../utils/imageUtils';
 import { OptimizedImage } from './OptimizedImage';
 
 export const SLIDESHOW_IMAGES: string[] = [
@@ -91,18 +91,24 @@ export const AtmosphericBackground: React.FC = () => {
   const rotationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const preloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pick a next random image index without consecutive repetition or failed images
+  // Pick a next random image index preferring locally optimized slideshow images
   const getNextRandomIndex = useCallback(
     (current: number, failedSet: Set<number>): number => {
-      const validIndices: number[] = [];
+      const optimizedIndices: number[] = [];
+      const fallbackIndices: number[] = [];
       for (let i = 0; i < SLIDESHOW_IMAGES.length; i++) {
         if (i !== current && !failedSet.has(i)) {
-          validIndices.push(i);
+          if (getOptimizedImageData(SLIDESHOW_IMAGES[i], 1280).isOptimized) {
+            optimizedIndices.push(i);
+          } else {
+            fallbackIndices.push(i);
+          }
         }
       }
-      if (validIndices.length === 0) return 0;
-      const randomIndex = Math.floor(Math.random() * validIndices.length);
-      return validIndices[randomIndex];
+      const pool = optimizedIndices.length > 0 ? optimizedIndices : fallbackIndices;
+      if (pool.length === 0) return 0;
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      return pool[randomIndex];
     },
     []
   );
@@ -139,25 +145,14 @@ export const AtmosphericBackground: React.FC = () => {
         const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
         const targetWidth = Math.min(1920, Math.round(vw * dpr));
 
-        getPreferredPreloadUrl(rawUrl, targetWidth).then((url) => {
-          const img = new Image();
-          preloadedImageRef.current = img;
-
-          img.onload = () => {
-            if (typeof img.decode === 'function') {
-              img.decode().catch(() => {}).finally(() => resolve(true));
-            } else {
-              resolve(true);
-            }
-          };
-
-          img.onerror = () => {
+        preloadImageWithFallback(rawUrl, targetWidth).then((resolved) => {
+          if (resolved) {
+            resolve(true);
+          } else {
             console.warn(`[AtmosphericBackground] Image failed to load: ${rawUrl}`);
             setFailedIndices((prev) => new Set(prev).add(nextIdx));
             resolve(false);
-          };
-
-          img.src = url;
+          }
         });
       });
     },

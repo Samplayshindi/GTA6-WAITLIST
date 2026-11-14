@@ -477,6 +477,11 @@
       768,
       1280,
       1920
+    ],
+    "webpWidths": [
+      375,
+      1280,
+      1920
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/The_Album_Cover_Art_square.0s5-7fm8xnns8.jpg": {
@@ -827,18 +832,6 @@
       1920
     ]
   },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_11.0j617-ylicowx.jpg": {
-    "id": "lucia-11",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1354768,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_11.019l5gj6~0~0v.jpg": {
     "id": "jason-11",
     "w": 3840,
@@ -923,54 +916,6 @@
       1920
     ]
   },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_07.0.c7un8ro7_p2.jpg": {
-    "id": "lucia-07",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 913009,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_08.08wo73uyjkhlk.jpg": {
-    "id": "lucia-08",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 876981,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_09.0pd.ppokmi8-n.jpg": {
-    "id": "lucia-09",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 898033,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_10.0s770xrip~yb..jpg": {
-    "id": "lucia-10",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 852361,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_01.07m377xeb6jhq.jpg": {
     "id": "jason-01",
     "w": 3840,
@@ -1043,426 +988,6 @@
       1920
     ]
   },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_01.0a7yqvewctkfp.jpg": {
-    "id": "lucia-01",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 301343,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_02.16n.5umvlu_48.jpg": {
-    "id": "lucia-02",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 637178,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_03.14xgd2y_ymmeg.jpg": {
-    "id": "lucia-03",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 454584,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_04.04kb_~4ubn3wn.jpg": {
-    "id": "lucia-04",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 280220,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_05.0i5b7k6a7_w6p.jpg": {
-    "id": "lucia-05",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 418652,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_06.0fxbjfk0jakb3.jpg": {
-    "id": "lucia-06",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 471321,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Raul_Bautista_01.0md1ii-yrn96r.jpg": {
-    "id": "raul-01",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 266164,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Raul_Bautista_02.10ddy6ogywu-t.jpg": {
-    "id": "raul-02",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 500262,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Raul_Bautista_03.0-x4xbav_6c40.jpg": {
-    "id": "raul-03",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 497296,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Raul_Bautista_04.0qx77gyvykvv5.jpg": {
-    "id": "raul-04",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 394705,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_18.001ebutl6h-9w.jpg": {
-    "id": "vc-18",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1088197,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_19.01ow62.xq.64i.jpg": {
-    "id": "vc-19",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1317886,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_20.18c75478u52nf.jpg": {
-    "id": "vc-20",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 973283,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_21.0m5vh15h178-e.jpg": {
-    "id": "vc-21",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 924993,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_22.0--9jlb822n~g.jpg": {
-    "id": "vc-22",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1626690,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_24.0r9tor5-x.p75.jpg": {
-    "id": "vc-24",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1489197,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_25.0f72z-5qgyd~v.jpg": {
-    "id": "vc-25",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1431425,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_26.0.bvvu2216_mj.jpg": {
-    "id": "vc-26",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 3096941,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_27.0d2e~w_r93hmh.jpg": {
-    "id": "vc-27",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1132950,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_13.0iq8ff474tsdx.jpg": {
-    "id": "vc-13",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1238397,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_15.11tb0mz68edqo.jpg": {
-    "id": "vc-15",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 929699,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_16.16hjjmnxqg9mv.jpg": {
-    "id": "vc-16",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1183780,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_17.0er79m2u3nygs.jpg": {
-    "id": "vc-17",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1551594,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_10.0f1q-xa_4q8r2.jpg": {
-    "id": "vc-10",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 878309,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_11.09paum3g942sc.jpg": {
-    "id": "vc-11",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 894386,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_12.0qdgemgi_uypg.jpg": {
-    "id": "vc-12",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 946930,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_01.135x56yoeu.6t.jpg": {
-    "id": "vc-01",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 492097,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_02.0c5.7qx17u9kl.jpg": {
-    "id": "vc-02",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 528149,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_03.0nqz~lrqdmlze.jpg": {
-    "id": "vc-03",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1247197,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_04.06evqutgh7624.jpg": {
-    "id": "vc-04",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 737058,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_05.0~r~o0jzpp4a-.jpg": {
-    "id": "vc-05",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 561227,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_06.0_tdmr3u9w84x.jpg": {
-    "id": "vc-06",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 649067,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_07.0b3mhak4k78oh.jpg": {
-    "id": "vc-07",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 528847,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_08.0bbg_xp4hqdvz.jpg": {
-    "id": "vc-08",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 753970,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Vice_City_09.0~ng.c8ack3fp.jpg": {
-    "id": "vc-09",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 938571,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_07.0txitddjiq5o1.jpg": {
     "id": "grass-07",
     "w": 3840,
@@ -1504,18 +1029,6 @@
     "w": 3840,
     "h": 2160,
     "origBytes": 909051,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_06.13ghhmb440r6e.jpg": {
-    "id": "port-06",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 883694,
     "widths": [
       375,
       768,
@@ -1607,150 +1120,6 @@
       1920
     ]
   },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_01.0fmisvza-5-cq.jpg": {
-    "id": "port-01",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 829686,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_02.00e7cz6lwrup-.jpg": {
-    "id": "port-02",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 572219,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_03.00c2b0eh7sm~q.jpg": {
-    "id": "port-03",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 357766,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_04.0hd-7kzfi51q..jpg": {
-    "id": "port-04",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1082200,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_05.0nsv0ou54n-t3.jpg": {
-    "id": "port-05",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 650414,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_01.0v5fl0f83hjv_.jpg": {
-    "id": "mt-kal-01",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 961160,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_02.0f24dhopdprvx.jpg": {
-    "id": "mt-kal-02",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 333806,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_03.037k2s87rwuxc.jpg": {
-    "id": "mt-kal-03",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 975635,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_04.0e1sxnp1mln2u.jpg": {
-    "id": "mt-kal-04",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1274178,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_05.0_~vto-o2zxok.jpg": {
-    "id": "mt-kal-05",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 861566,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_06.166ouq5pjd7h0.jpg": {
-    "id": "mt-kal-06",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1291623,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "https://www.rockstargames.com/VI/_next/static/media/VINTAGE_VICE_CITY_WEAPON_PATTERN_01.0gybtumgwdcoi.jpg": {
-    "id": "vice-city-weapon-pattern",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1814720,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
   "/images/hero-4k.jpg": {
     "id": "local-hero-4k",
     "w": 3840,
@@ -1761,63 +1130,6 @@
       768,
       1280,
       1920
-    ]
-  },
-  "https://img.youtube.com/vi/_yl5ELcmugI/maxresdefault.jpg": {
-    "id": "video-preload-now",
-    "w": 1280,
-    "h": 720,
-    "origBytes": 248766,
-    "widths": [
-      375,
-      768,
-      1280
-    ]
-  },
-  "/images/launch-trailer-4k.jpg": {
-    "id": "video-launch-trailer",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1908211,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "/images/extended-look-4k.jpg": {
-    "id": "video-extended-look",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 867346,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "/images/trailer-2-landscape.jpg": {
-    "id": "video-trailer-2",
-    "w": 1280,
-    "h": 720,
-    "origBytes": 221963,
-    "widths": [
-      375,
-      768,
-      1280
-    ]
-  },
-  "/images/trailer-1-landscape.jpg": {
-    "id": "video-trailer-1",
-    "w": 1280,
-    "h": 720,
-    "origBytes": 239389,
-    "widths": [
-      375,
-      768,
-      1280
     ]
   },
   "/official-gta-vi-hero.jpg": {
@@ -1837,18 +1149,6 @@
     "w": 3840,
     "h": 2160,
     "origBytes": 1491784,
-    "widths": [
-      375,
-      768,
-      1280,
-      1920
-    ]
-  },
-  "/images/vice-city-style-4k.jpg": {
-    "id": "local-vice-city-style-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1892605,
     "widths": [
       375,
       768,
@@ -1880,16 +1180,14 @@
       1920
     ]
   },
-  "/images/vice-city-pack-4k.jpg": {
-    "id": "local-vice-city-pack-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1491784,
+  "/images/trailer-1-4k.jpg": {
+    "id": "local-trailer-1-4k",
+    "w": 1080,
+    "h": 1600,
+    "origBytes": 578154,
     "widths": [
       375,
-      768,
-      1280,
-      1920
+      1080
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_02_square.0jnnm~4~.3cbg.jpg": {
@@ -1904,15 +1202,107 @@
       1920
     ]
   },
-  "/images/trailer-1-4k.jpg": {
-    "id": "local-trailer-1-4k",
-    "w": 1080,
-    "h": 1600,
-    "origBytes": 578154,
+  "https://img.youtube.com/vi/_yl5ELcmugI/maxresdefault.jpg": {
+    "id": "video-preload-now",
+    "w": 1280,
+    "h": 720,
+    "origBytes": 248766,
     "widths": [
       375,
       768,
-      1080
+      1280
+    ]
+  },
+  "https://img.youtube.com/vi/rz1B4B2yBZY/maxresdefault.jpg": {
+    "id": "video-launch-trailer",
+    "w": 1280,
+    "h": 720,
+    "origBytes": 234346,
+    "widths": [
+      375,
+      768,
+      1280
+    ]
+  },
+  "https://img.youtube.com/vi/tJbzMqJGH4k/maxresdefault.jpg": {
+    "id": "video-extended-look",
+    "w": 1280,
+    "h": 720,
+    "origBytes": 224147,
+    "widths": [
+      375,
+      768,
+      1280
+    ]
+  },
+  "/images/trailer-2-landscape.jpg": {
+    "id": "video-trailer-2",
+    "w": 1280,
+    "h": 720,
+    "origBytes": 221963,
+    "widths": [
+      375,
+      768,
+      1280
+    ]
+  },
+  "/images/trailer-1-landscape.jpg": {
+    "id": "video-trailer-1",
+    "w": 1280,
+    "h": 720,
+    "origBytes": 239389,
+    "widths": [
+      375,
+      768,
+      1280
+    ]
+  },
+  "/images/extended-look-4k.jpg": {
+    "id": "local-extended-look-4k",
+    "w": 3840,
+    "h": 2160,
+    "origBytes": 867346,
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
+    ]
+  },
+  "/images/launch-trailer-4k.jpg": {
+    "id": "local-launch-trailer-4k",
+    "w": 3840,
+    "h": 2160,
+    "origBytes": 1908211,
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
+    ]
+  },
+  "/images/vice-city-style-4k.jpg": {
+    "id": "local-vice-city-style-4k",
+    "w": 3840,
+    "h": 2160,
+    "origBytes": 1892605,
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
+    ]
+  },
+  "/images/vice-city-pack-4k.jpg": {
+    "id": "local-vice-city-pack-4k",
+    "w": 3840,
+    "h": 2160,
+    "origBytes": 1491784,
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
     ]
   },
   "/images/trailer-2-4k.jpg": {
@@ -1924,6 +1314,18 @@
       375,
       768,
       1080
+    ]
+  },
+  "https://www.rockstargames.com/VI/_next/static/media/VINTAGE_VICE_CITY_WEAPON_PATTERN_01.0gybtumgwdcoi.jpg": {
+    "id": "vice-city-weapon-pattern",
+    "w": 3840,
+    "h": 2160,
+    "origBytes": 1814720,
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
     ]
   }
 }

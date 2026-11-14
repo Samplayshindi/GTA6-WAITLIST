@@ -306,3 +306,44 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 480px;
 }
+
+/* Subtle GPU-friendly route crossfade transitions (Desktop navigation) */
+@keyframes routeCrossfadeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes routeCrossfadeOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+.route-crossfade-in {
+  animation: routeCrossfadeIn 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.route-crossfade-out {
+  animation: routeCrossfadeOut 260ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-crossfade-in,
+  .route-crossfade-out {
+    animation: none !important;
+    will-change: auto !important;
+  }
+}

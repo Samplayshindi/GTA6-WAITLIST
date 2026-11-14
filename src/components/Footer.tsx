@@ -3,6 +3,7 @@ import { ArrowUp, ExternalLink, Calendar, Video, Newspaper, HelpCircle, Cpu, Clo
 import { RELEASE_SPECS } from '../config/countdown';
 import { FULL_VERSION_STRING } from '../config/version';
 import { PWAInstallButton } from './PWAInstallButton';
+import { prefetchRoute } from '../utils/routeLoaders';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
@@ -21,8 +22,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand & Narrative */}
           <div className="space-y-4">
             <img
-              src="/gta-vi-logo.svg"
+              src={`${import.meta.env.BASE_URL}gta-vi-logo.svg`}
               alt="Grand Theft Auto VI"
+              width={160}
+              height={36}
+              loading="lazy"
+              decoding="async"
               className="h-8 sm:h-9 w-auto object-contain"
             />
             <p className="text-xs text-slate-400 leading-relaxed font-normal">
@@ -54,6 +59,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('characters')}
+                  onMouseEnter={() => prefetchRoute('characters')}
+                  onFocus={() => prefetchRoute('characters')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <Users className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #FF4FA3)' }} />
@@ -63,6 +70,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('gallery')}
+                  onMouseEnter={() => prefetchRoute('gallery')}
+                  onFocus={() => prefetchRoute('gallery')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <ImageIcon className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
@@ -72,6 +81,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('videos')}
+                  onMouseEnter={() => prefetchRoute('videos')}
+                  onFocus={() => prefetchRoute('videos')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <Video className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
@@ -81,6 +92,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('newswire')}
+                  onMouseEnter={() => prefetchRoute('newswire')}
+                  onFocus={() => prefetchRoute('newswire')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <Newspaper className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-tertiary, #00F5D4)' }} />
@@ -102,6 +115,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('timeline')}
+                  onMouseEnter={() => prefetchRoute('timeline')}
+                  onFocus={() => prefetchRoute('timeline')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <Calendar className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-tertiary, #00F5D4)' }} />
@@ -111,6 +126,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('faq')}
+                  onMouseEnter={() => prefetchRoute('faq')}
+                  onFocus={() => prefetchRoute('faq')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <HelpCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-secondary, #FF4FA3)' }} />
@@ -120,6 +137,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('specifications')}
+                  onMouseEnter={() => prefetchRoute('specifications')}
+                  onFocus={() => prefetchRoute('specifications')}
                   className="hover:text-white transition-colors cursor-pointer flex items-center gap-2 text-left py-1"
                 >
                   <Cpu className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--theme-primary, #F15A24)' }} />
