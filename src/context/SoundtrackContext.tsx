@@ -494,6 +494,15 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
               // PLAYING
               if (activeTrack?.youtubeId) {
                 setIsPlaying(true);
+                try {
+                  const dur = event.target?.getDuration?.();
+                  if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) {
+                    setDuration((prev) => (prev !== dur ? dur : prev));
+                    updateTrackDuration(activeTrack.id, dur);
+                  }
+                } catch {
+                  // ignore
+                }
               }
             } else if (event.data === 2) {
               // PAUSED
@@ -546,6 +555,9 @@ export const SoundtrackProvider: React.FC<{ children: ReactNode }> = ({ children
           }
           if (typeof dur === 'number' && dur > 0 && !isNaN(dur)) {
             setDuration((prev) => (prev !== dur ? dur : prev));
+            if (activeTrack.durationSec <= 0 || Math.abs(activeTrack.durationSec - Math.round(dur)) > 1) {
+              updateTrackDuration(activeTrack.id, dur);
+            }
           }
         } catch {
           // ignore

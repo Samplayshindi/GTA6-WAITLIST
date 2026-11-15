@@ -7,8 +7,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_landscape.0ldnbn87k-8mq.jpg": {
@@ -21,6 +29,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Brian_Heder_landscape.0a-egj5b8yo1q.jpg": {
@@ -33,6 +51,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Raul_Bautista_landscape.11_3hd0fr69~j.jpg": {
@@ -45,6 +73,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_landscape.0637akp_a5a_q.jpg": {
@@ -57,6 +95,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_landscape.0_b7hszyze6cy.jpg": {
@@ -69,6 +117,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_landscape.17k7bnt3myg.2.jpg": {
@@ -81,6 +139,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_01.0xlil231_osh4.jpg": {
@@ -91,8 +159,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_02.05r2t_mck65fe.jpg": {
@@ -103,8 +179,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_03.0.q68~pt1to9z.jpg": {
@@ -115,8 +199,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_04.0-78dep86yx2q.jpg": {
@@ -127,8 +219,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_01.0-wji2pg5anfs.jpg": {
@@ -139,8 +239,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_02.0sp9mtc.1cdzs.jpg": {
@@ -151,8 +259,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_03.0neka36~z25b5.jpg": {
@@ -163,8 +279,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_04.0~1fr6ijgvnzx.jpg": {
@@ -175,8 +299,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_01.0_0~wi-ipdj35.jpg": {
@@ -187,8 +319,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_02.02u69e~nkk3eo.jpg": {
@@ -199,8 +339,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_03.0zbl4i_x_1biu.jpg": {
@@ -211,8 +359,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_04.0n~kj~px_fn8t.jpg": {
@@ -223,8 +379,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_01.0djwwboo8-glx.jpg": {
@@ -235,8 +399,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_02.1366u9.x.yp0_.jpg": {
@@ -247,8 +419,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_03.02o2si7.op.ye.jpg": {
@@ -259,8 +439,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_04.0wa3vo07lz4e2.jpg": {
@@ -271,8 +459,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Brian_Heder_01.0r.ute88os9k-.jpg": {
@@ -283,8 +479,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Brian_Heder_02.0kmg6iw38f-9o.jpg": {
@@ -295,8 +499,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Brian_Heder_03.10ntuqh2h6upf.jpg": {
@@ -307,8 +519,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Brian_Heder_04.0z3o0t88jw54l.jpg": {
@@ -319,8 +539,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_06.0j9c7-8nfb_xf.jpg": {
@@ -331,8 +559,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_01.0rqphs0gazkm..jpg": {
@@ -343,8 +579,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_02.0wtqs05ozl.ym.jpg": {
@@ -355,8 +599,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_03.0vt46a.1s.7-y.jpg": {
@@ -367,8 +619,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_04.0.2cefoguu-tt.jpg": {
@@ -379,8 +639,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Ambrosia_05.0olhvjqff0o4b.jpg": {
@@ -391,8 +659,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_01.1096rw4lbjur_.jpg": {
@@ -403,8 +679,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_02.0teqs5xe2pem1.jpg": {
@@ -415,8 +699,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_03.14cuv-vg9orw4.jpg": {
@@ -427,8 +719,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_04.01ckpqbhxyz76.jpg": {
@@ -439,8 +739,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/GTAVI_MusicPage_AlbumArt.05qucexa8vzgb.jpg": {
@@ -453,6 +761,16 @@
       768,
       1280,
       1600
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1600
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Score_CoverArt_1014_1600x1600.0.5dr9slukqhb.jpg": {
@@ -463,8 +781,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1600
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Official_Cover_Art_square.10.vgeiw52wkr.jpg": {
@@ -479,7 +805,11 @@
       1920
     ],
     "webpWidths": [
+      375
+    ],
+    "avifWidths": [
       375,
+      768,
       1280,
       1920
     ]
@@ -492,8 +822,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Lucia_Rooftop_landscape.0c6p5do~-8~7..jpg": {
@@ -504,8 +842,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_14.10e7v.06pcm_t.jpg": {
@@ -516,8 +862,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_20.0cd~.c7jr~5g9.jpg": {
@@ -528,8 +882,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_15.0m-_zb~mcy2zr.jpg": {
@@ -542,6 +904,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_16.05-d133mx68ku.jpg": {
@@ -554,6 +926,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_17.117_b11r13mg5.jpg": {
@@ -566,6 +948,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_Motel_landscape.08edvuwtm-20v.jpg": {
@@ -578,6 +970,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_01_landscape.12x2gvspcm_3m.jpg": {
@@ -590,6 +992,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_02_landscape.0cosv-uzbpt91.jpg": {
@@ -602,6 +1014,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_Beach_landscape.0419q._86ukpt.jpg": {
@@ -614,6 +1036,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_Robbery_landscape.09c8a~do21h4p.jpg": {
@@ -626,6 +1058,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Lucia_Lock_And_Load_landscape.0l9s5w7ih9p~3.jpg": {
@@ -638,6 +1080,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_01.0naeahss9-1x6.jpg": {
@@ -648,8 +1100,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_02.0uig00eojlokf.jpg": {
@@ -660,8 +1120,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_03.15z-.c0tptrzs.jpg": {
@@ -672,8 +1140,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_05.0ypw_.fz.~4k0.jpg": {
@@ -684,8 +1160,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_06.1035xf1yo78.b.jpg": {
@@ -696,8 +1180,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_07.1699ivog8~w1n.jpg": {
@@ -708,8 +1200,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_08.0.bq0bdrl6g5y.jpg": {
@@ -720,8 +1220,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_09.11_dlvb_8svuu.jpg": {
@@ -732,8 +1240,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_10.0cauoz34524-..jpg": {
@@ -744,8 +1260,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_11.13lmeyci.i-yw.jpg": {
@@ -756,8 +1280,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_12.04brpvymc~09q.jpg": {
@@ -768,8 +1300,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_13.0q.hw42xbhptg.jpg": {
@@ -780,8 +1320,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_12.0zcl2old.t6gf.jpg": {
@@ -792,8 +1340,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_13.0xtzlmp0y6mt-.jpg": {
@@ -804,8 +1360,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_14.0eczq557_iuqo.jpg": {
@@ -816,8 +1380,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_15.0oze53sounjp2.jpg": {
@@ -828,8 +1400,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_11.019l5gj6~0~0v.jpg": {
@@ -842,6 +1422,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_17.0tp7hiuz.e385.jpg": {
@@ -854,6 +1444,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_19.0r7a1q04n5.7m.jpg": {
@@ -866,6 +1466,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_07.0ca326xbl~oyh.jpg": {
@@ -876,8 +1486,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_08.0841zdqaobvhd.jpg": {
@@ -888,8 +1506,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_09.0to5nepm39efn.jpg": {
@@ -900,8 +1526,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_10.14zid5kee4hy..jpg": {
@@ -912,8 +1546,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_01.07m377xeb6jhq.jpg": {
@@ -924,8 +1566,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_02.1486~7_v40cn..jpg": {
@@ -936,8 +1586,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_03.0-1vum7x-3vtp.jpg": {
@@ -948,8 +1606,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_04.16d-z2wa2s~bk.jpg": {
@@ -960,8 +1626,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_05.0kxp6enhvzqka.jpg": {
@@ -972,8 +1646,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_Duval_06.086o72llg6~1p.jpg": {
@@ -984,8 +1666,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_07.0txitddjiq5o1.jpg": {
@@ -996,8 +1686,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_07.0z9tb69ssp4rq.jpg": {
@@ -1010,6 +1708,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_08.0x-z0h-he35zo.jpg": {
@@ -1022,6 +1730,16 @@
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_06.0eapr3hbeyewx.jpg": {
@@ -1032,8 +1750,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_05.0.dx9~67tljry.jpg": {
@@ -1044,8 +1770,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Grassrivers_06.0bdeicllwisnc.jpg": {
@@ -1056,8 +1790,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_01.0zgz7tveur6y8.jpg": {
@@ -1068,8 +1810,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_02.0~ptk-53gl0lq.jpg": {
@@ -1080,8 +1830,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_03.0v_3~-9ceyixc.jpg": {
@@ -1092,8 +1850,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_04.0hce1rw1s8pd9.jpg": {
@@ -1104,8 +1870,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_05.0yerhvjhto-h..jpg": {
@@ -1116,78 +1890,148 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "/images/hero-4k.jpg": {
     "id": "local-hero-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 277293,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 85047,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/official-gta-vi-hero.jpg": {
     "id": "local-official-gta-vi-hero",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 277293,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 85047,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/official-gta-vi-cover.png": {
     "id": "local-official-gta-vi-cover",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1491784,
+    "w": 1024,
+    "h": 576,
+    "origBytes": 208398,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/grotti-cheetah-4k.jpg": {
     "id": "local-grotti-cheetah-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1864182,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 111408,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/squalo-speedboat-4k.jpg": {
     "id": "local-squalo-speedboat-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1949273,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 111913,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/trailer-1-4k.jpg": {
     "id": "local-trailer-1-4k",
     "w": 1080,
     "h": 1600,
-    "origBytes": 578154,
+    "origBytes": 184580,
     "widths": [
       375,
       1080
+    ],
+    "avifWidths": [
+      375,
+      1080
+    ],
+    "webpWidths": [
+      375
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/Jason_and_Lucia_02_square.0jnnm~4~.3cbg.jpg": {
@@ -1198,8 +2042,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://img.youtube.com/vi/_yl5ELcmugI/maxresdefault.jpg": {
@@ -1211,6 +2063,15 @@
       375,
       768,
       1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://img.youtube.com/vi/rz1B4B2yBZY/maxresdefault.jpg": {
@@ -1222,6 +2083,15 @@
       375,
       768,
       1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://img.youtube.com/vi/tJbzMqJGH4k/maxresdefault.jpg": {
@@ -1233,14 +2103,33 @@
       375,
       768,
       1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "/images/trailer-2-landscape.jpg": {
     "id": "video-trailer-2",
     "w": 1280,
     "h": 720,
-    "origBytes": 221963,
+    "origBytes": 115307,
     "widths": [
+      375,
+      768,
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
       375,
       768,
       1280
@@ -1250,8 +2139,18 @@
     "id": "video-trailer-1",
     "w": 1280,
     "h": 720,
-    "origBytes": 239389,
+    "origBytes": 126326,
     "widths": [
+      375,
+      768,
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
       375,
       768,
       1280
@@ -1259,61 +2158,114 @@
   },
   "/images/extended-look-4k.jpg": {
     "id": "local-extended-look-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 867346,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 99590,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/launch-trailer-4k.jpg": {
     "id": "local-launch-trailer-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1908211,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 104734,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/vice-city-style-4k.jpg": {
     "id": "local-vice-city-style-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1892605,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 123171,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/vice-city-pack-4k.jpg": {
     "id": "local-vice-city-pack-4k",
-    "w": 3840,
-    "h": 2160,
-    "origBytes": 1491784,
+    "w": 1280,
+    "h": 720,
+    "origBytes": 70748,
     "widths": [
       375,
       768,
       1280,
       1920
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "webpWidths": [
+      375,
+      768,
+      1280
     ]
   },
   "/images/trailer-2-4k.jpg": {
     "id": "local-trailer-2-4k",
     "w": 1080,
     "h": 1600,
-    "origBytes": 700321,
+    "origBytes": 229447,
     "widths": [
       375,
       768,
       1080
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1080
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   },
   "https://www.rockstargames.com/VI/_next/static/media/VINTAGE_VICE_CITY_WEAPON_PATTERN_01.0gybtumgwdcoi.jpg": {
@@ -1324,8 +2276,16 @@
     "widths": [
       375,
       768,
-      1280,
-      1920
+      1280
+    ],
+    "avifWidths": [
+      375,
+      768,
+      1280
+    ],
+    "webpWidths": [
+      375,
+      768
     ]
   }
 }

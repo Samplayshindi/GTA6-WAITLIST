@@ -146,6 +146,19 @@ export const VERIFIED_PLAYABLE_TRACKS: SoundtrackTrack[] = [
     isPlayable: true,
     status: 'playable',
   },
+  {
+    id: 'dont-chart',
+    title: "Don't Chart",
+    artist: 'Cardi B',
+    sourceLabel: 'Grand Theft Auto VI: The Album',
+    coverUrl:
+      'https://www.rockstargames.com/VI/_next/static/media/The_Album_Cover_Art_square.0s5-7fm8xnns8.jpg',
+    youtubeId: '0BxQ6hi3lXY',
+    durationSec: 0,
+    durationText: '--:--',
+    isPlayable: true,
+    status: 'playable',
+  },
 ];
 
 export const SOUNDTRACK_LIBRARY: SoundtrackTrack[] = [

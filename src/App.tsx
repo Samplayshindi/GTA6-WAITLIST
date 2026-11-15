@@ -169,7 +169,7 @@ function MainAppContent() {
       setRouteState((prev) =>
         prev.transitionSeq === seq ? { ...prev, outgoingPath: null } : prev
       );
-    }, 400);
+    }, 320);
     return () => clearTimeout(timer);
   }, [routeState.transitionSeq, routeState.outgoingPath]);
 
@@ -366,14 +366,20 @@ function MainAppContent() {
 
   const navHighlightPath = isRoutePending && pendingPath ? pendingPath : currentPath;
 
-  const renderDesktopRoute = (routePath: string, isActive: boolean) => {
+  const renderDesktopRoute = (
+    routePath: string,
+    isActive: boolean,
+    animateContent: boolean,
+    suppressBannerBackdrop: boolean
+  ) => {
+    const contentWrapClass = animateContent ? 'route-content-enter' : undefined;
     switch (routePath) {
       case '/':
         return (
-          <>
+          <div className={contentWrapClass}>
             <HeroSection onNavigate={handleNavigate} />
             <DesktopHomePreviews onNavigate={handleNavigate} />
-          </>
+          </div>
         );
       case '/characters':
         return (
@@ -383,8 +389,12 @@ function MainAppContent() {
               title="Official Character Profiles"
               description="Detailed criminal dossiers, verified backstories, and rotating key art collections for the key figures shaping Vice City and the Keys."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <CharactersPageLazy onNavigateHome={() => handleNavigate('overview')} isActive={isActive} />
+            <div className={contentWrapClass}>
+              <CharactersPageLazy onNavigateHome={() => handleNavigate('overview')} isActive={isActive} />
+            </div>
           </>
         );
       case '/gallery':
@@ -395,8 +405,12 @@ function MainAppContent() {
               title="Official Artwork &amp; Screenshots"
               description="Comprehensive high-resolution key art, character portraits, and in-engine screenshots captured directly from PlayStation 5 and Xbox Series X|S."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <GalleryPageLazy onNavigateHome={() => handleNavigate('overview')} isActive={isActive} />
+            <div className={contentWrapClass}>
+              <GalleryPageLazy onNavigateHome={() => handleNavigate('overview')} isActive={isActive} />
+            </div>
           </>
         );
       case '/videos':
@@ -407,8 +421,12 @@ function MainAppContent() {
               title="Official Videos &amp; Trailers"
               description="In-engine 4K UHD reveal trailers, official broadcasts, and gameplay deep-dives captured directly on PlayStation 5 and Xbox Series X|S."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <TrailerGalleryLazy />
+            <div className={contentWrapClass}>
+              <TrailerGalleryLazy />
+            </div>
           </>
         );
       case '/newswire':
@@ -419,8 +437,12 @@ function MainAppContent() {
               title="GTA VI Newswire Feed"
               description="Authoritative updates directly synchronized with Rockstar Games official feeds, Take-Two financial disclosures, and verified industry reports."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <NewsSectionLazy isActive={isActive} />
+            <div className={contentWrapClass}>
+              <NewsSectionLazy isActive={isActive} />
+            </div>
           </>
         );
       case '/timeline':
@@ -431,8 +453,12 @@ function MainAppContent() {
               title="Development &amp; Reveal Timeline"
               description="A chronological timeline archiving key announcements, official teaser drops, record-shattering debuts, and launch milestones."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <TimelineSectionLazy />
+            <div className={contentWrapClass}>
+              <TimelineSectionLazy />
+            </div>
           </>
         );
       case '/faq':
@@ -443,8 +469,12 @@ function MainAppContent() {
               title="Frequently Asked Questions"
               description="Verified answers regarding platform launch windows, digital pre-loading schedules, game editions, cross-play expectations, and PC release details."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <FaqSectionLazy />
+            <div className={contentWrapClass}>
+              <FaqSectionLazy />
+            </div>
           </>
         );
       case '/details':
@@ -455,8 +485,12 @@ function MainAppContent() {
               title="System Specs &amp; Preload Details"
               description="Confirmed console hardware targets, pre-load unlock schedules, storage allocation requirements, and verified platform support."
               onNavigateHome={() => handleNavigate('overview')}
+              suppressBackdrop={suppressBannerBackdrop}
+              animateContent={animateContent}
             />
-            <ReleaseInformationLazy />
+            <div className={contentWrapClass}>
+              <ReleaseInformationLazy />
+            </div>
           </>
         );
       default:
@@ -480,7 +514,7 @@ function MainAppContent() {
       {/* 3. Main Content Flow */}
       <main className="flex-1 relative z-10 w-full max-w-full overflow-x-hidden pt-16">
         {isDesktop ? (
-          /* DESKTOP ROUTED PAGES: Transition keeps previous route visible while loading, then crossfades smoothly */
+          /* DESKTOP ROUTED PAGES: Transition keeps previous route visible while loading, then crossfades smoothly without breaking backdrop-blur */
           <Suspense fallback={<RouteLoadingFallback />}>
             <div className="relative w-full overflow-clip">
               {routeState.visitedPaths.map((routePath) => {
@@ -490,7 +524,7 @@ function MainAppContent() {
 
                 let panelClass = 'hidden';
                 if (isActive) {
-                  panelClass = animateCrossfade ? 'relative z-[2] route-crossfade-in' : 'relative z-[2]';
+                  panelClass = 'relative z-[2]';
                 } else if (isOutgoing) {
                   panelClass =
                     'absolute inset-x-0 top-0 z-[1] pointer-events-none select-none route-crossfade-out';
@@ -502,7 +536,12 @@ function MainAppContent() {
                     className={panelClass}
                     aria-hidden={!isActive}
                   >
-                    {renderDesktopRoute(routePath, isActive)}
+                    {renderDesktopRoute(
+                      routePath,
+                      isActive,
+                      isActive && animateCrossfade,
+                      isOutgoing && currentPath !== '/'
+                    )}
                   </div>
                 );
               })}

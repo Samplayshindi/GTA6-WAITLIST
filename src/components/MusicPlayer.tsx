@@ -346,7 +346,7 @@ export const MusicPlayer: React.FC = () => {
                           <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                         </button>
                         <span className="text-xs font-mono text-slate-400 tabular-nums">
-                          {formatTime(track.durationSec)}
+                          {track.durationSec > 0 ? formatTime(track.durationSec) : (track.durationText || '--:--')}
                         </span>
                       </div>
                     </div>
@@ -525,7 +525,7 @@ export const MusicPlayer: React.FC = () => {
               </div>
 
               <span className="text-[10px] font-mono text-slate-400 w-9 text-left tabular-nums shrink-0">
-                {formatTime(safeDuration)}
+                {safeDuration > 0 ? formatTime(safeDuration) : (currentTrack.durationText || '--:--')}
               </span>
             </div>
           </div>

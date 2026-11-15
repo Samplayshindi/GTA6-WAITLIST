@@ -8,6 +8,8 @@ interface PageHeaderBannerProps {
   description: string;
   accentColor?: string;
   onNavigateHome: () => void;
+  suppressBackdrop?: boolean;
+  animateContent?: boolean;
 }
 
 export const PageHeaderBanner: React.FC<PageHeaderBannerProps> = ({
@@ -15,10 +17,24 @@ export const PageHeaderBanner: React.FC<PageHeaderBannerProps> = ({
   title,
   description,
   onNavigateHome,
+  suppressBackdrop = false,
+  animateContent = false,
 }) => {
   return (
-    <div className="relative pt-24 pb-8 md:pt-28 md:pb-12 bg-gradient-to-b from-[#0B2425]/40 via-[#08090D]/50 to-transparent border-b border-white/10 backdrop-blur-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative pt-24 pb-8 md:pt-28 md:pb-12 border-b border-white/10">
+      {/* Persistent translucent dark & blurred overlay layered above AtmosphericBackground and below heading text */}
+      {!suppressBackdrop && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-[#0B2425]/40 via-[#08090D]/50 to-transparent backdrop-blur-xs pointer-events-none"
+        />
+      )}
+
+      <div
+        className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${
+          animateContent ? 'route-content-enter' : ''
+        }`}
+      >
         
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-3 mb-4 text-xs font-mono">
